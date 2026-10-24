@@ -1,0 +1,153 @@
+{
+  "surah": {
+    "id": 90,
+    "name": "سُورَةُ البَلَدِ",
+    "englishName": "Al-Balad",
+    "englishNameTranslation": "The City",
+    "numberOfAyahs": 20,
+    "revelationType": "Meccan"
+  },
+  "ayahs": [
+    {
+      "id": 6024,
+      "surahID": 90,
+      "numberInSurah": 1,
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ لَآ أُقْسِمُ بِهَٰذَا ٱلْبَلَدِ",
+      "tajweed": "ل[o[َآ] أُ[q:13287[قْ]سِمُ بِهَ[n[ـٰ]ذَا [h:14500[ٱ]لْبَلَ[q[د]ِ"
+    },
+    {
+      "id": 6025,
+      "surahID": 90,
+      "numberInSurah": 2,
+      "text": "وَأَنتَ حِلٌّۢ بِهَٰذَا ٱلْبَلَدِ",
+      "tajweed": "وَأَ[f:3893[نت]َ حِل[i:14501[ُّۢ ب]ِهَ[n[ـٰ]ذَا [h:14500[ٱ]لْبَلَ[q[د]ِ"
+    },
+    {
+      "id": 6026,
+      "surahID": 90,
+      "numberInSurah": 3,
+      "text": "وَوَالِدٍۢ وَمَا وَلَدَ",
+      "tajweed": "وَوَالِ[a:14502[دٍ و]َمَا وَلَ[q[د]َ"
+    },
+    {
+      "id": 6027,
+      "surahID": 90,
+      "numberInSurah": 4,
+      "text": "لَقَدْ خَلَقْنَا ٱلْإِنسَٰنَ فِى كَبَدٍ",
+      "tajweed": "لَقَ[q:2389[دْ] خَلَ[q:5159[قْ]نَا [h:7228[ٱ]لْإِ[f:5969[نس]َ[n[ـٰ]نَ فِى كَبَ[q[د]ٍ"
+    },
+    {
+      "id": 6028,
+      "surahID": 90,
+      "numberInSurah": 5,
+      "text": "أَيَحْسَبُ أَن لَّن يَقْدِرَ عَلَيْهِ أَحَدٌۭ",
+      "tajweed": "أَيَحْسَبُ أ[u:8842[َن ل]ّ[a:14503[َن ي]َ[q:14504[قْ]دِرَ عَلَيْهِ أَحَ[q[د]ٌ"
+    },
+    {
+      "id": 6029,
+      "surahID": 90,
+      "numberInSurah": 6,
+      "text": "يَقُولُ أَهْلَكْتُ مَالًۭا لُّبَدًا",
+      "tajweed": "يَقُولُ أَهْلَكْتُ مَال[u:14505[اً ل]ُّبَدًا"
+    },
+    {
+      "id": 6030,
+      "surahID": 90,
+      "numberInSurah": 7,
+      "text": "أَيَحْسَبُ أَن لَّمْ يَرَهُۥٓ أَحَدٌ",
+      "tajweed": "أَيَحْسَبُ أ[u:4423[َن ل]َّمْ يَرَهُ[o[ۥٓ] أَحَ[q[د]ٌ"
+    },
+    {
+      "id": 6031,
+      "surahID": 90,
+      "numberInSurah": 8,
+      "text": "أَلَمْ نَجْعَل لَّهُۥ عَيْنَيْنِ",
+      "tajweed": "أَلَمْ نَ[q:8219[جْ]عَل لَّهُ[n[ۥ] عَيْنَ[p[يْ]نِ"
+    },
+    {
+      "id": 6032,
+      "surahID": 90,
+      "numberInSurah": 9,
+      "text": "وَلِسَانًۭا وَشَفَتَيْنِ",
+      "tajweed": "وَلِسَا[a:14506[نًا و]َشَفَتَ[p[يْ]نِ"
+    },
+    {
+      "id": 6033,
+      "surahID": 90,
+      "numberInSurah": 10,
+      "text": "وَهَدَيْنَٰهُ ٱلنَّجْدَيْنِ",
+      "tajweed": "وَهَدَيْنَ[n[ـٰ]هُ [h:14507[ٱ][l[ل][g[نّ]َ[q:14508[جْ]دَ[p[يْ]نِ"
+    },
+    {
+      "id": 6034,
+      "surahID": 90,
+      "numberInSurah": 11,
+      "text": "فَلَا ٱقْتَحَمَ ٱلْعَقَبَةَ",
+      "tajweed": "فَلَا [h:14509[ٱ][q:14510[قْ]تَحَمَ [h:14511[ٱ]لْعَقَبَةَ"
+    },
+    {
+      "id": 6035,
+      "surahID": 90,
+      "numberInSurah": 12,
+      "text": "وَمَآ أَدْرَىٰكَ مَا ٱلْعَقَبَةُ",
+      "tajweed": "وَم[o[َآ] أَ[q:13858[دْ]رَ[n[ٮٰ]كَ مَا [h:14512[ٱ]لْعَقَبَةُ"
+    },
+    {
+      "id": 6036,
+      "surahID": 90,
+      "numberInSurah": 13,
+      "text": "فَكُّ رَقَبَةٍ",
+      "tajweed": "فَكُّ رَقَبَةٍ"
+    },
+    {
+      "id": 6037,
+      "surahID": 90,
+      "numberInSurah": 14,
+      "text": "أَوْ إِطْعَٰمٌۭ فِى يَوْمٍۢ ذِى مَسْغَبَةٍۢ",
+      "tajweed": "أَوْ إِ[q:14513[طْ]عَ[n[ـٰ][f:14514[مٌ ف]ِى يَوْ[f:14515[مٍ ذ]ِى مَسْغَبَةٍ"
+    },
+    {
+      "id": 6038,
+      "surahID": 90,
+      "numberInSurah": 15,
+      "text": "يَتِيمًۭا ذَا مَقْرَبَةٍ",
+      "tajweed": "يَتِي[f:14516[مًا ذ]َا مَ[q:14517[قْ]رَبَةٍ"
+    },
+    {
+      "id": 6039,
+      "surahID": 90,
+      "numberInSurah": 16,
+      "text": "أَوْ مِسْكِينًۭا ذَا مَتْرَبَةٍۢ",
+      "tajweed": "أَوْ مِسْكِي[f:14518[نًا ذ]َا مَتْرَبَةٍ"
+    },
+    {
+      "id": 6040,
+      "surahID": 90,
+      "numberInSurah": 17,
+      "text": "ثُمَّ كَانَ مِنَ ٱلَّذِينَ ءَامَنُوا۟ وَتَوَاصَوْا۟ بِٱلصَّبْرِ وَتَوَاصَوْا۟ بِٱلْمَرْحَمَةِ",
+      "tajweed": "ثُ[g[مّ]َ كَانَ مِنَ [h:523[ٱ]لَّذِينَ ءَامَنُو[s[اْ] وَتَوَاصَوْ[s[اْ] بِ[h:223[ٱ][l[ل]صَّ[q:223[بْ]رِ وَتَوَاصَوْ[s[اْ] بِ[h:14519[ٱ]لْمَرْحَمَةِ"
+    },
+    {
+      "id": 6041,
+      "surahID": 90,
+      "numberInSurah": 18,
+      "text": "أُو۟لَٰٓئِكَ أَصْحَٰبُ ٱلْمَيْمَنَةِ",
+      "tajweed": "أُ[s[وْ]لَ[o[ـٰٓ]ئِكَ أَصْحَ[n[ـٰ]بُ [h:13209[ٱ]لْمَيْمَنَةِ"
+    },
+    {
+      "id": 6042,
+      "surahID": 90,
+      "numberInSurah": 19,
+      "text": "وَٱلَّذِينَ كَفَرُوا۟ بِـَٔايَٰتِنَا هُمْ أَصْحَٰبُ ٱلْمَشْـَٔمَةِ",
+      "tajweed": "وَ[h:9999[ٱ]لَّذِينَ كَفَرُو[s[اْ] بِـَٔـايَ[n[ـٰ]تِنَا هُمْ أَصْحَ[n[ـٰ]بُ [h:13211[ٱ]لْمَشْــَٔمَةِ"
+    },
+    {
+      "id": 6043,
+      "surahID": 90,
+      "numberInSurah": 20,
+      "text": "عَلَيْهِمْ نَارٌۭ مُّؤْصَدَةٌۢ",
+      "tajweed": "عَلَيْهِمْ نَا[a:14520[رٌ م]ُّؤْصَدَةُۢ"
+    }
+  ],
+  "_notice": "Tanzil Quran Text\nCopyright (C) 2007-2021 Tanzil Project\nLicense: Creative Commons Attribution 3.0\n\nThis copy of the Quran text is carefully produced, highly verified and\ncontinuously monitored by a group of specialists in Tanzil Project.\n\nTERMS OF USE:\n- Permission is granted to copy and distribute verbatim copies of this text,\n  but CHANGING IT IS NOT ALLOWED.\n- This Quran text can be used in any website or application, provided that\n  its source (Tanzil Project) is clearly indicated, and a link is made to\n  tanzil.net to enable users to keep track of changes.\n- This copyright notice shall be included in all verbatim copies of the text,\n  and shall be reproduced appropriately in all files derived from or containing\n  substantial portion of this text.\n\nPlease check updates at: http://tanzil.net/updates/\nSource: https://tanzil.net/ ; https://tanzil.net/docs/text_license\n"
+}

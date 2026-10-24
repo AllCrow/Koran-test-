@@ -1,0 +1,118 @@
+{
+  "surah": {
+    "id": 91,
+    "name": "سُورَةُ الشَّمۡسِ",
+    "englishName": "Ash-Shams",
+    "englishNameTranslation": "The Sun",
+    "numberOfAyahs": 15,
+    "revelationType": "Meccan"
+  },
+  "ayahs": [
+    {
+      "id": 6044,
+      "surahID": 91,
+      "numberInSurah": 1,
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ وَٱلشَّمْسِ وَضُحَىٰهَا",
+      "tajweed": "وَ[h:9999[ٱ][l[ل]شَّمْسِ وَضُحَ[n[ـٰ]هَا"
+    },
+    {
+      "id": 6045,
+      "surahID": 91,
+      "numberInSurah": 2,
+      "text": "وَٱلْقَمَرِ إِذَا تَلَىٰهَا",
+      "tajweed": "وَ[h:9999[ٱ]لْقَمَرِ إِذَا تَلَ[n[ـٰ]هَا"
+    },
+    {
+      "id": 6046,
+      "surahID": 91,
+      "numberInSurah": 3,
+      "text": "وَٱلنَّهَارِ إِذَا جَلَّىٰهَا",
+      "tajweed": "وَ[h:9999[ٱ][l[ل][g[نّ]َهَارِ إِذَا جَلَّ[n[ـٰ]هَا"
+    },
+    {
+      "id": 6047,
+      "surahID": 91,
+      "numberInSurah": 4,
+      "text": "وَٱلَّيْلِ إِذَا يَغْشَىٰهَا",
+      "tajweed": "وَ[h:9999[ٱ]لَّيْلِ إِذَا يَغْشَ[n[ـٰ]هَا"
+    },
+    {
+      "id": 6048,
+      "surahID": 91,
+      "numberInSurah": 5,
+      "text": "وَٱلسَّمَآءِ وَمَا بَنَىٰهَا",
+      "tajweed": "وَ[h:9999[ٱ][l[ل]سَّم[o[َا]ٓءِ وَمَا بَنَ[n[ـٰ]هَا"
+    },
+    {
+      "id": 6049,
+      "surahID": 91,
+      "numberInSurah": 6,
+      "text": "وَٱلْأَرْضِ وَمَا طَحَىٰهَا",
+      "tajweed": "وَ[h:9999[ٱ]لْأَرْضِ وَمَا طَحَ[n[ـٰ]هَا"
+    },
+    {
+      "id": 6050,
+      "surahID": 91,
+      "numberInSurah": 7,
+      "text": "وَنَفْسٍۢ وَمَا سَوَّىٰهَا",
+      "tajweed": "وَنَفْ[a:14521[سٍ و]َمَا سَوَّ[n[ٮٰ]هَا"
+    },
+    {
+      "id": 6051,
+      "surahID": 91,
+      "numberInSurah": 8,
+      "text": "فَأَلْهَمَهَا فُجُورَهَا وَتَقْوَىٰهَا",
+      "tajweed": "فَأَلْهَمَهَا فُجُورَهَا وَتَ[q:14522[قْ]وَ[n[ٮٰ]هَا"
+    },
+    {
+      "id": 6052,
+      "surahID": 91,
+      "numberInSurah": 9,
+      "text": "قَدْ أَفْلَحَ مَن زَكَّىٰهَا",
+      "tajweed": "قَ[q:298[دْ] أَفْلَحَ مَ[f:14523[ن ز]َكَّ[n[ـٰ]هَا"
+    },
+    {
+      "id": 6053,
+      "surahID": 91,
+      "numberInSurah": 10,
+      "text": "وَقَدْ خَابَ مَن دَسَّىٰهَا",
+      "tajweed": "وَقَ[q:387[دْ] خَابَ مَ[f:14524[ن د]َسَّ[n[ـٰ]هَا"
+    },
+    {
+      "id": 6054,
+      "surahID": 91,
+      "numberInSurah": 11,
+      "text": "كَذَّبَتْ ثَمُودُ بِطَغْوَىٰهَآ",
+      "tajweed": "كَذَّبَتْ ثَمُودُ بِطَغْوَ[n[ٮٰ]هَآ"
+    },
+    {
+      "id": 6055,
+      "surahID": 91,
+      "numberInSurah": 12,
+      "text": "إِذِ ٱنۢبَعَثَ أَشْقَىٰهَا",
+      "tajweed": "إِذِ [h:14525[ٱ][i:14526[نۢب]َعَثَ أَشْقَ[n[ـٰ]هَا"
+    },
+    {
+      "id": 6056,
+      "surahID": 91,
+      "numberInSurah": 13,
+      "text": "فَقَالَ لَهُمْ رَسُولُ ٱللَّهِ نَاقَةَ ٱللَّهِ وَسُقْيَٰهَا",
+      "tajweed": "فَقَالَ لَهُمْ رَسُولُ [h:3306[ٱ]للَّهِ نَاقَةَ [h:14527[ٱ]للَّهِ وَسُ[q:14528[قْ]يَ[n[ـٰ]هَا"
+    },
+    {
+      "id": 6057,
+      "surahID": 91,
+      "numberInSurah": 14,
+      "text": "فَكَذَّبُوهُ فَعَقَرُوهَا فَدَمْدَمَ عَلَيْهِمْ رَبُّهُم بِذَنۢبِهِمْ فَسَوَّىٰهَا",
+      "tajweed": "فَكَذَّبُوهُ فَعَقَرُوهَا فَدَمْدَمَ عَلَيْهِمْ رَبُّه[c:14529[ُم ب]ِذَ[i:13779[نۢب]ِهِمْ فَسَوَّ[n[ٮٰ]هَا"
+    },
+    {
+      "id": 6058,
+      "surahID": 91,
+      "numberInSurah": 15,
+      "text": "وَلَا يَخَافُ عُقْبَٰهَا",
+      "tajweed": "وَلَا يَخَافُ عُ[q:14530[قْ]بَ[n[ـٰ]هَا"
+    }
+  ],
+  "_notice": "Tanzil Quran Text\nCopyright (C) 2007-2021 Tanzil Project\nLicense: Creative Commons Attribution 3.0\n\nThis copy of the Quran text is carefully produced, highly verified and\ncontinuously monitored by a group of specialists in Tanzil Project.\n\nTERMS OF USE:\n- Permission is granted to copy and distribute verbatim copies of this text,\n  but CHANGING IT IS NOT ALLOWED.\n- This Quran text can be used in any website or application, provided that\n  its source (Tanzil Project) is clearly indicated, and a link is made to\n  tanzil.net to enable users to keep track of changes.\n- This copyright notice shall be included in all verbatim copies of the text,\n  and shall be reproduced appropriately in all files derived from or containing\n  substantial portion of this text.\n\nPlease check updates at: http://tanzil.net/updates/\nSource: https://tanzil.net/ ; https://tanzil.net/docs/text_license\n"
+}

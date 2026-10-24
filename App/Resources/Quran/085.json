@@ -1,0 +1,167 @@
+{
+  "surah": {
+    "id": 85,
+    "name": "سُورَةُ البُرُوجِ",
+    "englishName": "Al-Burooj",
+    "englishNameTranslation": "The Constellations",
+    "numberOfAyahs": 22,
+    "revelationType": "Meccan"
+  },
+  "ayahs": [
+    {
+      "id": 5910,
+      "surahID": 85,
+      "numberInSurah": 1,
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ وَٱلسَّمَآءِ ذَاتِ ٱلْبُرُوجِ",
+      "tajweed": "وَ[h:9999[ٱ][l[ل]سَّم[o[َا]ٓءِ ذَاتِ [h:14402[ٱ]لْبُر[p[ُو][q[ج]ِ"
+    },
+    {
+      "id": 5911,
+      "surahID": 85,
+      "numberInSurah": 2,
+      "text": "وَٱلْيَوْمِ ٱلْمَوْعُودِ",
+      "tajweed": "وَ[h:9999[ٱ]لْيَوْمِ [h:14403[ٱ]لْمَوْع[p[ُو][q[د]ِ"
+    },
+    {
+      "id": 5912,
+      "surahID": 85,
+      "numberInSurah": 3,
+      "text": "وَشَاهِدٍۢ وَمَشْهُودٍۢ",
+      "tajweed": "وَشَاهِ[a:14404[دٍ و]َمَشْه[p[ُو][q[د]ٍ"
+    },
+    {
+      "id": 5913,
+      "surahID": 85,
+      "numberInSurah": 4,
+      "text": "قُتِلَ أَصْحَٰبُ ٱلْأُخْدُودِ",
+      "tajweed": "قُتِلَ أَصْحَ[n[ـٰ]بُ [h:14405[ٱ]لْأُخْد[p[ُو][q[د]ِ"
+    },
+    {
+      "id": 5914,
+      "surahID": 85,
+      "numberInSurah": 5,
+      "text": "ٱلنَّارِ ذَاتِ ٱلْوَقُودِ",
+      "tajweed": "ٱ[l[ل][g[نّ]َارِ ذَاتِ [h:14406[ٱ]لْوَق[p[ُو][q[د]ِ"
+    },
+    {
+      "id": 5915,
+      "surahID": 85,
+      "numberInSurah": 6,
+      "text": "إِذْ هُمْ عَلَيْهَا قُعُودٌۭ",
+      "tajweed": "إِذْ هُمْ عَلَيْهَا قُع[p[ُو][q[د]ٌ"
+    },
+    {
+      "id": 5916,
+      "surahID": 85,
+      "numberInSurah": 7,
+      "text": "وَهُمْ عَلَىٰ مَا يَفْعَلُونَ بِٱلْمُؤْمِنِينَ شُهُودٌۭ",
+      "tajweed": "وَهُمْ عَلَىٰ مَا يَفْعَلُونَ بِ[h:3560[ٱ]لْمُؤْمِنِينَ شُه[p[ُو][q[د]ٌ"
+    },
+    {
+      "id": 5917,
+      "surahID": 85,
+      "numberInSurah": 8,
+      "text": "وَمَا نَقَمُوا۟ مِنْهُمْ إِلَّآ أَن يُؤْمِنُوا۟ بِٱللَّهِ ٱلْعَزِيزِ ٱلْحَمِيدِ",
+      "tajweed": "وَمَا نَقَمُو[s[اْ] مِنْهُمْ إِلّ[o[َآ] أ[a:386[َن ي]ُؤْمِنُو[s[اْ] بِ[h:32[ٱ]للَّهِ [h:14407[ٱ]لْعَزِيزِ [h:7037[ٱ]لْحَم[p[ِي][q[د]ِ"
+    },
+    {
+      "id": 5918,
+      "surahID": 85,
+      "numberInSurah": 9,
+      "text": "ٱلَّذِى لَهُۥ مُلْكُ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضِ ۚ وَٱللَّهُ عَلَىٰ كُلِّ شَىْءٍۢ شَهِيدٌ",
+      "tajweed": "ٱلَّذِى لَهُ[n[ۥ] مُلْكُ [h:555[ٱ][l[ل]سَّمَ[n[ـٰ]و[n[َٲ]تِ وَ[h:177[ٱ]لْأَرْضِ‌ۚ وَ[h:72[ٱ]للَّهُ عَلَىٰ كُلِّ ش[f:3903[َىْءٍ ش]َه[p[ِي][q[د]ٌ"
+    },
+    {
+      "id": 5919,
+      "surahID": 85,
+      "numberInSurah": 10,
+      "text": "إِنَّ ٱلَّذِينَ فَتَنُوا۟ ٱلْمُؤْمِنِينَ وَٱلْمُؤْمِنَٰتِ ثُمَّ لَمْ يَتُوبُوا۟ فَلَهُمْ عَذَابُ جَهَنَّمَ وَلَهُمْ عَذَابُ ٱلْحَرِيقِ",
+      "tajweed": "إِ[g[نّ]َ [h:24[ٱ]لَّذِينَ فَتَنُو[s[اْ] [h:14408[ٱ]لْمُؤْمِنِينَ وَ[h:5718[ٱ]لْمُؤْمِنَ[n[ـٰ]تِ ثُ[g[مّ]َ لَمْ يَتُوبُو[s[اْ] فَلَهُمْ عَذَابُ جَهَ[g[نّ]َمَ وَلَهُمْ عَذَابُ [h:14409[ٱ]لْحَر[p[ِي][q[ق]ِ"
+    },
+    {
+      "id": 5920,
+      "surahID": 85,
+      "numberInSurah": 11,
+      "text": "إِنَّ ٱلَّذِينَ ءَامَنُوا۟ وَعَمِلُوا۟ ٱلصَّٰلِحَٰتِ لَهُمْ جَنَّٰتٌۭ تَجْرِى مِن تَحْتِهَا ٱلْأَنْهَٰرُ ۚ ذَٰلِكَ ٱلْفَوْزُ ٱلْكَبِيرُ",
+      "tajweed": "إِ[g[نّ]َ [h:24[ٱ]لَّذِينَ ءَامَنُو[s[اْ] وَعَمِلُو[s[اْ] [h:118[ٱ][l[ل]صَّ[n[ـٰ]لِحَ[n[ـٰ]تِ لَهُمْ جَ[g[نّ]َ[n[ـٰ][f:1786[تٌ ت]َ[q:120[جْ]رِى مِ[f:121[ن ت]َحْتِهَا [h:122[ٱ]لْأَنْهَ[n[ـٰ]رُ‌ۚ ذ[n[َٲ]لِكَ [h:3911[ٱ]لْفَوْزُ [h:14410[ٱ]لْكَب[p[ِي]رُ"
+    },
+    {
+      "id": 5921,
+      "surahID": 85,
+      "numberInSurah": 12,
+      "text": "إِنَّ بَطْشَ رَبِّكَ لَشَدِيدٌ",
+      "tajweed": "إِ[g[نّ]َ بَ[q:14411[طْ]شَ رَبِّكَ لَشَد[p[ِي][q[د]ٌ"
+    },
+    {
+      "id": 5922,
+      "surahID": 85,
+      "numberInSurah": 13,
+      "text": "إِنَّهُۥ هُوَ يُبْدِئُ وَيُعِيدُ",
+      "tajweed": "إِ[g[نّ]َهُ[n[ۥ] هُوَ يُ[q:10320[بْ]دِئُ وَيُع[p[ِي][q[د]ُ"
+    },
+    {
+      "id": 5923,
+      "surahID": 85,
+      "numberInSurah": 14,
+      "text": "وَهُوَ ٱلْغَفُورُ ٱلْوَدُودُ",
+      "tajweed": "وَهُوَ [h:6227[ٱ]لْغَفُورُ [h:14412[ٱ]لْوَد[p[ُو][q[د]ُ"
+    },
+    {
+      "id": 5924,
+      "surahID": 85,
+      "numberInSurah": 15,
+      "text": "ذُو ٱلْعَرْشِ ٱلْمَجِيدُ",
+      "tajweed": "ذُو [h:11807[ٱ]لْعَرْشِ [h:14413[ٱ]لْمَج[p[ِي][q[د]ُ"
+    },
+    {
+      "id": 5925,
+      "surahID": 85,
+      "numberInSurah": 16,
+      "text": "فَعَّالٌۭ لِّمَا يُرِيدُ",
+      "tajweed": "فَعَّا[u:6506[لٌ ل]ِّمَا يُر[p[ِي][q[د]ُ"
+    },
+    {
+      "id": 5926,
+      "surahID": 85,
+      "numberInSurah": 17,
+      "text": "هَلْ أَتَىٰكَ حَدِيثُ ٱلْجُنُودِ",
+      "tajweed": "هَلْ أَتَ[n[ـٰ]كَ حَدِيثُ [h:14414[ٱ]لْجُن[p[ُو][q[د]ِ"
+    },
+    {
+      "id": 5927,
+      "surahID": 85,
+      "numberInSurah": 18,
+      "text": "فِرْعَوْنَ وَثَمُودَ",
+      "tajweed": "فِرْعَوْنَ وَثَم[p[ُو][q[د]َ"
+    },
+    {
+      "id": 5928,
+      "surahID": 85,
+      "numberInSurah": 19,
+      "text": "بَلِ ٱلَّذِينَ كَفَرُوا۟ فِى تَكْذِيبٍۢ",
+      "tajweed": "بَلِ [h:10932[ٱ]لَّذِينَ كَفَرُو[s[اْ] فِى تَكْذ[p[ِي][q[ب]ٍ"
+    },
+    {
+      "id": 5929,
+      "surahID": 85,
+      "numberInSurah": 20,
+      "text": "وَٱللَّهُ مِن وَرَآئِهِم مُّحِيطٌۢ",
+      "tajweed": "وَ[h:9999[ٱ]للَّهُ م[a:12394[ِن و]َر[o[َا]ٓئِه[w:14415[ِم م]ُّح[p[ِي][q[ط]ُۢ"
+    },
+    {
+      "id": 5930,
+      "surahID": 85,
+      "numberInSurah": 21,
+      "text": "بَلْ هُوَ قُرْءَانٌۭ مَّجِيدٌۭ",
+      "tajweed": "بَلْ هُوَ قُرْءَا[a:14416[نٌ م]َّج[p[ِي][q[د]ٌ"
+    },
+    {
+      "id": 5931,
+      "surahID": 85,
+      "numberInSurah": 22,
+      "text": "فِى لَوْحٍۢ مَّحْفُوظٍۭ",
+      "tajweed": "فِى لَوْ[a:14417[حٍ م]َّحْف[p[ُو]ظِۭ"
+    }
+  ],
+  "_notice": "Tanzil Quran Text\nCopyright (C) 2007-2021 Tanzil Project\nLicense: Creative Commons Attribution 3.0\n\nThis copy of the Quran text is carefully produced, highly verified and\ncontinuously monitored by a group of specialists in Tanzil Project.\n\nTERMS OF USE:\n- Permission is granted to copy and distribute verbatim copies of this text,\n  but CHANGING IT IS NOT ALLOWED.\n- This Quran text can be used in any website or application, provided that\n  its source (Tanzil Project) is clearly indicated, and a link is made to\n  tanzil.net to enable users to keep track of changes.\n- This copyright notice shall be included in all verbatim copies of the text,\n  and shall be reproduced appropriately in all files derived from or containing\n  substantial portion of this text.\n\nPlease check updates at: http://tanzil.net/updates/\nSource: https://tanzil.net/ ; https://tanzil.net/docs/text_license\n"
+}

@@ -1,0 +1,69 @@
+{
+  "surah": {
+    "id": 95,
+    "name": "سُورَةُ التِّينِ",
+    "englishName": "At-Tin",
+    "englishNameTranslation": "The Fig",
+    "numberOfAyahs": 8,
+    "revelationType": "Meccan"
+  },
+  "ayahs": [
+    {
+      "id": 6099,
+      "surahID": 95,
+      "numberInSurah": 1,
+      "text": "بِّسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ وَٱلتِّينِ وَٱلزَّيْتُونِ",
+      "tajweed": "وَ[h:9999[ٱ][l[ل]تِّينِ وَ[h:14553[ٱ][l[ل]زَّيْت[p[ُو]نِ"
+    },
+    {
+      "id": 6100,
+      "surahID": 95,
+      "numberInSurah": 2,
+      "text": "وَطُورِ سِينِينَ",
+      "tajweed": "وَطُورِ سِين[p[ِي]نَ"
+    },
+    {
+      "id": 6101,
+      "surahID": 95,
+      "numberInSurah": 3,
+      "text": "وَهَٰذَا ٱلْبَلَدِ ٱلْأَمِينِ",
+      "tajweed": "وَهَ[n[ـٰ]ذَا [h:14554[ٱ]لْبَلَدِ [h:14555[ٱ]لْأَم[p[ِي]نِ"
+    },
+    {
+      "id": 6102,
+      "surahID": 95,
+      "numberInSurah": 4,
+      "text": "لَقَدْ خَلَقْنَا ٱلْإِنسَٰنَ فِىٓ أَحْسَنِ تَقْوِيمٍۢ",
+      "tajweed": "لَقَ[q:2389[دْ] خَلَ[q:5159[قْ]نَا [h:7228[ٱ]لْإِ[f:5969[نس]َ[n[ـٰ]نَ ف[o[ِىٓ] أَحْسَنِ تَ[q:14556[قْ]و[p[ِي]مٍ"
+    },
+    {
+      "id": 6103,
+      "surahID": 95,
+      "numberInSurah": 5,
+      "text": "ثُمَّ رَدَدْنَٰهُ أَسْفَلَ سَٰفِلِينَ",
+      "tajweed": "ثُ[g[مّ]َ رَدَ[q:14557[دْ]نَ[n[ـٰ]هُ أَسْفَلَ سَ[n[ـٰ]فِل[p[ِي]نَ"
+    },
+    {
+      "id": 6104,
+      "surahID": 95,
+      "numberInSurah": 6,
+      "text": "إِلَّا ٱلَّذِينَ ءَامَنُوا۟ وَعَمِلُوا۟ ٱلصَّٰلِحَٰتِ فَلَهُمْ أَجْرٌ غَيْرُ مَمْنُونٍۢ",
+      "tajweed": "إِلَّا [h:778[ٱ]لَّذِينَ ءَامَنُو[s[اْ] وَعَمِلُو[s[اْ] [h:118[ٱ][l[ل]صَّ[n[ـٰ]لِحَ[n[ـٰ]تِ فَلَهُمْ أَ[q:2423[جْ]رٌ غَيْرُ مَمْن[p[ُو]نٍ"
+    },
+    {
+      "id": 6105,
+      "surahID": 95,
+      "numberInSurah": 7,
+      "text": "فَمَا يُكَذِّبُكَ بَعْدُ بِٱلدِّينِ",
+      "tajweed": "فَمَا يُكَذِّبُكَ بَعْدُ بِ[h:14361[ٱ][l[ل]دّ[p[ِي]نِ"
+    },
+    {
+      "id": 6106,
+      "surahID": 95,
+      "numberInSurah": 8,
+      "text": "أَلَيْسَ ٱللَّهُ بِأَحْكَمِ ٱلْحَٰكِمِينَ",
+      "tajweed": "أَلَيْسَ [h:4087[ٱ]للَّهُ بِأَحْكَمِ [h:14558[ٱ]لْحَ[n[ـٰ]كِم[p[ِي]نَ"
+    }
+  ],
+  "_notice": "Tanzil Quran Text\nCopyright (C) 2007-2021 Tanzil Project\nLicense: Creative Commons Attribution 3.0\n\nThis copy of the Quran text is carefully produced, highly verified and\ncontinuously monitored by a group of specialists in Tanzil Project.\n\nTERMS OF USE:\n- Permission is granted to copy and distribute verbatim copies of this text,\n  but CHANGING IT IS NOT ALLOWED.\n- This Quran text can be used in any website or application, provided that\n  its source (Tanzil Project) is clearly indicated, and a link is made to\n  tanzil.net to enable users to keep track of changes.\n- This copyright notice shall be included in all verbatim copies of the text,\n  and shall be reproduced appropriately in all files derived from or containing\n  substantial portion of this text.\n\nPlease check updates at: http://tanzil.net/updates/\nSource: https://tanzil.net/ ; https://tanzil.net/docs/text_license\n"
+}

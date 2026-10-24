@@ -1,0 +1,180 @@
+import AVFoundation
+import Combine
+import Foundation
+import QuranCore
+
+/// A single local practice take. There is deliberately no upload or AI score.
+@MainActor
+final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
+    @Published private(set) var isRecording = false
+    @Published private(set) var isPlaying = false
+    @Published private(set) var isRequestingPermission = false
+    @Published private(set) var hasRecording = false
+    @Published private(set) var recordedReference: AyahReference?
+    @Published private(set) var errorMessage: String?
+    @Published private(set) var permissionDenied = false
+
+    private var recorder: AVAudioRecorder?
+    private var player: AVAudioPlayer?
+    private var recordingURL: URL?
+    private var permissionRequestID = UUID()
+    private let directory: URL
+    private var interruptionToken: NSObjectProtocol?
+
+    override init() {
+        directory = FileManager.default.temporaryDirectory.appendingPathComponent("SakinaPractice", isDirectory: true)
+        super.init()
+        // Takes are temporary and cannot be reopened after app restart.
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        if let files = try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) {
+            for file in files { try? FileManager.default.removeItem(at: file) }
+        }
+        interruptionToken = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification, object: nil, queue: .main
+        ) { [weak self] notification in
+            let type = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+            if type == AVAudioSession.InterruptionType.began.rawValue {
+                MainActor.assumeIsolated { self?.stopAll() }
+            }
+        }
+    }
+
+    deinit {
+        if let interruptionToken { NotificationCenter.default.removeObserver(interruptionToken) }
+        recorder?.stop()
+        player?.stop()
+        if let recordingURL { try? FileManager.default.removeItem(at: recordingURL) }
+    }
+
+    func start(reference: AyahReference) async {
+        guard !isRecording, !isRequestingPermission else { return }
+        stopPlayback()
+        errorMessage = nil
+        permissionDenied = false
+        let requestID = UUID()
+        permissionRequestID = requestID
+        isRequestingPermission = true
+        let allowed = await withCheckedContinuation { continuation in
+            AVAudioApplication.requestRecordPermission { continuation.resume(returning: $0) }
+        }
+        guard permissionRequestID == requestID else { return }
+        isRequestingPermission = false
+        guard allowed else {
+            permissionDenied = true
+            errorMessage = "Tillåt mikrofonen i Inställningar för att spela in din recitation."
+            return
+        }
+        let url = directory.appendingPathComponent(UUID().uuidString).appendingPathExtension("m4a")
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
+            try session.setActive(true)
+            let settings: [String: Any] = [
+                AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+                AVSampleRateKey: 44_100,
+                AVNumberOfChannelsKey: 1,
+                AVEncoderBitRateKey: 64_000,
+                AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+            ]
+            let nextRecorder = try AVAudioRecorder(url: url, settings: settings)
+            nextRecorder.delegate = self
+            guard nextRecorder.prepareToRecord(), nextRecorder.record(forDuration: 60) else {
+                throw CocoaError(.fileWriteUnknown)
+            }
+            if let recordingURL { try? FileManager.default.removeItem(at: recordingURL) }
+            recorder = nextRecorder
+            recordingURL = url
+            recordedReference = reference
+            hasRecording = false
+            isRecording = true
+            try? FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: url.path)
+        } catch {
+            try? FileManager.default.removeItem(at: url)
+            errorMessage = "Inspelningen kunde inte startas. Kontrollera mikrofonen och försök igen."
+            deactivateSession()
+        }
+    }
+
+    func finishRecordingIfNeeded() {
+        // Also invalidate a permission request if the user leaves the screen.
+        permissionRequestID = UUID()
+        isRequestingPermission = false
+        guard isRecording, let recorder else { return }
+        recorder.stop()
+        isRecording = false
+        hasRecording = recorder.currentTime > 0 || validFileExists()
+        self.recorder = nil
+        deactivateSession()
+    }
+
+    func playRecording() {
+        guard !isRecording, hasRecording, let recordingURL else { return }
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, mode: .default)
+            try session.setActive(true)
+            let newPlayer = try AVAudioPlayer(contentsOf: recordingURL)
+            newPlayer.delegate = self
+            guard newPlayer.play() else { throw CocoaError(.fileReadUnknown) }
+            player = newPlayer
+            isPlaying = true
+            errorMessage = nil
+        } catch {
+            errorMessage = "Inspelningen kunde inte spelas. Spela in en ny tagning och försök igen."
+            isPlaying = false
+            deactivateSession()
+        }
+    }
+
+    func stopPlayback() {
+        guard player != nil else { return }
+        player?.stop()
+        player = nil
+        isPlaying = false
+        deactivateSession()
+    }
+
+    func stopAll() {
+        finishRecordingIfNeeded()
+        stopPlayback()
+    }
+
+    func deleteRecording() {
+        stopAll()
+        if let recordingURL { try? FileManager.default.removeItem(at: recordingURL) }
+        recordingURL = nil
+        recordedReference = nil
+        hasRecording = false
+        errorMessage = nil
+    }
+
+    nonisolated func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        Task { @MainActor [weak self, weak recorder] in
+            guard let self, let recorder, self.recorder === recorder else { return }
+            self.isRecording = false
+            self.hasRecording = flag && self.validFileExists()
+            self.recorder = nil
+            if !flag { self.errorMessage = "Inspelningen avbröts. Försök igen med en ny tagning." }
+            self.deactivateSession()
+        }
+    }
+
+    nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        Task { @MainActor [weak self, weak player] in
+            guard let self, let player, self.player === player else { return }
+            self.player = nil
+            self.isPlaying = false
+            self.deactivateSession()
+        }
+    }
+
+    private func validFileExists() -> Bool {
+        guard let recordingURL,
+              let values = try? recordingURL.resourceValues(forKeys: [.fileSizeKey]) else { return false }
+        return (values.fileSize ?? 0) > 0
+    }
+
+    private func deactivateSession() {
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+}

@@ -1,0 +1,39 @@
+name: iPhone build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-build:
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate bundled Quran against source snapshots
+        run: python3 scripts/verify_content.py
+      - name: Test core logic
+        run: swift test --parallel
+      - name: Check reproducible Xcode project
+        run: |
+          python3 scripts/generate_project.py
+          git diff --exit-code -- Sakina.xcodeproj
+      - name: Build iPhone simulator app
+        run: >-
+          xcodebuild -project Sakina.xcodeproj -scheme Sakina
+          -configuration Debug -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sakina-simulator
+          path: DerivedData/Build/Products/Debug-iphonesimulator/Sakina.app
+          retention-days: 7

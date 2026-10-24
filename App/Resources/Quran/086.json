@@ -1,0 +1,132 @@
+{
+  "surah": {
+    "id": 86,
+    "name": "سُورَةُ الطَّارِقِ",
+    "englishName": "At-Taariq",
+    "englishNameTranslation": "The Morning Star",
+    "numberOfAyahs": 17,
+    "revelationType": "Meccan"
+  },
+  "ayahs": [
+    {
+      "id": 5932,
+      "surahID": 86,
+      "numberInSurah": 1,
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ وَٱلسَّمَآءِ وَٱلطَّارِقِ",
+      "tajweed": "وَ[h:9999[ٱ][l[ل]سَّم[o[َا]ٓءِ وَ[h:14418[ٱ][l[ل]طَّارِ[q[ق]ِ"
+    },
+    {
+      "id": 5933,
+      "surahID": 86,
+      "numberInSurah": 2,
+      "text": "وَمَآ أَدْرَىٰكَ مَا ٱلطَّارِقُ",
+      "tajweed": "وَم[o[َآ] أَ[q:13858[دْ]رَ[n[ٮٰ]كَ مَا [h:14419[ٱ][l[ل]طَّارِ[q[ق]ُ"
+    },
+    {
+      "id": 5934,
+      "surahID": 86,
+      "numberInSurah": 3,
+      "text": "ٱلنَّجْمُ ٱلثَّاقِبُ",
+      "tajweed": "ٱ[l[ل][g[نّ]َ[q:14420[جْ]مُ [h:14421[ٱ][l[ل]ثَّاقِ[q[ب]ُ"
+    },
+    {
+      "id": 5935,
+      "surahID": 86,
+      "numberInSurah": 4,
+      "text": "إِن كُلُّ نَفْسٍۢ لَّمَّا عَلَيْهَا حَافِظٌۭ",
+      "tajweed": "إِ[f:8426[ن ك]ُلُّ نَفْ[u:14422[سٍ ل]َّ[g[مّ]َا عَلَيْهَا حَافِظٌ"
+    },
+    {
+      "id": 5936,
+      "surahID": 86,
+      "numberInSurah": 5,
+      "text": "فَلْيَنظُرِ ٱلْإِنسَٰنُ مِمَّ خُلِقَ",
+      "tajweed": "فَلْيَ[f:14313[نظ]ُرِ [h:14314[ٱ]لْإِ[f:2732[نس]َ[n[ـٰ]نُ مِ[g[مّ]َ خُلِ[q[ق]َ"
+    },
+    {
+      "id": 5937,
+      "surahID": 86,
+      "numberInSurah": 6,
+      "text": "خُلِقَ مِن مَّآءٍۢ دَافِقٍۢ",
+      "tajweed": "خُلِقَ م[a:840[ِن م]ّ[o[َا]ٓ[f:14423[ءٍ د]َافِ[q[ق]ٍ"
+    },
+    {
+      "id": 5938,
+      "surahID": 86,
+      "numberInSurah": 7,
+      "text": "يَخْرُجُ مِنۢ بَيْنِ ٱلصُّلْبِ وَٱلتَّرَآئِبِ",
+      "tajweed": "يَخْرُجُ م[i:4612[ِنۢ ب]َيْنِ [h:14424[ٱ][l[ل]صُّلْبِ وَ[h:14425[ٱ][l[ل]تَّر[o[َا]ٓئِ[q[ب]ِ"
+    },
+    {
+      "id": 5939,
+      "surahID": 86,
+      "numberInSurah": 8,
+      "text": "إِنَّهُۥ عَلَىٰ رَجْعِهِۦ لَقَادِرٌۭ",
+      "tajweed": "إِ[g[نّ]َهُ[n[ۥ] عَلَىٰ رَ[q:14426[جْ]عِه[n[ِۦ] لَقَادِرٌ"
+    },
+    {
+      "id": 5940,
+      "surahID": 86,
+      "numberInSurah": 9,
+      "text": "يَوْمَ تُبْلَى ٱلسَّرَآئِرُ",
+      "tajweed": "يَوْمَ تُ[q:14427[بْ]لَى [h:14428[ٱ][l[ل]سَّر[o[َا]ٓئِرُ"
+    },
+    {
+      "id": 5941,
+      "surahID": 86,
+      "numberInSurah": 10,
+      "text": "فَمَا لَهُۥ مِن قُوَّةٍۢ وَلَا نَاصِرٍۢ",
+      "tajweed": "فَمَا لَهُ[n[ۥ] مِ[f:5395[ن ق]ُوَّ[a:14429[ةٍ و]َلَا نَاصِرٍ"
+    },
+    {
+      "id": 5942,
+      "surahID": 86,
+      "numberInSurah": 11,
+      "text": "وَٱلسَّمَآءِ ذَاتِ ٱلرَّجْعِ",
+      "tajweed": "وَ[h:9999[ٱ][l[ل]سَّم[o[َا]ٓءِ ذَاتِ [h:14430[ٱ][l[ل]رَّ[q:14431[جْ]عِ"
+    },
+    {
+      "id": 5943,
+      "surahID": 86,
+      "numberInSurah": 12,
+      "text": "وَٱلْأَرْضِ ذَاتِ ٱلصَّدْعِ",
+      "tajweed": "وَ[h:9999[ٱ]لْأَرْضِ ذَاتِ [h:14432[ٱ][l[ل]صَّ[q:14433[دْ]عِ"
+    },
+    {
+      "id": 5944,
+      "surahID": 86,
+      "numberInSurah": 13,
+      "text": "إِنَّهُۥ لَقَوْلٌۭ فَصْلٌۭ",
+      "tajweed": "إِ[g[نّ]َهُ[n[ۥ] لَقَوْ[f:14434[لٌ ف]َصْلٌ"
+    },
+    {
+      "id": 5945,
+      "surahID": 86,
+      "numberInSurah": 14,
+      "text": "وَمَا هُوَ بِٱلْهَزْلِ",
+      "tajweed": "وَمَا هُوَ بِ[h:14435[ٱ]لْهَزْلِ"
+    },
+    {
+      "id": 5946,
+      "surahID": 86,
+      "numberInSurah": 15,
+      "text": "إِنَّهُمْ يَكِيدُونَ كَيْدًۭا",
+      "tajweed": "إِ[g[نّ]َهُمْ يَكِيدُونَ كَيْدًا"
+    },
+    {
+      "id": 5947,
+      "surahID": 86,
+      "numberInSurah": 16,
+      "text": "وَأَكِيدُ كَيْدًۭا",
+      "tajweed": "وَأَكِيدُ كَيْدًا"
+    },
+    {
+      "id": 5948,
+      "surahID": 86,
+      "numberInSurah": 17,
+      "text": "فَمَهِّلِ ٱلْكَٰفِرِينَ أَمْهِلْهُمْ رُوَيْدًۢا",
+      "tajweed": "فَمَهِّلِ [h:14436[ٱ]لْكَ[n[ـٰ]فِرِينَ أَمْهِلْهُمْ رُوَيْدَۢا"
+    }
+  ],
+  "_notice": "Tanzil Quran Text\nCopyright (C) 2007-2021 Tanzil Project\nLicense: Creative Commons Attribution 3.0\n\nThis copy of the Quran text is carefully produced, highly verified and\ncontinuously monitored by a group of specialists in Tanzil Project.\n\nTERMS OF USE:\n- Permission is granted to copy and distribute verbatim copies of this text,\n  but CHANGING IT IS NOT ALLOWED.\n- This Quran text can be used in any website or application, provided that\n  its source (Tanzil Project) is clearly indicated, and a link is made to\n  tanzil.net to enable users to keep track of changes.\n- This copyright notice shall be included in all verbatim copies of the text,\n  and shall be reproduced appropriately in all files derived from or containing\n  substantial portion of this text.\n\nPlease check updates at: http://tanzil.net/updates/\nSource: https://tanzil.net/ ; https://tanzil.net/docs/text_license\n"
+}

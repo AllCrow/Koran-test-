@@ -1,0 +1,90 @@
+{
+  "surah": {
+    "id": 101,
+    "name": "سُورَةُ القَارِعَةِ",
+    "englishName": "Al-Qaari'a",
+    "englishNameTranslation": "The Calamity",
+    "numberOfAyahs": 11,
+    "revelationType": "Meccan"
+  },
+  "ayahs": [
+    {
+      "id": 6158,
+      "surahID": 101,
+      "numberInSurah": 1,
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ٱلْقَارِعَةُ",
+      "tajweed": "ٱلْقَارِعَةُ"
+    },
+    {
+      "id": 6159,
+      "surahID": 101,
+      "numberInSurah": 2,
+      "text": "مَا ٱلْقَارِعَةُ",
+      "tajweed": "مَا [h:14619[ٱ]لْقَارِعَةُ"
+    },
+    {
+      "id": 6160,
+      "surahID": 101,
+      "numberInSurah": 3,
+      "text": "وَمَآ أَدْرَىٰكَ مَا ٱلْقَارِعَةُ",
+      "tajweed": "وَم[o[َآ] أَ[q:13858[دْ]رَ[n[ٮٰ]كَ مَا [h:14619[ٱ]لْقَارِعَةُ"
+    },
+    {
+      "id": 6161,
+      "surahID": 101,
+      "numberInSurah": 4,
+      "text": "يَوْمَ يَكُونُ ٱلنَّاسُ كَٱلْفَرَاشِ ٱلْمَبْثُوثِ",
+      "tajweed": "يَوْمَ يَكُونُ [h:14620[ٱ][l[ل][g[نّ]َاسُ كَ[h:14621[ٱ]لْفَرَاشِ [h:14622[ٱ]لْمَ[q:14623[بْ]ث[p[ُو]ثِ"
+    },
+    {
+      "id": 6162,
+      "surahID": 101,
+      "numberInSurah": 5,
+      "text": "وَتَكُونُ ٱلْجِبَالُ كَٱلْعِهْنِ ٱلْمَنفُوشِ",
+      "tajweed": "وَتَكُونُ [h:13919[ٱ]لْجِبَالُ كَ[h:13920[ٱ]لْعِهْنِ [h:14624[ٱ]لْمَ[f:14625[نف][p[ُو]شِ"
+    },
+    {
+      "id": 6163,
+      "surahID": 101,
+      "numberInSurah": 6,
+      "text": "فَأَمَّا مَن ثَقُلَتْ مَوَٰزِينُهُۥ",
+      "tajweed": "فَأَ[g[مّ]َا مَ[f:14626[ن ث]َقُلَتْ مَو[n[َٲ]زِينُهُۥ"
+    },
+    {
+      "id": 6164,
+      "surahID": 101,
+      "numberInSurah": 7,
+      "text": "فَهُوَ فِى عِيشَةٍۢ رَّاضِيَةٍۢ",
+      "tajweed": "فَهُوَ فِى عِيشَ[u:13890[ةٍ ر]َّاضِيَةٍ"
+    },
+    {
+      "id": 6165,
+      "surahID": 101,
+      "numberInSurah": 8,
+      "text": "وَأَمَّا مَنْ خَفَّتْ مَوَٰزِينُهُۥ",
+      "tajweed": "وَأَ[g[مّ]َا مَنْ خَفَّتْ مَو[n[َٲ]زِينُهُۥ"
+    },
+    {
+      "id": 6166,
+      "surahID": 101,
+      "numberInSurah": 9,
+      "text": "فَأُمُّهُۥ هَاوِيَةٌۭ",
+      "tajweed": "فَأُ[g[مّ]ُهُ[n[ۥ] هَاوِيَةٌ"
+    },
+    {
+      "id": 6167,
+      "surahID": 101,
+      "numberInSurah": 10,
+      "text": "وَمَآ أَدْرَىٰكَ مَا هِيَهْ",
+      "tajweed": "وَم[o[َآ] أَ[q:13858[دْ]رَ[n[ٮٰ]كَ مَا هِيَهْ"
+    },
+    {
+      "id": 6168,
+      "surahID": 101,
+      "numberInSurah": 11,
+      "text": "نَارٌ حَامِيَةٌۢ",
+      "tajweed": "نَارٌ حَامِيَةُۢ"
+    }
+  ],
+  "_notice": "Tanzil Quran Text\nCopyright (C) 2007-2021 Tanzil Project\nLicense: Creative Commons Attribution 3.0\n\nThis copy of the Quran text is carefully produced, highly verified and\ncontinuously monitored by a group of specialists in Tanzil Project.\n\nTERMS OF USE:\n- Permission is granted to copy and distribute verbatim copies of this text,\n  but CHANGING IT IS NOT ALLOWED.\n- This Quran text can be used in any website or application, provided that\n  its source (Tanzil Project) is clearly indicated, and a link is made to\n  tanzil.net to enable users to keep track of changes.\n- This copyright notice shall be included in all verbatim copies of the text,\n  and shall be reproduced appropriately in all files derived from or containing\n  substantial portion of this text.\n\nPlease check updates at: http://tanzil.net/updates/\nSource: https://tanzil.net/ ; https://tanzil.net/docs/text_license\n"
+}

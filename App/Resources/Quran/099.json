@@ -1,0 +1,69 @@
+{
+  "surah": {
+    "id": 99,
+    "name": "سُورَةُ الزَّلۡزَلَةِ",
+    "englishName": "Az-Zalzala",
+    "englishNameTranslation": "The Earthquake",
+    "numberOfAyahs": 8,
+    "revelationType": "Medinan"
+  },
+  "ayahs": [
+    {
+      "id": 6139,
+      "surahID": 99,
+      "numberInSurah": 1,
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ إِذَا زُلْزِلَتِ ٱلْأَرْضُ زِلْزَالَهَا",
+      "tajweed": "إِذَا زُلْزِلَتِ [h:14601[ٱ]لْأَرْضُ زِلْزَالَهَا"
+    },
+    {
+      "id": 6140,
+      "surahID": 99,
+      "numberInSurah": 2,
+      "text": "وَأَخْرَجَتِ ٱلْأَرْضُ أَثْقَالَهَا",
+      "tajweed": "وَأَخْرَجَتِ [h:14602[ٱ]لْأَرْضُ أَثْقَالَهَا"
+    },
+    {
+      "id": 6141,
+      "surahID": 99,
+      "numberInSurah": 3,
+      "text": "وَقَالَ ٱلْإِنسَٰنُ مَا لَهَا",
+      "tajweed": "وَقَالَ [h:14603[ٱ]لْإِ[f:2732[نس]َ[n[ـٰ]نُ مَا لَهَا"
+    },
+    {
+      "id": 6142,
+      "surahID": 99,
+      "numberInSurah": 4,
+      "text": "يَوْمَئِذٍۢ تُحَدِّثُ أَخْبَارَهَا",
+      "tajweed": "يَوْمَئِ[f:14604[ذٍ ت]ُحَدِّثُ أَخْبَارَهَا"
+    },
+    {
+      "id": 6143,
+      "surahID": 99,
+      "numberInSurah": 5,
+      "text": "بِأَنَّ رَبَّكَ أَوْحَىٰ لَهَا",
+      "tajweed": "بِأَ[g[نّ]َ رَبَّكَ أَوْحَىٰ لَهَا"
+    },
+    {
+      "id": 6144,
+      "surahID": 99,
+      "numberInSurah": 6,
+      "text": "يَوْمَئِذٍۢ يَصْدُرُ ٱلنَّاسُ أَشْتَاتًۭا لِّيُرَوْا۟ أَعْمَٰلَهُمْ",
+      "tajweed": "يَوْمَئِ[a:14605[ذٍ ي]َصْدُرُ [h:14606[ٱ][l[ل][g[نّ]َاسُ أَشْتَا[u:14607[تًا ل]ِّيُرَوْ[s[اْ] أَعْمَ[n[ـٰ]لَهُمْ"
+    },
+    {
+      "id": 6145,
+      "surahID": 99,
+      "numberInSurah": 7,
+      "text": "فَمَن يَعْمَلْ مِثْقَالَ ذَرَّةٍ خَيْرًۭا يَرَهُۥ",
+      "tajweed": "فَم[a:8855[َن ي]َعْمَلْ مِثْقَالَ ذَرَّةٍ خَيْ[a:14608[رًا ي]َرَهُۥ"
+    },
+    {
+      "id": 6146,
+      "surahID": 99,
+      "numberInSurah": 8,
+      "text": "وَمَن يَعْمَلْ مِثْقَالَ ذَرَّةٍۢ شَرًّۭا يَرَهُۥ",
+      "tajweed": "وَم[a:3112[َن ي]َعْمَلْ مِثْقَالَ ذَرَّ[f:14609[ةٍ ش]َر[a:14610[ًّا ي]َرَهُۥ"
+    }
+  ],
+  "_notice": "Tanzil Quran Text\nCopyright (C) 2007-2021 Tanzil Project\nLicense: Creative Commons Attribution 3.0\n\nThis copy of the Quran text is carefully produced, highly verified and\ncontinuously monitored by a group of specialists in Tanzil Project.\n\nTERMS OF USE:\n- Permission is granted to copy and distribute verbatim copies of this text,\n  but CHANGING IT IS NOT ALLOWED.\n- This Quran text can be used in any website or application, provided that\n  its source (Tanzil Project) is clearly indicated, and a link is made to\n  tanzil.net to enable users to keep track of changes.\n- This copyright notice shall be included in all verbatim copies of the text,\n  and shall be reproduced appropriately in all files derived from or containing\n  substantial portion of this text.\n\nPlease check updates at: http://tanzil.net/updates/\nSource: https://tanzil.net/ ; https://tanzil.net/docs/text_license\n"
+}

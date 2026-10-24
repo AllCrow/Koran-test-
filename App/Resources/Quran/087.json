@@ -1,0 +1,146 @@
+{
+  "surah": {
+    "id": 87,
+    "name": "سُورَةُ الأَعۡلَىٰ",
+    "englishName": "Al-A'laa",
+    "englishNameTranslation": "The Most High",
+    "numberOfAyahs": 19,
+    "revelationType": "Meccan"
+  },
+  "ayahs": [
+    {
+      "id": 5949,
+      "surahID": 87,
+      "numberInSurah": 1,
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ سَبِّحِ ٱسْمَ رَبِّكَ ٱلْأَعْلَى",
+      "tajweed": "سَبِّحِ [h:14437[ٱ]سْمَ رَبِّكَ [h:14438[ٱ]لْأَعْلَى"
+    },
+    {
+      "id": 5950,
+      "surahID": 87,
+      "numberInSurah": 2,
+      "text": "ٱلَّذِى خَلَقَ فَسَوَّىٰ",
+      "tajweed": "ٱلَّذِى خَلَقَ فَسَوَّىٰ"
+    },
+    {
+      "id": 5951,
+      "surahID": 87,
+      "numberInSurah": 3,
+      "text": "وَٱلَّذِى قَدَّرَ فَهَدَىٰ",
+      "tajweed": "وَ[h:9999[ٱ]لَّذِى قَدَّرَ فَهَدَىٰ"
+    },
+    {
+      "id": 5952,
+      "surahID": 87,
+      "numberInSurah": 4,
+      "text": "وَٱلَّذِىٓ أَخْرَجَ ٱلْمَرْعَىٰ",
+      "tajweed": "وَ[h:9999[ٱ]لَّذ[o[ِىٓ] أَخْرَجَ [h:14439[ٱ]لْمَرْعَىٰ"
+    },
+    {
+      "id": 5953,
+      "surahID": 87,
+      "numberInSurah": 5,
+      "text": "فَجَعَلَهُۥ غُثَآءً أَحْوَىٰ",
+      "tajweed": "فَجَعَلَهُ[n[ۥ] غُث[o[َا]ٓءً أَحْوَىٰ"
+    },
+    {
+      "id": 5954,
+      "surahID": 87,
+      "numberInSurah": 6,
+      "text": "سَنُقْرِئُكَ فَلَا تَنسَىٰٓ",
+      "tajweed": "سَنُ[q:14440[قْ]رِئُكَ فَلَا تَ[f:14441[نس]َىٰٓ"
+    },
+    {
+      "id": 5955,
+      "surahID": 87,
+      "numberInSurah": 7,
+      "text": "إِلَّا مَا شَآءَ ٱللَّهُ ۚ إِنَّهُۥ يَعْلَمُ ٱلْجَهْرَ وَمَا يَخْفَىٰ",
+      "tajweed": "إِلَّا مَا ش[o[َا]ٓءَ [h:78[ٱ]للَّهُ‌ۚ إِ[g[نّ]َهُ[n[ۥ] يَعْلَمُ [h:8891[ٱ]لْجَهْرَ وَمَا يَخْفَىٰ"
+    },
+    {
+      "id": 5956,
+      "surahID": 87,
+      "numberInSurah": 8,
+      "text": "وَنُيَسِّرُكَ لِلْيُسْرَىٰ",
+      "tajweed": "وَنُيَسِّرُكَ لِلْيُسْرَىٰ"
+    },
+    {
+      "id": 5957,
+      "surahID": 87,
+      "numberInSurah": 9,
+      "text": "فَذَكِّرْ إِن نَّفَعَتِ ٱلذِّكْرَىٰ",
+      "tajweed": "فَذَكِّرْ إ[a:14442[ِن ن]َّفَعَتِ [h:14443[ٱ][l[ل]ذِّكْرَىٰ"
+    },
+    {
+      "id": 5958,
+      "surahID": 87,
+      "numberInSurah": 10,
+      "text": "سَيَذَّكَّرُ مَن يَخْشَىٰ",
+      "tajweed": "سَيَذَّكَّرُ م[a:14444[َن ي]َخْشَىٰ"
+    },
+    {
+      "id": 5959,
+      "surahID": 87,
+      "numberInSurah": 11,
+      "text": "وَيَتَجَنَّبُهَا ٱلْأَشْقَى",
+      "tajweed": "وَيَتَجَ[g[نّ]َبُهَا [h:14445[ٱ]لْأَشْقَى"
+    },
+    {
+      "id": 5960,
+      "surahID": 87,
+      "numberInSurah": 12,
+      "text": "ٱلَّذِى يَصْلَى ٱلنَّارَ ٱلْكُبْرَىٰ",
+      "tajweed": "ٱلَّذِى يَصْلَى [h:14446[ٱ][l[ل][g[نّ]َارَ [h:14447[ٱ]لْكُ[q:8463[بْ]رَىٰ"
+    },
+    {
+      "id": 5961,
+      "surahID": 87,
+      "numberInSurah": 13,
+      "text": "ثُمَّ لَا يَمُوتُ فِيهَا وَلَا يَحْيَىٰ",
+      "tajweed": "ثُ[g[مّ]َ لَا يَمُوتُ فِيهَا وَلَا يَحْيَىٰ"
+    },
+    {
+      "id": 5962,
+      "surahID": 87,
+      "numberInSurah": 14,
+      "text": "قَدْ أَفْلَحَ مَن تَزَكَّىٰ",
+      "tajweed": "قَ[q:298[دْ] أَفْلَحَ مَ[f:8555[ن ت]َزَكَّىٰ"
+    },
+    {
+      "id": 5963,
+      "surahID": 87,
+      "numberInSurah": 15,
+      "text": "وَذَكَرَ ٱسْمَ رَبِّهِۦ فَصَلَّىٰ",
+      "tajweed": "وَذَكَرَ [h:14448[ٱ]سْمَ رَبِّه[n[ِۦ] فَصَلَّىٰ"
+    },
+    {
+      "id": 5964,
+      "surahID": 87,
+      "numberInSurah": 16,
+      "text": "بَلْ تُؤْثِرُونَ ٱلْحَيَوٰةَ ٱلدُّنْيَا",
+      "tajweed": "بَلْ تُؤْثِرُونَ [h:14449[ٱ]لْحَيَ[s[و][n[ٲ]ةَ [h:446[ٱ][l[ل]دُّنْيَا"
+    },
+    {
+      "id": 5965,
+      "surahID": 87,
+      "numberInSurah": 17,
+      "text": "وَٱلْءَاخِرَةُ خَيْرٌۭ وَأَبْقَىٰٓ",
+      "tajweed": "وَ[h:9999[ٱ]لْأَخِرَةُ خَيْ[a:8546[رٌ و]َأَ[q:8540[بْ]قَىٰٓ"
+    },
+    {
+      "id": 5966,
+      "surahID": 87,
+      "numberInSurah": 18,
+      "text": "إِنَّ هَٰذَا لَفِى ٱلصُّحُفِ ٱلْأُولَىٰ",
+      "tajweed": "إِ[g[نّ]َ هَ[n[ـٰ]ذَا لَفِى [h:14450[ٱ][l[ل]صُّحُفِ [h:8657[ٱ]لْأُولَىٰ"
+    },
+    {
+      "id": 5967,
+      "surahID": 87,
+      "numberInSurah": 19,
+      "text": "صُحُفِ إِبْرَٰهِيمَ وَمُوسَىٰ",
+      "tajweed": "صُحُفِ إِ[q:1860[بْ]ر[n[َٲ]هِيمَ وَمُوسَىٰ"
+    }
+  ],
+  "_notice": "Tanzil Quran Text\nCopyright (C) 2007-2021 Tanzil Project\nLicense: Creative Commons Attribution 3.0\n\nThis copy of the Quran text is carefully produced, highly verified and\ncontinuously monitored by a group of specialists in Tanzil Project.\n\nTERMS OF USE:\n- Permission is granted to copy and distribute verbatim copies of this text,\n  but CHANGING IT IS NOT ALLOWED.\n- This Quran text can be used in any website or application, provided that\n  its source (Tanzil Project) is clearly indicated, and a link is made to\n  tanzil.net to enable users to keep track of changes.\n- This copyright notice shall be included in all verbatim copies of the text,\n  and shall be reproduced appropriately in all files derived from or containing\n  substantial portion of this text.\n\nPlease check updates at: http://tanzil.net/updates/\nSource: https://tanzil.net/ ; https://tanzil.net/docs/text_license\n"
+}

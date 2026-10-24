@@ -1,0 +1,195 @@
+{
+  "surah": {
+    "id": 88,
+    "name": "سُورَةُ الغَاشِيَةِ",
+    "englishName": "Al-Ghaashiya",
+    "englishNameTranslation": "The Overwhelming",
+    "numberOfAyahs": 26,
+    "revelationType": "Meccan"
+  },
+  "ayahs": [
+    {
+      "id": 5968,
+      "surahID": 88,
+      "numberInSurah": 1,
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ هَلْ أَتَىٰكَ حَدِيثُ ٱلْغَٰشِيَةِ",
+      "tajweed": "هَلْ أَتَ[n[ـٰ]كَ حَدِيثُ [h:14451[ٱ]لْغَ[n[ـٰ]شِيَةِ"
+    },
+    {
+      "id": 5969,
+      "surahID": 88,
+      "numberInSurah": 2,
+      "text": "وُجُوهٌۭ يَوْمَئِذٍ خَٰشِعَةٌ",
+      "tajweed": "وُجُو[a:14135[هٌ ي]َوْمَئِذٍ خَ[n[ـٰ]شِعَةٌ"
+    },
+    {
+      "id": 5970,
+      "surahID": 88,
+      "numberInSurah": 3,
+      "text": "عَامِلَةٌۭ نَّاصِبَةٌۭ",
+      "tajweed": "عَامِلَ[a:14452[ةٌ ن]َّاصِبَةٌ"
+    },
+    {
+      "id": 5971,
+      "surahID": 88,
+      "numberInSurah": 4,
+      "text": "تَصْلَىٰ نَارًا حَامِيَةًۭ",
+      "tajweed": "تَصْلَىٰ نَارًا حَامِيَةً"
+    },
+    {
+      "id": 5972,
+      "surahID": 88,
+      "numberInSurah": 5,
+      "text": "تُسْقَىٰ مِنْ عَيْنٍ ءَانِيَةٍۢ",
+      "tajweed": "تُسْقَىٰ مِنْ عَيْنٍ ءَانِيَةٍ"
+    },
+    {
+      "id": 5973,
+      "surahID": 88,
+      "numberInSurah": 6,
+      "text": "لَّيْسَ لَهُمْ طَعَامٌ إِلَّا مِن ضَرِيعٍۢ",
+      "tajweed": "لَّيْسَ لَهُمْ طَعَامٌ إِلَّا مِ[f:14453[ن ض]َر[p[ِي]عٍ"
+    },
+    {
+      "id": 5974,
+      "surahID": 88,
+      "numberInSurah": 7,
+      "text": "لَّا يُسْمِنُ وَلَا يُغْنِى مِن جُوعٍۢ",
+      "tajweed": "لَّا يُسْمِنُ وَلَا يُغْنِى مِ[f:14454[ن ج][p[ُو]عٍ"
+    },
+    {
+      "id": 5975,
+      "surahID": 88,
+      "numberInSurah": 8,
+      "text": "وُجُوهٌۭ يَوْمَئِذٍۢ نَّاعِمَةٌۭ",
+      "tajweed": "وُجُو[a:14135[هٌ ي]َوْمَئِ[a:14455[ذٍ ن]َّاعِمَةٌ"
+    },
+    {
+      "id": 5976,
+      "surahID": 88,
+      "numberInSurah": 9,
+      "text": "لِّسَعْيِهَا رَاضِيَةٌۭ",
+      "tajweed": "لِّسَعْيِهَا رَاضِيَةٌ"
+    },
+    {
+      "id": 5977,
+      "surahID": 88,
+      "numberInSurah": 10,
+      "text": "فِى جَنَّةٍ عَالِيَةٍۢ",
+      "tajweed": "فِى جَ[g[نّ]َةٍ عَالِيَةٍ"
+    },
+    {
+      "id": 5978,
+      "surahID": 88,
+      "numberInSurah": 11,
+      "text": "لَّا تَسْمَعُ فِيهَا لَٰغِيَةًۭ",
+      "tajweed": "لَّا تَسْمَعُ فِيهَا لَ[n[ـٰ]غِيَةً"
+    },
+    {
+      "id": 5979,
+      "surahID": 88,
+      "numberInSurah": 12,
+      "text": "فِيهَا عَيْنٌۭ جَارِيَةٌۭ",
+      "tajweed": "فِيهَا عَيْ[f:14456[نٌ ج]َارِيَةٌ"
+    },
+    {
+      "id": 5980,
+      "surahID": 88,
+      "numberInSurah": 13,
+      "text": "فِيهَا سُرُرٌۭ مَّرْفُوعَةٌۭ",
+      "tajweed": "فِيهَا سُرُ[a:14457[رٌ م]َّرْفُوعَةٌ"
+    },
+    {
+      "id": 5981,
+      "surahID": 88,
+      "numberInSurah": 14,
+      "text": "وَأَكْوَابٌۭ مَّوْضُوعَةٌۭ",
+      "tajweed": "وَأَكْوَا[a:14458[بٌ م]َّوْضُوعَةٌ"
+    },
+    {
+      "id": 5982,
+      "surahID": 88,
+      "numberInSurah": 15,
+      "text": "وَنَمَارِقُ مَصْفُوفَةٌۭ",
+      "tajweed": "وَنَمَارِقُ مَصْفُوفَةٌ"
+    },
+    {
+      "id": 5983,
+      "surahID": 88,
+      "numberInSurah": 16,
+      "text": "وَزَرَابِىُّ مَبْثُوثَةٌ",
+      "tajweed": "وَزَرَابِىُّ مَ[q:14459[بْ]ثُوثَةٌ"
+    },
+    {
+      "id": 5984,
+      "surahID": 88,
+      "numberInSurah": 17,
+      "text": "أَفَلَا يَنظُرُونَ إِلَى ٱلْإِبِلِ كَيْفَ خُلِقَتْ",
+      "tajweed": "أَفَلَا يَ[f:1141[نظ]ُرُونَ إِلَى [h:14460[ٱ]لْإِبِلِ كَيْفَ خُلِقَتْ"
+    },
+    {
+      "id": 5985,
+      "surahID": 88,
+      "numberInSurah": 18,
+      "text": "وَإِلَى ٱلسَّمَآءِ كَيْفَ رُفِعَتْ",
+      "tajweed": "وَإِلَى [h:14461[ٱ][l[ل]سَّم[o[َا]ٓءِ كَيْفَ رُفِعَتْ"
+    },
+    {
+      "id": 5986,
+      "surahID": 88,
+      "numberInSurah": 19,
+      "text": "وَإِلَى ٱلْجِبَالِ كَيْفَ نُصِبَتْ",
+      "tajweed": "وَإِلَى [h:14462[ٱ]لْجِبَالِ كَيْفَ نُصِبَتْ"
+    },
+    {
+      "id": 5987,
+      "surahID": 88,
+      "numberInSurah": 20,
+      "text": "وَإِلَى ٱلْأَرْضِ كَيْفَ سُطِحَتْ",
+      "tajweed": "وَإِلَى [h:14463[ٱ]لْأَرْضِ كَيْفَ سُطِحَتْ"
+    },
+    {
+      "id": 5988,
+      "surahID": 88,
+      "numberInSurah": 21,
+      "text": "فَذَكِّرْ إِنَّمَآ أَنتَ مُذَكِّرٌۭ",
+      "tajweed": "فَذَكِّرْ إِ[g[نّ]َم[o[َآ] أَ[f:169[نت]َ مُذَكِّرٌ"
+    },
+    {
+      "id": 5989,
+      "surahID": 88,
+      "numberInSurah": 22,
+      "text": "لَّسْتَ عَلَيْهِم بِمُصَيْطِرٍ",
+      "tajweed": "لَّسْتَ عَلَيْه[c:14464[ِم ب]ِمُصَيْطِرٍ"
+    },
+    {
+      "id": 5990,
+      "surahID": 88,
+      "numberInSurah": 23,
+      "text": "إِلَّا مَن تَوَلَّىٰ وَكَفَرَ",
+      "tajweed": "إِلَّا مَ[f:12995[ن ت]َوَلَّىٰ وَكَفَرَ"
+    },
+    {
+      "id": 5991,
+      "surahID": 88,
+      "numberInSurah": 24,
+      "text": "فَيُعَذِّبُهُ ٱللَّهُ ٱلْعَذَابَ ٱلْأَكْبَرَ",
+      "tajweed": "فَيُعَذِّبُهُ [h:14465[ٱ]للَّهُ [h:14466[ٱ]لْعَذَابَ [h:14467[ٱ]لْأَكْبَرَ"
+    },
+    {
+      "id": 5992,
+      "surahID": 88,
+      "numberInSurah": 25,
+      "text": "إِنَّ إِلَيْنَآ إِيَابَهُمْ",
+      "tajweed": "إِ[g[نّ]َ إِلَيْن[o[َآ] إِيَابَهُمْ"
+    },
+    {
+      "id": 5993,
+      "surahID": 88,
+      "numberInSurah": 26,
+      "text": "ثُمَّ إِنَّ عَلَيْنَا حِسَابَهُم",
+      "tajweed": "ثُ[g[مّ]َ إِ[g[نّ]َ عَلَيْنَا حِسَابَهُم"
+    }
+  ],
+  "_notice": "Tanzil Quran Text\nCopyright (C) 2007-2021 Tanzil Project\nLicense: Creative Commons Attribution 3.0\n\nThis copy of the Quran text is carefully produced, highly verified and\ncontinuously monitored by a group of specialists in Tanzil Project.\n\nTERMS OF USE:\n- Permission is granted to copy and distribute verbatim copies of this text,\n  but CHANGING IT IS NOT ALLOWED.\n- This Quran text can be used in any website or application, provided that\n  its source (Tanzil Project) is clearly indicated, and a link is made to\n  tanzil.net to enable users to keep track of changes.\n- This copyright notice shall be included in all verbatim copies of the text,\n  and shall be reproduced appropriately in all files derived from or containing\n  substantial portion of this text.\n\nPlease check updates at: http://tanzil.net/updates/\nSource: https://tanzil.net/ ; https://tanzil.net/docs/text_license\n"
+}

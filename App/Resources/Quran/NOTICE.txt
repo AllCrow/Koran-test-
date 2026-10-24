@@ -1,0 +1,53 @@
+Tanzil Quran Text
+Copyright (C) 2007-2021 Tanzil Project
+License: Creative Commons Attribution 3.0
+
+This copy of the Quran text is carefully produced, highly verified and
+continuously monitored by a group of specialists in Tanzil Project.
+
+TERMS OF USE:
+- Permission is granted to copy and distribute verbatim copies of this text,
+  but CHANGING IT IS NOT ALLOWED.
+- This Quran text can be used in any website or application, provided that
+  its source (Tanzil Project) is clearly indicated, and a link is made to
+  tanzil.net to enable users to keep track of changes.
+- This copyright notice shall be included in all verbatim copies of the text,
+  and shall be reproduced appropriately in all files derived from or containing
+  substantial portion of this text.
+
+Please check updates at: http://tanzil.net/updates/
+Source: https://tanzil.net/ ; https://tanzil.net/docs/text_license
+
+App edition provenance
+----------------------
+The source of this app's complete Arabic editions is AlQuran Cloud / Islamic
+Network, which attributes its Arabic text curation to sources including Tanzil
+Project and Quran Academy. The upstream edition identifiers are quran-uthmani
+and quran-tajweed. This attribution does not assert that every edition uses
+identical orthography or annotations.
+
+Every Arabic `text` and annotated `tajweed` string is copied verbatim from the
+corresponding upstream edition. Metadata is reorganized into per-surah JSON;
+neither Arabic string is normalized or rewritten. The two editions may differ in
+orthography and invisible characters. Their Unicode offsets are not equivalent.
+Tajweed colors must be parsed from the annotated edition itself.
+In the supplied Uthmani snapshot, the Basmala is prefixed to ayah 1 of surahs
+other than 1 and 9; the Tajweed snapshot places no such prefix there. A reader
+may present that exact prefix separately as a Basmala header while preserving
+every source character. The Basmala of surah 1 is itself ayah 1.
+
+AlQuran Cloud terms: https://alquran.cloud/terms-and-conditions
+Tajweed annotation guide: https://alquran.cloud/tajweed-guide
+Tajweed annotations are distributed as supplied by AlQuran Cloud. Its terms
+permit embedding/storing/displaying Arabic text and require faithful orthography
+and acknowledgement of the sources; no independent annotation-specific license
+grant was located. Review the upstream terms before publishing an update.
+
+No tafsir, translation, or recitation audio is contained in these resources.
+Audio is streamed separately; public availability does not establish its rights
+for repackaging, commercial redistribution, or indefinite hosting availability.
+Tafsir requested at runtime is separate source commentary, not Quran text.
+
+The copyright notice applies to source curation. This development import is
+mechanically checked for structure and exact source preservation; it has not
+received independent scholarly certification.

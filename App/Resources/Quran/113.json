@@ -1,0 +1,48 @@
+{
+  "surah": {
+    "id": 113,
+    "name": "سُورَةُ الفَلَقِ",
+    "englishName": "Al-Falaq",
+    "englishNameTranslation": "The Dawn",
+    "numberOfAyahs": 5,
+    "revelationType": "Meccan"
+  },
+  "ayahs": [
+    {
+      "id": 6226,
+      "surahID": 113,
+      "numberInSurah": 1,
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ",
+      "tajweed": "قُلْ أَعُوذُ بِرَبِّ [h:14678[ٱ]لْفَلَ[q[ق]ِ"
+    },
+    {
+      "id": 6227,
+      "surahID": 113,
+      "numberInSurah": 2,
+      "text": "مِن شَرِّ مَا خَلَقَ",
+      "tajweed": "مِ[f:14679[ن ش]َرِّ مَا خَلَ[q[ق]َ"
+    },
+    {
+      "id": 6228,
+      "surahID": 113,
+      "numberInSurah": 3,
+      "text": "وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ",
+      "tajweed": "وَمِ[f:14680[ن ش]َرِّ غَاسِقٍ إِذَا وَقَ[q[ب]َ"
+    },
+    {
+      "id": 6229,
+      "surahID": 113,
+      "numberInSurah": 4,
+      "text": "وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِى ٱلْعُقَدِ",
+      "tajweed": "وَمِ[f:14680[ن ش]َرِّ [h:14681[ٱ][l[ل][g[نّ]َفَّ[n[ـٰ]ثَ[n[ـٰ]تِ فِى [h:14682[ٱ]لْعُقَ[q[د]ِ"
+    },
+    {
+      "id": 6230,
+      "surahID": 113,
+      "numberInSurah": 5,
+      "text": "وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+      "tajweed": "وَمِ[f:14680[ن ش]َرِّ حَاسِدٍ إِذَا حَسَ[q[د]َ"
+    }
+  ],
+  "_notice": "Tanzil Quran Text\nCopyright (C) 2007-2021 Tanzil Project\nLicense: Creative Commons Attribution 3.0\n\nThis copy of the Quran text is carefully produced, highly verified and\ncontinuously monitored by a group of specialists in Tanzil Project.\n\nTERMS OF USE:\n- Permission is granted to copy and distribute verbatim copies of this text,\n  but CHANGING IT IS NOT ALLOWED.\n- This Quran text can be used in any website or application, provided that\n  its source (Tanzil Project) is clearly indicated, and a link is made to\n  tanzil.net to enable users to keep track of changes.\n- This copyright notice shall be included in all verbatim copies of the text,\n  and shall be reproduced appropriately in all files derived from or containing\n  substantial portion of this text.\n\nPlease check updates at: http://tanzil.net/updates/\nSource: https://tanzil.net/ ; https://tanzil.net/docs/text_license\n"
+}

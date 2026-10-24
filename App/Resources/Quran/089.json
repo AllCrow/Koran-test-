@@ -1,0 +1,223 @@
+{
+  "surah": {
+    "id": 89,
+    "name": "سُورَةُ الفَجۡرِ",
+    "englishName": "Al-Fajr",
+    "englishNameTranslation": "The Dawn",
+    "numberOfAyahs": 30,
+    "revelationType": "Meccan"
+  },
+  "ayahs": [
+    {
+      "id": 5994,
+      "surahID": 89,
+      "numberInSurah": 1,
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ وَٱلْفَجْرِ",
+      "tajweed": "وَ[h:9999[ٱ]لْفَ[q:14468[جْ]رِ"
+    },
+    {
+      "id": 5995,
+      "surahID": 89,
+      "numberInSurah": 2,
+      "text": "وَلَيَالٍ عَشْرٍۢ",
+      "tajweed": "وَلَيَالٍ عَشْرٍ"
+    },
+    {
+      "id": 5996,
+      "surahID": 89,
+      "numberInSurah": 3,
+      "text": "وَٱلشَّفْعِ وَٱلْوَتْرِ",
+      "tajweed": "وَ[h:9999[ٱ][l[ل]شَّفْعِ وَ[h:14469[ٱ]لْوَتْرِ"
+    },
+    {
+      "id": 5997,
+      "surahID": 89,
+      "numberInSurah": 4,
+      "text": "وَٱلَّيْلِ إِذَا يَسْرِ",
+      "tajweed": "وَ[h:9999[ٱ]لَّيْلِ إِذَا يَسْرِ"
+    },
+    {
+      "id": 5998,
+      "surahID": 89,
+      "numberInSurah": 5,
+      "text": "هَلْ فِى ذَٰلِكَ قَسَمٌۭ لِّذِى حِجْرٍ",
+      "tajweed": "هَلْ فِى ذ[n[َٲ]لِكَ قَسَ[u:14470[مٌ ل]ِّذِى حِ[q:14471[جْ]رٍ"
+    },
+    {
+      "id": 5999,
+      "surahID": 89,
+      "numberInSurah": 6,
+      "text": "أَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِعَادٍ",
+      "tajweed": "أَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِع[p[َا][q[د]ٍ"
+    },
+    {
+      "id": 6000,
+      "surahID": 89,
+      "numberInSurah": 7,
+      "text": "إِرَمَ ذَاتِ ٱلْعِمَادِ",
+      "tajweed": "إِرَمَ ذَاتِ [h:14472[ٱ]لْعِم[p[َا][q[د]ِ"
+    },
+    {
+      "id": 6001,
+      "surahID": 89,
+      "numberInSurah": 8,
+      "text": "ٱلَّتِى لَمْ يُخْلَقْ مِثْلُهَا فِى ٱلْبِلَٰدِ",
+      "tajweed": "ٱلَّتِى لَمْ يُخْلَ[q:14473[قْ] مِثْلُهَا فِى [h:2519[ٱ]لْبِلَ[p[ـٰ][q[د]ِ"
+    },
+    {
+      "id": 6002,
+      "surahID": 89,
+      "numberInSurah": 9,
+      "text": "وَثَمُودَ ٱلَّذِينَ جَابُوا۟ ٱلصَّخْرَ بِٱلْوَادِ",
+      "tajweed": "وَثَمُودَ [h:14474[ٱ]لَّذِينَ جَابُو[s[اْ] [h:14475[ٱ][l[ل]صَّخْرَ بِ[h:8451[ٱ]لْو[p[َا][q[د]ِ"
+    },
+    {
+      "id": 6003,
+      "surahID": 89,
+      "numberInSurah": 10,
+      "text": "وَفِرْعَوْنَ ذِى ٱلْأَوْتَادِ",
+      "tajweed": "وَفِرْعَوْنَ ذِى [h:14476[ٱ]لْأَوْت[p[َا][q[د]ِ"
+    },
+    {
+      "id": 6004,
+      "surahID": 89,
+      "numberInSurah": 11,
+      "text": "ٱلَّذِينَ طَغَوْا۟ فِى ٱلْبِلَٰدِ",
+      "tajweed": "ٱلَّذِينَ طَغَوْ[s[اْ] فِى [h:2519[ٱ]لْبِلَ[p[ـٰ][q[د]ِ"
+    },
+    {
+      "id": 6005,
+      "surahID": 89,
+      "numberInSurah": 12,
+      "text": "فَأَكْثَرُوا۟ فِيهَا ٱلْفَسَادَ",
+      "tajweed": "فَأَكْثَرُو[s[اْ] فِيهَا [h:14477[ٱ]لْفَس[p[َا][q[د]َ"
+    },
+    {
+      "id": 6006,
+      "surahID": 89,
+      "numberInSurah": 13,
+      "text": "فَصَبَّ عَلَيْهِمْ رَبُّكَ سَوْطَ عَذَابٍ",
+      "tajweed": "فَصَبَّ عَلَيْهِمْ رَبُّكَ سَوْطَ عَذ[p[َا][q[ب]ٍ"
+    },
+    {
+      "id": 6007,
+      "surahID": 89,
+      "numberInSurah": 14,
+      "text": "إِنَّ رَبَّكَ لَبِٱلْمِرْصَادِ",
+      "tajweed": "إِ[g[نّ]َ رَبَّكَ لَبِ[h:14478[ٱ]لْمِرْص[p[َا][q[د]ِ"
+    },
+    {
+      "id": 6008,
+      "surahID": 89,
+      "numberInSurah": 15,
+      "text": "فَأَمَّا ٱلْإِنسَٰنُ إِذَا مَا ٱبْتَلَىٰهُ رَبُّهُۥ فَأَكْرَمَهُۥ وَنَعَّمَهُۥ فَيَقُولُ رَبِّىٓ أَكْرَمَنِ",
+      "tajweed": "فَأَ[g[مّ]َا [h:14479[ٱ]لْإِ[f:2732[نس]َ[n[ـٰ]نُ إِذَا مَا [h:14480[ٱ][q:14481[بْ]تَلَ[n[ـٰ]هُ رَبُّهُ[n[ۥ] فَأَكْرَمَهُ[n[ۥ] وَنَعَّمَهُ[n[ۥ] فَيَقُولُ رَبّ[o[ِىٓ] أَكْرَمَنِ"
+    },
+    {
+      "id": 6009,
+      "surahID": 89,
+      "numberInSurah": 16,
+      "text": "وَأَمَّآ إِذَا مَا ٱبْتَلَىٰهُ فَقَدَرَ عَلَيْهِ رِزْقَهُۥ فَيَقُولُ رَبِّىٓ أَهَٰنَنِ",
+      "tajweed": "وَأَ[g[مّ][o[َآ] إِذَا مَا [h:14480[ٱ][q:14481[بْ]تَلَ[n[ـٰ]هُ فَقَدَرَ عَلَيْهِ رِزْقَهُ[n[ۥ] فَيَقُولُ رَبّ[o[ِىٓ] أَهَ[n[ـٰ]نَنِ"
+    },
+    {
+      "id": 6010,
+      "surahID": 89,
+      "numberInSurah": 17,
+      "text": "كَلَّا ۖ بَل لَّا تُكْرِمُونَ ٱلْيَتِيمَ",
+      "tajweed": "كَلَّا‌ۖ بَل لَّا تُكْرِمُونَ [h:14482[ٱ]لْيَت[p[ِي]مَ"
+    },
+    {
+      "id": 6011,
+      "surahID": 89,
+      "numberInSurah": 18,
+      "text": "وَلَا تَحَٰٓضُّونَ عَلَىٰ طَعَامِ ٱلْمِسْكِينِ",
+      "tajweed": "وَلَا تَحَ[m[ـٰٓ]ضُّونَ عَلَىٰ طَعَامِ [h:13901[ٱ]لْمِسْك[p[ِي]نِ"
+    },
+    {
+      "id": 6012,
+      "surahID": 89,
+      "numberInSurah": 19,
+      "text": "وَتَأْكُلُونَ ٱلتُّرَاثَ أَكْلًۭا لَّمًّۭا",
+      "tajweed": "وَتَأْكُلُونَ [h:14483[ٱ][l[ل]تُّرَاثَ أَكْل[u:14484[اً ل]َّ[g[مّ]ًا"
+    },
+    {
+      "id": 6013,
+      "surahID": 89,
+      "numberInSurah": 20,
+      "text": "وَتُحِبُّونَ ٱلْمَالَ حُبًّۭا جَمًّۭا",
+      "tajweed": "وَتُحِبُّونَ [h:14485[ٱ]لْمَالَ حُب[f:14486[ًّا ج]َ[g[مّ]ًا"
+    },
+    {
+      "id": 6014,
+      "surahID": 89,
+      "numberInSurah": 21,
+      "text": "كَلَّآ إِذَا دُكَّتِ ٱلْأَرْضُ دَكًّۭا دَكًّۭا",
+      "tajweed": "كَلّ[o[َآ] إِذَا دُكَّتِ [h:14487[ٱ]لْأَرْضُ دَك[f:14488[ًّا د]َكًّا"
+    },
+    {
+      "id": 6015,
+      "surahID": 89,
+      "numberInSurah": 22,
+      "text": "وَجَآءَ رَبُّكَ وَٱلْمَلَكُ صَفًّۭا صَفًّۭا",
+      "tajweed": "وَج[o[َا]ٓءَ رَبُّكَ وَ[h:14489[ٱ]لْمَلَكُ صَف[f:14490[ًّا ص]َفًّا"
+    },
+    {
+      "id": 6016,
+      "surahID": 89,
+      "numberInSurah": 23,
+      "text": "وَجِا۟ىٓءَ يَوْمَئِذٍۭ بِجَهَنَّمَ ۚ يَوْمَئِذٍۢ يَتَذَكَّرُ ٱلْإِنسَٰنُ وَأَنَّىٰ لَهُ ٱلذِّكْرَىٰ",
+      "tajweed": "وَجِ[s[اْ][o[ىٓ]ءَ يَوْمَئِ[i:14491[ذِۭ ب]ِجَهَ[g[نّ]َمَ‌ۚ يَوْمَئِ[a:14492[ذٍ ي]َتَذَكَّرُ [h:14286[ٱ]لْإِ[f:2732[نس]َ[n[ـٰ]نُ وَأَ[g[نّ]َىٰ لَهُ [h:14493[ٱ][l[ل]ذِّكْرَىٰ"
+    },
+    {
+      "id": 6017,
+      "surahID": 89,
+      "numberInSurah": 24,
+      "text": "يَقُولُ يَٰلَيْتَنِى قَدَّمْتُ لِحَيَاتِى",
+      "tajweed": "يَقُولُ يَ[n[ـٰ]لَيْتَنِى قَدَّمْتُ لِحَيَاتِى"
+    },
+    {
+      "id": 6018,
+      "surahID": 89,
+      "numberInSurah": 25,
+      "text": "فَيَوْمَئِذٍۢ لَّا يُعَذِّبُ عَذَابَهُۥٓ أَحَدٌۭ",
+      "tajweed": "فَيَوْمَئِ[u:10538[ذٍ ل]َّا يُعَذِّبُ عَذَابَهُ[o[ۥٓ] أَحَ[q[د]ٌ"
+    },
+    {
+      "id": 6019,
+      "surahID": 89,
+      "numberInSurah": 26,
+      "text": "وَلَا يُوثِقُ وَثَاقَهُۥٓ أَحَدٌۭ",
+      "tajweed": "وَلَا يُوثِقُ وَثَاقَهُ[o[ۥٓ] أَحَ[q[د]ٌ"
+    },
+    {
+      "id": 6020,
+      "surahID": 89,
+      "numberInSurah": 27,
+      "text": "يَٰٓأَيَّتُهَا ٱلنَّفْسُ ٱلْمُطْمَئِنَّةُ",
+      "tajweed": "يَ[o[ـٰٓ]أَيَّتُهَا [h:14494[ٱ][l[ل][g[نّ]َفْسُ [h:14495[ٱ]لْمُ[q:14496[طْ]مَئِ[g[نّ]َةُ"
+    },
+    {
+      "id": 6021,
+      "surahID": 89,
+      "numberInSurah": 28,
+      "text": "ٱرْجِعِىٓ إِلَىٰ رَبِّكِ رَاضِيَةًۭ مَّرْضِيَّةًۭ",
+      "tajweed": "ٱرْجِع[o[ِىٓ] إِلَىٰ رَبِّكِ رَاضِيَ[a:14497[ةً م]َّرْضِيَّةً"
+    },
+    {
+      "id": 6022,
+      "surahID": 89,
+      "numberInSurah": 29,
+      "text": "فَٱدْخُلِى فِى عِبَٰدِى",
+      "tajweed": "فَ[h:9999[ٱ][q:14498[دْ]خُلِى فِى عِبَ[n[ـٰ]دِى"
+    },
+    {
+      "id": 6023,
+      "surahID": 89,
+      "numberInSurah": 30,
+      "text": "وَٱدْخُلِى جَنَّتِى",
+      "tajweed": "وَ[h:9999[ٱ][q:14499[دْ]خُلِى جَ[g[نّ]َتِى"
+    }
+  ],
+  "_notice": "Tanzil Quran Text\nCopyright (C) 2007-2021 Tanzil Project\nLicense: Creative Commons Attribution 3.0\n\nThis copy of the Quran text is carefully produced, highly verified and\ncontinuously monitored by a group of specialists in Tanzil Project.\n\nTERMS OF USE:\n- Permission is granted to copy and distribute verbatim copies of this text,\n  but CHANGING IT IS NOT ALLOWED.\n- This Quran text can be used in any website or application, provided that\n  its source (Tanzil Project) is clearly indicated, and a link is made to\n  tanzil.net to enable users to keep track of changes.\n- This copyright notice shall be included in all verbatim copies of the text,\n  and shall be reproduced appropriately in all files derived from or containing\n  substantial portion of this text.\n\nPlease check updates at: http://tanzil.net/updates/\nSource: https://tanzil.net/ ; https://tanzil.net/docs/text_license\n"
+}

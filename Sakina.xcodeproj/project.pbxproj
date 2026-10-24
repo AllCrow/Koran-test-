@@ -1,0 +1,285 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+		AF30B83F593768838238B11D = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/Models/AppStore.swift";
+			sourceTree = "<group>";
+		};
+		E4A1AF5C0F393CC7A46FD36E = {
+			isa = PBXBuildFile;
+			fileRef = AF30B83F593768838238B11D;
+		};
+		58E70AE60D8E530A3732687D = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/SakinaApp.swift";
+			sourceTree = "<group>";
+		};
+		F855E07D33561A19730CE477 = {
+			isa = PBXBuildFile;
+			fileRef = 58E70AE60D8E530A3732687D;
+		};
+		EA84A428F87A3B30238BA0F1 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/Services/PracticeRecorder.swift";
+			sourceTree = "<group>";
+		};
+		65B37E1C46287BB2F0A49049 = {
+			isa = PBXBuildFile;
+			fileRef = EA84A428F87A3B30238BA0F1;
+		};
+		E3C8D7B0EB1CE2C94FC1B580 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/Services/QuranRepository.swift";
+			sourceTree = "<group>";
+		};
+		F69977837E1A209F4C648786 = {
+			isa = PBXBuildFile;
+			fileRef = E3C8D7B0EB1CE2C94FC1B580;
+		};
+		EC9182DEB482FB46A5E583CE = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/Services/RecitationPlayer.swift";
+			sourceTree = "<group>";
+		};
+		BC62CAAA4540BE7249BCA93F = {
+			isa = PBXBuildFile;
+			fileRef = EC9182DEB482FB46A5E583CE;
+		};
+		6D25C3625B28CC7CC8BD5200 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/Services/TafsirRepository.swift";
+			sourceTree = "<group>";
+		};
+		AA35A9729BA1B7D30F635990 = {
+			isa = PBXBuildFile;
+			fileRef = 6D25C3625B28CC7CC8BD5200;
+		};
+		C1363F07B2849E4036FA605E = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/Views/DesignSystem.swift";
+			sourceTree = "<group>";
+		};
+		CD78A444D036EBFF3476B76E = {
+			isa = PBXBuildFile;
+			fileRef = C1363F07B2849E4036FA605E;
+		};
+		EE10CFC3F26DF561E84B44BF = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/Views/HomeView.swift";
+			sourceTree = "<group>";
+		};
+		E14B9F6C8BC6297CE612BBC7 = {
+			isa = PBXBuildFile;
+			fileRef = EE10CFC3F26DF561E84B44BF;
+		};
+		79171ED583464402F0CBA537 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/Views/PracticeView.swift";
+			sourceTree = "<group>";
+		};
+		FDB39F7C94779C822D55EF43 = {
+			isa = PBXBuildFile;
+			fileRef = 79171ED583464402F0CBA537;
+		};
+		CF50DABDF00AB119A845D4EB = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/Views/ReaderView.swift";
+			sourceTree = "<group>";
+		};
+		AE38354D7484F096A02386BD = {
+			isa = PBXBuildFile;
+			fileRef = CF50DABDF00AB119A845D4EB;
+		};
+		895886F4500C7C5A9A93837C = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/Views/SettingsView.swift";
+			sourceTree = "<group>";
+		};
+		74AD2C8F797EFDED857A94D7 = {
+			isa = PBXBuildFile;
+			fileRef = 895886F4500C7C5A9A93837C;
+		};
+		81BA611B60871F587A6EBBA5 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "App/Views/TafsirSheet.swift";
+			sourceTree = "<group>";
+		};
+		B483E6FB4B67DF1046F8AD79 = {
+			isa = PBXBuildFile;
+			fileRef = 81BA611B60871F587A6EBBA5;
+		};
+		205AD835A91E229C71A32F5D = {
+			isa = PBXFileReference;
+			lastKnownFileType = "folder";
+			path = "App/Resources/Quran";
+			sourceTree = "<group>";
+		};
+		8B7606B57B38CB9EFF9D0032 = {
+			isa = PBXBuildFile;
+			fileRef = 205AD835A91E229C71A32F5D;
+		};
+		E90D0F4DCACD254DB44C6F9B = {
+			isa = PBXFileReference;
+			lastKnownFileType = "text.xml";
+			path = "App/PrivacyInfo.xcprivacy";
+			sourceTree = "<group>";
+		};
+		5171A6DAC37C8806FA38B971 = {
+			isa = PBXBuildFile;
+			fileRef = E90D0F4DCACD254DB44C6F9B;
+		};
+		C0566E27E6396AE20DE4036C = {
+			isa = PBXFileReference;
+			lastKnownFileType = "folder.assetcatalog";
+			path = "App/Assets.xcassets";
+			sourceTree = "<group>";
+		};
+		B70D2F1FAED795B3B7353E70 = {
+			isa = PBXBuildFile;
+			fileRef = C0566E27E6396AE20DE4036C;
+		};
+		38A007151ABE87CC01A5B6E9 = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = "Sakina.app";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		59BD0A3FF43B32849B319E64 = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			path = "App/Info.plist";
+			sourceTree = "<group>";
+		};
+		BCE16DD0260827ECF338C787 = {
+			isa = PBXGroup;
+			children = (AF30B83F593768838238B11D, 58E70AE60D8E530A3732687D, EA84A428F87A3B30238BA0F1, E3C8D7B0EB1CE2C94FC1B580, EC9182DEB482FB46A5E583CE, 6D25C3625B28CC7CC8BD5200, C1363F07B2849E4036FA605E, EE10CFC3F26DF561E84B44BF, 79171ED583464402F0CBA537, CF50DABDF00AB119A845D4EB, 895886F4500C7C5A9A93837C, 81BA611B60871F587A6EBBA5);
+			name = "App";
+			sourceTree = "<group>";
+		};
+		0189424A5A60FED329FA868E = {
+			isa = PBXGroup;
+			children = (205AD835A91E229C71A32F5D, E90D0F4DCACD254DB44C6F9B, C0566E27E6396AE20DE4036C, 59BD0A3FF43B32849B319E64);
+			name = "Resources";
+			sourceTree = "<group>";
+		};
+		FBDC4F23F93125BBEEAE800C = {
+			isa = PBXGroup;
+			children = (38A007151ABE87CC01A5B6E9);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		B28B7AF69320201D1CF206EB = {
+			isa = PBXGroup;
+			children = (BCE16DD0260827ECF338C787, 0189424A5A60FED329FA868E, FBDC4F23F93125BBEEAE800C);
+			sourceTree = "<group>";
+		};
+		582681C2EAE02B3F3D399C0C = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ".";
+		};
+		05B4C13CEE8FCA4F3D850987 = {
+			isa = XCSwiftPackageProductDependency;
+			package = 582681C2EAE02B3F3D399C0C;
+			productName = "QuranCore";
+		};
+		B567B43AB0EEEBB82B99B3C4 = {
+			isa = PBXBuildFile;
+			productRef = 05B4C13CEE8FCA4F3D850987;
+		};
+		019DCF79831E783B1D7D6308 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (E4A1AF5C0F393CC7A46FD36E, F855E07D33561A19730CE477, 65B37E1C46287BB2F0A49049, F69977837E1A209F4C648786, BC62CAAA4540BE7249BCA93F, AA35A9729BA1B7D30F635990, CD78A444D036EBFF3476B76E, E14B9F6C8BC6297CE612BBC7, FDB39F7C94779C822D55EF43, AE38354D7484F096A02386BD, 74AD2C8F797EFDED857A94D7, B483E6FB4B67DF1046F8AD79);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D6C9E8A172005E68A1DD674F = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (8B7606B57B38CB9EFF9D0032, 5171A6DAC37C8806FA38B971, B70D2F1FAED795B3B7353E70);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		69BE8A4D8E4D9DA4E7DB3928 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (B567B43AB0EEEBB82B99B3C4);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		89E1FD6268CC0F221A2BE178 = {
+			isa = XCBuildConfiguration;
+			buildSettings = { CLANG_ENABLE_MODULES = "YES"; CLANG_ENABLE_OBJC_ARC = "YES"; IPHONEOS_DEPLOYMENT_TARGET = "17.0"; SDKROOT = "iphoneos"; SWIFT_VERSION = "5.0"; ENABLE_USER_SCRIPT_SANDBOXING = "YES"; SWIFT_STRICT_CONCURRENCY = "minimal"; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; DEBUG_INFORMATION_FORMAT = "dwarf"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG"; ENABLE_TESTABILITY = "YES"; };
+			name = "Debug";
+		};
+		E6DE6C99132752C914FEF632 = {
+			isa = XCBuildConfiguration;
+			buildSettings = { CLANG_ENABLE_MODULES = "YES"; CLANG_ENABLE_OBJC_ARC = "YES"; IPHONEOS_DEPLOYMENT_TARGET = "17.0"; SDKROOT = "iphoneos"; SWIFT_VERSION = "5.0"; ENABLE_USER_SCRIPT_SANDBOXING = "YES"; SWIFT_STRICT_CONCURRENCY = "minimal"; SWIFT_OPTIMIZATION_LEVEL = "-O"; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; };
+			name = "Release";
+		};
+		389E3AB3166B5E85D4DB22E9 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (89E1FD6268CC0F221A2BE178, E6DE6C99132752C914FEF632);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release";
+		};
+		E9B2E96ABC5F6856F2BE79CF = {
+			isa = XCBuildConfiguration;
+			buildSettings = { PRODUCT_NAME = "$(TARGET_NAME)"; PRODUCT_BUNDLE_IDENTIFIER = "org.example.Sakina"; INFOPLIST_FILE = "App/Info.plist"; GENERATE_INFOPLIST_FILE = "NO"; CODE_SIGN_STYLE = "Automatic"; TARGETED_DEVICE_FAMILY = "1"; SUPPORTS_MACCATALYST = "NO"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; MARKETING_VERSION = "0.1.0"; CURRENT_PROJECT_VERSION = "1"; ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon"; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks"; };
+			name = "Debug";
+		};
+		5A8C91857F674E16E2724F47 = {
+			isa = XCBuildConfiguration;
+			buildSettings = { PRODUCT_NAME = "$(TARGET_NAME)"; PRODUCT_BUNDLE_IDENTIFIER = "org.example.Sakina"; INFOPLIST_FILE = "App/Info.plist"; GENERATE_INFOPLIST_FILE = "NO"; CODE_SIGN_STYLE = "Automatic"; TARGETED_DEVICE_FAMILY = "1"; SUPPORTS_MACCATALYST = "NO"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; MARKETING_VERSION = "0.1.0"; CURRENT_PROJECT_VERSION = "1"; ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon"; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks"; };
+			name = "Release";
+		};
+		A35B84B959F54EFE1DB91090 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (E9B2E96ABC5F6856F2BE79CF, 5A8C91857F674E16E2724F47);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release";
+		};
+		0E8A3AD980EC179856012B7E = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A35B84B959F54EFE1DB91090;
+			buildPhases = (019DCF79831E783B1D7D6308, 69BE8A4D8E4D9DA4E7DB3928, D6C9E8A172005E68A1DD674F);
+			buildRules = ();
+			dependencies = ();
+			name = "Sakina";
+			packageProductDependencies = (05B4C13CEE8FCA4F3D850987);
+			productName = "Sakina";
+			productReference = 38A007151ABE87CC01A5B6E9;
+			productType = "com.apple.product-type.application";
+		};
+		E5300ACC1EACA7602AC342D7 = {
+			isa = PBXProject;
+			attributes = { BuildIndependentTargetsInParallel = YES; LastUpgradeCheck = 1600; };
+			buildConfigurationList = 389E3AB3166B5E85D4DB22E9;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "sv";
+			hasScannedForEncodings = 0;
+			knownRegions = ("sv", "en", "ar", "Base");
+			mainGroup = B28B7AF69320201D1CF206EB;
+			packageReferences = (582681C2EAE02B3F3D399C0C);
+			productRefGroup = FBDC4F23F93125BBEEAE800C;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (0E8A3AD980EC179856012B7E);
+		};
+	};
+	rootObject = E5300ACC1EACA7602AC342D7;
+}
