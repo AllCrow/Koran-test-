@@ -2,6 +2,8 @@
 
 Kontrollerat **2026-10-24** mot publika originalkällor. Detta är ett tekniskt beslutsunderlag för Sakina. Modellvikter har inte laddats ned, ingen neural inferens har körts och ingen jämförelse med Tarteels betalversion har genomförts. Att paket-API:er och modellfiler finns är inte ett bevis på tillräcklig återkopplingskvalitet.
 
+**Senare utvecklingssteg samma dag:** efter denna ursprungliga undersökning har den fixerade modellen hämtats och provats med verklig CPU-inferens samt inspekterats med REA. Dessa separata resultat redovisas i [CPU-provrapporten](MODEL_SMOKE_RESULTS.md) och [REA-inspektionen](REA_MODEL_INSPECTION.md). Författarnas publicerade forskningsresultat nedan är oförändrade och ska inte blandas ihop med våra begränsade funktionsprov.
+
 ## Rekommendation
 
 Börja med en separat, valbar serverprototyp baserad på **Quran Muaalem v3.2**, med uttrycklig vald vers och tydligt angivna Hafs-inställningar. Den är den starkaste verifierade kandidaten här för ljudbaserade tajweedegenskaper. Använd den publicerade, fixerade Python-releasen och modellrevisionen nedan, och låt appen fortsätta fungera utan servern. Publicera inga uttalsbetyg som låtsas vara lärarverifierade.

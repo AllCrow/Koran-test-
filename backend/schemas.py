@@ -41,7 +41,7 @@ class Assessment(BaseModel):
     message: str
     assumptions: list[str] = Field(default_factory=lambda: [
         "Hafs an Asim",
-        "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil at waqf: 4; madd arid: 4.",
+        "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
         "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
         "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare.",
     ])

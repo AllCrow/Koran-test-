@@ -1,0 +1,3 @@
+# Lightweight pinned reference/phoneticizer dependency; no acoustic weights or torch.
+numpy==2.2.6
+quran-transcript @ https://files.pythonhosted.org/packages/88/9f/355569ee077aeebcba700d8b010be2a3d11a9fe97d0b053a9b7aa1747245/quran_transcript-0.6.4-py3-none-any.whl#sha256=8db46fa8217514d44b81abfe548b92f7eb6d23988195ad2c193c7d69c13c50a9

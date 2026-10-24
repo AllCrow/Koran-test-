@@ -18,7 +18,7 @@ Utvecklingen fortsätter självständigt enligt användarens senaste instruktion
 
 Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline; tafsir kräver nät. Den native ljudnedladdningen och uppspelningen har ännu inte provats på iPhone.
 
-**Tarteel-kvalitetsmålet är inte uppnått eller verifierat.** Analysvägen ger inga övergripande uttalsbetyg och laddar inte automatiskt upp inspelningar. Ingen publik analystjänst är driftsatt. Modellens första verkliga CPU-prov är ännu inte bekräftat i den här statusen; kontrakttester är inte modellkvalitetstester.
+**Tarteel-kvalitetsmålet är inte uppnått eller verifierat.** Analysvägen ger inga övergripande uttalsbetyg och laddar inte automatiskt upp inspelningar. Ingen publik analystjänst är driftsatt. Verklig CPU-inferens har körts genom API:t, senast med 35 indata: 33 referensklipp från al-Fatiha och al-Ikhlas med tre recitatörer samt annan-vers- och tystnadskontroller. 32 referensklipp gav inga indikationer; en indikation i al-Afasys 112:2 behöver sakkunnig källklippsgranskning och är inte klassificerad som rätt eller fel. Detta är funktionsprov utan uppmätt generell träffsäkerhet. Se [resultaten](docs/MODEL_SMOKE_RESULTS.md).
 
 Se [kraven](KRAV.md), [aktuell status](STATUS.md), [modellundersökningen](docs/RECITATION_RESEARCH.md) och [backendens installations- och driftguide](backend/README.md).
 
@@ -43,7 +43,7 @@ xcodebuild -project Sakina.xcodeproj -scheme Sakina \
 
 Efter tillägg av Swift-filer eller resurser: kör `python3 scripts/generate_project.py` och checka in det uppdaterade projektet. Generatorn kräver bara Python 3.
 
-**Verifierat hittills:** 55 portabla Swift-tester passerar: 21 för kärnlogik, 16 för data och 18 för analyskontrakt/referenser. Backendens 16 kontrakts- och avkodningstester passerar, inklusive riktig M4A-avkodning. Inget av detta ersätter ett Xcode-bygge eller en fysisk iPhone-körning. Fullständiga gränser finns i [STATUS.md](STATUS.md).
+**Verifierat hittills:** 56 portabla Swift-tester passerar: 21 för kärnlogik, 16 för data och 19 för analyskontrakt/referenser. Backendens 24 tester passerar, inklusive kontrakt, riktig M4A-avkodning och avgränsad hantering av madd arid-varianter. Ett verkligt CPU-prov och en lokal Docker-bygg-/startkontroll har också genomförts. Inget av detta ersätter ett Xcode-bygge eller en fysisk iPhone-körning. Fullständiga gränser finns i [STATUS.md](STATUS.md).
 
 ## Struktur
 
@@ -73,6 +73,6 @@ Läsdata och lokala övningsinspelningar sparas på telefonen. EveryAyah och AlQ
 
 Korantextens proveniens och hashmanifest finns i [CONTENT_SOURCES.json](CONTENT_SOURCES.json) och [textnotiserna](App/Resources/Quran/NOTICE.txt). Fontens källa och licens finns i [fontnotisen](App/Resources/Fonts/SOURCE.md). Rättigheter för ljuddistribution och övrigt externt innehåll behöver slutföras före offentlig release.
 
-[REA](https://github.com/morluto/rea) finns separat som undersökningsverktyg och är inget beroende i appen. Tarteels app eller servrar har inte analyserats. Undersökning av de faktiska Muaalem-vikterna återstår tills deras separata nedladdning är färdig; sådana vikter ska inte läggas i apprepot.
+[REA](https://github.com/morluto/rea) finns separat och har faktiskt inspekterat Muaalems hämtade viktfil: 816 F32-tensorer, 605 754 251 deklarerade element och verifierad fullfilshash. Se [REA-evidensen](docs/REA_MODEL_INSPECTION.md). Det är inget beroende i appen. Tarteels app eller servrar har inte analyserats. Modellvikterna ligger i en extern cache och ingår inte i Git eller iPhone-appen.
 
 Ett separat **privat repo under AllCrow** är begärt. Skapandet nekades av GitHub-integrationen med HTTP 403; ingen lyckad uppladdning är bekräftad. Arbetet är bevarat lokalt i Git medan utvecklingen fortsätter. Aktuella hinder, testresultat och återstående releasekrav finns i [STATUS.md](STATUS.md).

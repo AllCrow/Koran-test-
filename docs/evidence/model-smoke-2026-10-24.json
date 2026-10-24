@@ -6,8 +6,10 @@
   "torch": "2.7.1+cpu",
   "platform": "Linux x86_64",
   "cpu_threads": 2,
-  "model_load_seconds": 2.552,
-  "peak_process_rss_mib": 2748.9,
+  "model_load_seconds": 2.041,
+  "peak_process_rss_mib": 2749.1,
+  "backend_engine_sha256": "8b3e996a5d44b641d9ede4c5a45b77e9d51af15766b8a64ab6c2ca109185b032",
+  "backend_schema_sha256": "5ff9359418d38b82d86256860fef3ae377e4ea56279765c43583836451030b11",
   "health": {
     "ready": true,
     "status": "ready",
@@ -23,7 +25,7 @@
       "control": "reference_recitation",
       "upload_sha256": "36cd554e0ea8e3664176f014dcfe08a1c4f4f0063a10684ec926be98bc80d25c",
       "upload_bytes": 51005,
-      "elapsed_seconds": 2.856,
+      "elapsed_seconds": 3.282,
       "assessment": {
         "schema_version": 1,
         "status": "assessed",
@@ -44,7 +46,7 @@
         "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
         "assumptions": [
           "Hafs an Asim",
-          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil at waqf: 4; madd arid: 4.",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
           "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
           "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
         ]
@@ -55,7 +57,7 @@
       "control": "reference_recitation",
       "upload_sha256": "09dcf9563cd6682335ce6c9403181adcbfdf91cff09cdc208aefec074ca9f9b7",
       "upload_bytes": 45148,
-      "elapsed_seconds": 2.248,
+      "elapsed_seconds": 2.398,
       "assessment": {
         "schema_version": 1,
         "status": "assessed",
@@ -76,7 +78,7 @@
         "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
         "assumptions": [
           "Hafs an Asim",
-          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil at waqf: 4; madd arid: 4.",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
           "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
           "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
         ]
@@ -87,7 +89,7 @@
       "control": "reference_recitation",
       "upload_sha256": "a4bb94543587084de1a3565ff628097830de45d835ff54774fb69612c4c280b3",
       "upload_bytes": 40122,
-      "elapsed_seconds": 2.327,
+      "elapsed_seconds": 2.283,
       "assessment": {
         "schema_version": 1,
         "status": "assessed",
@@ -104,21 +106,11 @@
         "reference_source": "quran-transcript-0.6.4",
         "reference_scalar_offset": 0,
         "include_basmala": false,
-        "issues": [
-          {
-            "kind": "tajweed",
-            "category": "replace",
-            "start_scalar": 36,
-            "end_scalar": 37,
-            "expected": "ۦۦۦۦ",
-            "observed": "ۦۦ",
-            "message": "Modellen indikerar en möjlig tajweedavvikelse: Aared Madd."
-          }
-        ],
-        "message": "Experimentell analys klar. Gå igenom markeringarna med en kunnig lärare.",
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
         "assumptions": [
           "Hafs an Asim",
-          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil at waqf: 4; madd arid: 4.",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
           "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
           "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
         ]
@@ -129,7 +121,7 @@
       "control": "intentionally_wrong_verse",
       "upload_sha256": "47209bb53827a648f6b21b80648b40736dbf41611b422dedc161bf36cedc6c4c",
       "upload_bytes": 25360,
-      "elapsed_seconds": 1.512,
+      "elapsed_seconds": 1.561,
       "assessment": {
         "schema_version": 1,
         "status": "assessed",
@@ -286,7 +278,7 @@
         "message": "Experimentell analys klar. Gå igenom markeringarna med en kunnig lärare.",
         "assumptions": [
           "Hafs an Asim",
-          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil at waqf: 4; madd arid: 4.",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
           "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
           "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
         ]
@@ -318,7 +310,7 @@
         "message": "Inspelningen är för tyst för att analysera. Försök igen nära mikrofonen.",
         "assumptions": [
           "Hafs an Asim",
-          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil at waqf: 4; madd arid: 4.",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
           "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
           "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
         ]

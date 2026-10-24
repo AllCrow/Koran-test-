@@ -184,6 +184,35 @@ final class RecitationAssessmentClientTests: XCTestCase {
         catch { XCTAssertTrue(error is CancellationError) }
     }
 
+    func testRecordedPythonModelResponsesPassSwiftContractAndPreserveFeedbackText() async throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let evidenceURL = root.appendingPathComponent("docs/evidence/model-smoke-2026-10-24.json")
+        let evidence = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: evidenceURL)) as? [String: Any])
+        let clips = try XCTUnwrap(evidence["clips"] as? [[String: Any]])
+        XCTAssertEqual(clips.count, 5)
+        let chapter = try JSONDecoder().decode(QuranChapter.self, from: Data(contentsOf: root.appendingPathComponent("App/Resources/Quran/001.json")))
+        let selectedAyah = try XCTUnwrap(chapter.ayahs.first { $0.numberInSurah == 1 })
+        // Only the container signature is needed for mocked HTTP. This fixture
+        // test does not load audio, repeat model inference or evaluate accuracy.
+        let wave = Data(Array("RIFF".utf8) + [0, 0, 0, 0] + Array("WAVE".utf8))
+        for clip in clips {
+            let object = try XCTUnwrap(clip["assessment"] as? [String: Any])
+            let response = try JSONSerialization.data(withJSONObject: object)
+            let expected = try JSONDecoder().decode(RecitationAssessment.self, from: response)
+            XCTAssertEqual(expected.reference.surahID, selectedAyah.surahID)
+            XCTAssertEqual(expected.reference.ayahNumber, selectedAyah.numberInSurah)
+            XCTAssertEqual(expected.modelRevision, evidence["model_revision"] as? String)
+            AssessmentURLProtocol.setHandler { request in
+                XCTAssertTrue(String(decoding: Self.requestBody(request), as: UTF8.self).contains("Content-Type: audio/wav"))
+                return (200, response, [:])
+            }
+            let received = try await client().assess(audioData: wave, format: .wav, ayah: selectedAyah, includeBasmala: expected.includeBasmala)
+            XCTAssertEqual(received, expected)
+            let spans = FeedbackHighlighter.spans(text: received.referenceText, issues: received.issues)
+            XCTAssertTrue(spans.map(\.text).joined().unicodeScalars.elementsEqual(received.referenceText.unicodeScalars))
+        }
+    }
+
     private func client() throws -> RecitationAssessmentClient {
         try RecitationAssessmentClient(baseURL: URL(string: "https://analysis.example.test/base")!, session: session)
     }

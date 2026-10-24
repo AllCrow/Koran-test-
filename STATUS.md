@@ -15,7 +15,7 @@ Uppdaterat: **2026-10-24**. Utvecklingen fortsätter enligt användarens instruk
 | Ljud offline | Uttrycklig nedladdning per sura/recitatör, framsteg, avbrytning, fortsättning och radering finns i native-koden. Spelaren föredrar lokal fil. Inget ljud är förpaketerat. | Nedladdnings- och offlineflödet är ännu inte native-testat på iPhone. Ljudrättigheter återstår. |
 | Tafsir | Al-Muyassar på arabiska hämtas online med källangivelse. | iOS-nätverksflöde och visuell återgivning. Ingen offline-tafsir eller svensk tafsir ingår. |
 | Egen röst | Lokal inspelning och återlyssning. | Mikrofonbehörighet, ljudsessioner och radering på iPhone. Ingen automatisk uppladdning. |
-| Experimentell analys | Separat Muaalem-backend, typad native-klient, svarskontroller och återkopplingsvy är integrerade. **Avstängd som standard**, tom HTTPS-adress och ingen publik driftsättning. | Faktisk modellkörning, native-integration och sakkunnig kvalitet. Ingen automatisk uttalspoäng ges. |
+| Experimentell analys | Separat Muaalem-backend, typad native-klient, svarskontroller och återkopplingsvy är integrerade. **Avstängd som standard**, tom HTTPS-adress och ingen publik driftsättning. | Bredare modellprov, native-integration och sakkunnig kvalitet. Ett begränsat verkligt CPU-prov är utfört. Ingen automatisk uttalspoäng ges. |
 | Modellreferens | Separat quran-transcript-0.6.4-utgåva för backend och app, cirka 2,01 MB. Alla 6 236 referenser och 112 öppningsfraser klarar fonemvokabulär-/mappningskontroll. | Akustisk bedömning av inspelningar. Återkoppling visas i exakt referenstext, inte med offsets i läsvyns andra edition. |
 | Prestanda och kostnad | Läsaren utlöser ingen tung talanalys. Ingen obligatorisk abonnemangsfunktion är implementerad. | Fysiska temperatur-/energimätningar och finansiering av eventuell serverdrift. |
 
@@ -25,13 +25,15 @@ Korantext, tajweeddata och övningsreferenser är lokala. Recitationsljud kräve
 
 | Kontroll | Resultat | Omfattning |
 | --- | --- | --- |
-| Portabla Swift-tester | **55 passerade, 0 fel** | 21 kärntester, 16 datatester och 18 övnings-/analyskontraktstester. Körda på Linux med Swift, inte via iOS-runtime. |
-| Backendtester | **16 passerade** | HTTP-kontrakt, validering, resursgränser och ljudavkodning. Riktig M4A-avkodning kördes i den fixerade ML-miljön. Motorersättning i kontrakttester mäter inte modellens kvalitet. |
+| Portabla Swift-tester | **56 passerade, 0 fel** | 21 kärntester, 16 datatester och 19 övnings-/analyskontraktstester. Det nya tvärspråkstestet validerar fem verkliga Python-svar genom Swift-klienten. Körda på Linux med Swift, inte via iOS-runtime. |
+| Backendtester | **24 passerade** | Kontrakt, validering, resursgränser, riktig M4A-avkodning och avgränsade madd arid-varianter. Kontraktstester med motorersättning mäter inte modellkvalitet. |
 | Koranresurser | **Godkända** | 114 suror, 6 236 konsekutiva referenser, metadatakoppling, UTF-8-bevarande och samtliga käll-/resurshashar. |
 | Övningsreferenser | **Godkända** | Fixerad källversion, originaldata/API-hashar, filinventering, licensnotiser samt fonemkompatibilitet för samtliga referenser. |
 | Font och resurser | **Godkända** | Amiri Quran-/OFL-hashar, resursdeklarationer och synlig teckentäckning för kanonisk lästext. |
 | Native Xcode-/enhetsprov | **Inte utförda** | SwiftUI, AVFoundation, fysisk telefon och signering är inte godkända genom portabla tester. |
-| Verklig Muaalem-inferens | **Första prov väntar** | Modellvikter hämtas separat; inget lyckat CPU-inferensprov är ännu bekräftat i denna status. |
+| Verklig Muaalem-inferens | **Utförd; utökat prov med 35 indata** | 33 referensklipp från al-Fatiha/al-Ikhlas med tre recitatörer samt annan vers och tystnad. Ett referensfall behöver sakkunnig granskning. Inga expertetiketter eller generell kvalitetsmätning. |
+| REA-inspektion | **Utförd på verklig viktfil** | 816 F32-tensorer, 605 754 251 deklarerade element och full SHA256 verifierade. Tensorvärden eller kvalitet tolkas inte av denna kontroll. |
+| Dockerbygg/-start | **Godkända lokalt** | `sakina-analysis:dev` byggdes och kördes som UID 10001 utan nätverk eller värdportar. Hälsokontroll utan modell gav säkert inte-redo-läge; ren avstängning. Ingen containerinferens eller publik tjänst verifierad. Aktuell patched image har byggts och isolerat hälsotestats igen. |
 
 Koranverifieringen körs med `python3 scripts/verify_content.py`. Offlineåterskapande från källögonblicksbilder har kontrollerats som deterministiskt. Negativa kontroller avvisar ändrad arabisk text, en extra kapitelresurs och ändrad text även när dess resurshash har skrivits om. Det är inte en oberoende lärd certifiering av källan.
 
@@ -41,13 +43,21 @@ Swift-syntax, Foundation-baserad typkontroll och Xcode-projektets struktur har o
 
 ## Recitationsanalysens faktiska gränser
 
+Övningen använder en uttryckligt vald vers och högst 60 sekunders inspelning med analys efteråt. Ingen liveföljning av orden i användarens egen röst är implementerad. Basmala är av som standard och väljs före inspelningen; valet låses när en giltig inspelning finns och ändras inte genom att tyst radera inspelningen.
+
 Standardkonfigurationen är `SAKINA_ENABLE_EXPERIMENTAL_ANALYSIS=false` och `SAKINA_ANALYSIS_URL` tom. En aktiverad experimentell byggversion kräver en nåbar HTTPS-server och en uttrycklig analysåtgärd. Det finns ingen automatisk uppladdning och ingen dold modellkörning medan användaren läser.
 
 Backend använder en fixerad MIT-licensierad PyPI-release av `quran-muaalem` 0.2.2, `quran-transcript` 0.6.4 och modellrevision `01a1ef9fbe40d144ef845101e89ff924aed3fef5`. Dagens Git-main har andra licensvillkor och är inte samma valda artefakt. Licenser och proveniens är dokumenterade.
 
-Aktuell kod jämför Muaalems fonemutdata med referensen. Separata sifat-huvuden ger ännu ingen egen återkoppling. Därför är alla tajweed- och uttalsegenskaper inte bedömda. Fasta Hafs-/madd-antaganden och pauser kan påverka indikationerna. Ingen jämförelse med Tarteels aktuella betalversion har gjorts. **Kravet om minst Tarteels kvalitet är inte uppfyllt eller styrkt.**
+Aktuell kod jämför Muaalems fonemutdata med referensen. Separata sifat-huvuden ger ännu ingen egen återkoppling, så alla uttalsegenskaper är inte bedömda. Madd arid-varianter på 2, 4 eller 6 godtas nu endast för samma långa vokal och en exakt typad, ensam `AaredMaddRule` med konsekventa längduppgifter; andra regler eller vokalbyten döljs inte. Övriga Hafs-/madd-antaganden och pauser kan påverka resultatet. Ingen jämförelse med Tarteels aktuella betalversion har gjorts. **Kravet om minst Tarteels kvalitet är inte uppfyllt eller styrkt.**
 
-Den cirka 2,42 GB stora viktfilen hämtas till en extern utvecklingscache under `/workspace/scratch/sakina-model-cache`, utanför apprepot. Den ska inte läggas i Git eller beskrivas som bundlad iPhone-AI. Första faktiska CPU-inferensprov, minnesmätning och modellfilsundersökning återstår att bekräfta. Se [modellunderlaget](docs/RECITATION_RESEARCH.md) för publicerade resultat och begränsningar; de är inte våra egna kvalitetsmätningar.
+Den cirka 2,42 GB stora viktfilen finns i extern utvecklingscache under `/workspace/scratch/sakina-model-cache`, utanför apprepot. Den ska inte läggas i Git eller beskrivas som bundlad iPhone-AI.
+
+Det första verkliga [CPU-/API-provet](docs/MODEL_SMOKE_RESULTS.md) gav noll presenterade indikationer för al-Afasy, al-Husary och al-Minshawi 1:1, 15 för den avsiktligt andra versen 112:1 mot referens 1:1 samt `insufficient_audio` utan indikationer för tystnad. [Råresultaten](docs/evidence/model-smoke-2026-10-24.json) är sparade, liksom [körningen före madd-ändringen](docs/evidence/model-smoke-before-variants-2026-10-24.json).
+
+Ett [utökat prov med 35 indata](docs/evidence/model-baseline-2026-10-24.json) omfattade samtliga sju al-Fatiha-verser och fyra al-Ikhlas-verser med var och en av tre recitatörer, totalt 33 referensklipp. Alla fick `assessed`; 32 gav noll indikationer och al-Afasy 112:2 gav en `normal`/`delete`-indikation för förväntat initialt fonem `ءَ`. Den kräver sakkunnig granskning av källklipp/onset, wasl, referens, lässtil och modell. Den är inte klassificerad som falsk indikation eller verkligt uttalsfel, och ingen noggrannhetsprocent räknas ut. Kontrollen med annan vers gav fortsatt 15 indikationer, och tystnaden `insufficient_audio`.
+
+Modelladdning från lokala filer tog 2,041 sekunder; topp-RSS för Linux-processen var 2 749,1 MiB. De tre 1:1-anropen tog 2,283–3,282 sekunder med två CPU-trådar i ett in-process HTTP-test. Fil-/sidcache var inte dokumenterat kall och inget publikt nät användes. Detta är inga iPhone-, nätverks-, temperatur- eller energimått. Det utökade provets referensanrop tog 1,343–8,475 sekunder med median 2,351 sekunder; dess modelladdning tog 1,911 sekunder och topp-RSS var 3 240,5 MiB. Dessa mått är från den separata 35-indatakörningen med samma lokala CPU-/API-upplägg. Två suror och publicerade recitatörer med okänt träningsöverlapp bevisar inte generell felupptäckt. Författarnas separata forskningssiffror finns kvar i [modellunderlaget](docs/RECITATION_RESEARCH.md); de blandas inte med detta funktionsprov.
 
 ## Innehåll och rättigheter
 
@@ -59,17 +69,17 @@ Tillgängliga API:er och ljudfiler betyder inte att alla rättigheter för appen
 
 ## Bevarande, REA och distribution
 
-Ett lokalt Git-repo finns. Den första sparade snapshoten är `238ac4b`; fortsatt utveckling och dokumentation bevaras i följande snapshots. Se lokal Git-logg för senaste commit. Denna status innebär inte att det senaste arbetsträdet redan är uppladdat eller att utvecklingen är färdig.
+Ett lokalt Git-repo finns. Grundversionen är sparad i `238ac4b` och den integrerade offline-/analyspipelinen i `10abe88`; följande ändringar och dokumentation bevaras i nya snapshots. Se lokal Git-logg för senaste commit. Denna status innebär inte att det senaste arbetsträdet redan är uppladdat eller att utvecklingen är färdig.
 
 Ett separat **privat GitHub-repo under AllCrow** är begärt. Autentiserad anslutning är bekräftad, men skapande nekades med HTTP 403, `Resource not accessible by integration`. Ingen ny GitHub-repository eller lyckad uppladdning är bekräftad. Arbetet fortsätter lokalt utan nya rutinfrågor medan denna externa behörighetsbegränsning kvarstår.
 
-REA finns separat i `/workspace/rea`, commit `f196ebf80665107aedc16892af25a1e1f9f26f43`. Det är ett analysverktyg, inte appens talmodell. Tarteel har inte analyserats. Inspektion av Muaalems faktiska viktfil kan göras när nedladdningen är färdig; den är ännu inte genomförd i denna status.
+REA finns separat i `/workspace/rea`, commit `f196ebf80665107aedc16892af25a1e1f9f26f43`. Det har faktiskt inventerat Muaalems safetensors-fil och strömmat hela filen för SHA256; den matchar den fixerade HF-artefakten. [Oförändrad evidens och metod](docs/REA_MODEL_INSPECTION.md) är sparade. Detta är en artefaktundersökning, inte en kvalitetsbedömning. **Tarteels app eller servrar har inte analyserats.**
 
 Användaren har iPhone men ingen Mac. Molnbaserad macOS-byggmiljö, Apple Developer-medlemskap, App Store Connect och signering behövs för den tänkta TestFlight-vägen. **Signering och TestFlight är inte färdiga.** Det förberedda GitHub Actions-flödet ersätter inte dessa förutsättningar, och en osignerad simulatorartefakt kan inte installeras på fysisk iPhone. Inga serverhemligheter eller signeringsnycklar ska checkas in.
 
 ## Återstående releasekrav och fortsatt arbete
 
-1. Slutför faktiskt modellprov och dokumentera resultat samt begränsningar. Kör därefter sakkunnig utvärdering av verkliga inspelningar; påstå ingen Tarteel-paritet innan den är styrkt.
+1. Utöka modellproven från den verifierade begränsade körningen till flera verser, elever och verkliga förhållanden. Kör sakkunnig utvärdering; påstå ingen Tarteel-paritet innan den är styrkt.
 2. Verifiera privat GitHub-bevarande under AllCrow när rätt åtkomst finns. Behåll lokala snapshots under tiden.
 3. Kör riktigt Xcode-bygge och simulatorprov i macOS. Prova därefter läsning, arabisk text, ljudsynkning, nedladdning/offline, tafsir, streak, inspelning och eventuell analys på fysisk iPhone.
 4. Mät telefonens värme, batteri, minne och svarstid. **Ingen fysisk temperatur- eller energimätning är ännu utförd.**

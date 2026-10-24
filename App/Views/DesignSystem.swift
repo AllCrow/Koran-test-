@@ -127,16 +127,18 @@ struct ArabicText: View {
 
 /// SwiftUI's visible text remains selectable; VoiceOver gets an explicit Arabic language.
 @MainActor
-private struct ArabicAccessibilityLabel: UIViewRepresentable {
+struct ArabicAccessibilityLabel: UIViewRepresentable {
     let text: String
     func makeUIView(context: Context) -> UILabel {
         let label = UILabel()
+        label.numberOfLines = 0
         label.isAccessibilityElement = true
         label.accessibilityLanguage = "ar"
         label.accessibilityTraits = .staticText
         return label
     }
     func updateUIView(_ label: UILabel, context: Context) {
+        label.text = text
         label.accessibilityLabel = text
     }
 }

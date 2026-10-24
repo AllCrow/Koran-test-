@@ -1,0 +1,21 @@
+{
+  "kind": "invocation_metadata_not_REA_evidence",
+  "source_repository": "https://github.com/morluto/rea",
+  "source_commit": "f196ebf80665107aedc16892af25a1e1f9f26f43",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@24.22.1",
+    "--package=npm@11.16.0",
+    "--call",
+    "node scripts/rea.mjs inspect-model-artifact /workspace/scratch/sakina-model-cache/models--obadx--muaalem-model-v3_2/snapshots/01a1ef9fbe40d144ef845101e89ff924aed3fef5/model.safetensors --hash full --format json"
+  ],
+  "exit_code": 1,
+  "elapsed_seconds": 1.6353324870001416,
+  "child_user_cpu_seconds": 1.816565,
+  "child_system_cpu_seconds": 0.334793,
+  "largest_child_peak_rss_kib": 362740,
+  "peak_rss_scope": "maximum single child, not aggregate process-family peak",
+  "measurement_note": "includes npm exec launcher; not model inference; token usage unmeasured"
+}

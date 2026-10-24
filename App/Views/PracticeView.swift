@@ -11,7 +11,7 @@ struct PracticeView: View {
     @EnvironmentObject private var audioLibrary: AudioLibrary
     @State private var verseNumber = 1
     @State private var showSurahs = false
-    @State private var includeBasmala = true
+    @State private var includeBasmala = false
     @State private var uploadError: String?
 
     var body: some View {
@@ -38,7 +38,14 @@ struct PracticeView: View {
                         Card {
                             Text("\(reference.surahID):\(reference.ayahNumber)").font(.caption).foregroundStyle(.secondary)
                             if let basmala = QuranPresentation.basmala(for: ayah) {
-                                ArabicText(text: basmala, tajweed: nil, colored: false).padding(.top, 14)
+                                Toggle("Läs även Basmala", isOn: $includeBasmala)
+                                    .font(.subheadline).padding(.top, 12)
+                                    .disabled(phraseChoiceLocked)
+                                Text(phraseChoiceHint)
+                                    .font(.caption).foregroundStyle(.secondary).padding(.top, 6)
+                                if includeBasmala {
+                                    ArabicText(text: basmala, tajweed: nil, colored: false).padding(.top, 14)
+                                }
                             }
                             ArabicText(text: QuranPresentation.verseText(ayah), tajweed: ayah.tajweed, colored: store.tajweedEnabled)
                                 .padding(.vertical, 14)
@@ -118,12 +125,19 @@ struct PracticeView: View {
         .onChange(of: store.chapter?.surah.id) { _, _ in
             assessment.reset()
             recorder.deleteRecording()
+            includeBasmala = false
             verseNumber = store.lastRead?.surahID == store.chapter?.surah.id ? (store.lastRead?.ayahNumber ?? 1) : 1
         }
         .onChange(of: verseNumber) { _, _ in
             assessment.reset()
             uploadError = nil
             recorder.deleteRecording()
+            player.stop()
+            includeBasmala = false
+        }
+        .onChange(of: includeBasmala) { _, _ in
+            assessment.reset()
+            uploadError = nil
             player.stop()
         }
         .onAppear {
@@ -163,10 +177,6 @@ struct PracticeView: View {
 
     private func assessmentControls(ayah: Ayah) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            if QuranPresentation.basmala(for: ayah) != nil {
-                Toggle("Ta med Basmala i övningen", isOn: $includeBasmala)
-                    .onChange(of: includeBasmala) { _, _ in assessment.reset() }
-            }
             Text("När du väljer Analysera skickas inspelningen för den här versen till analystjänsten. Funktionen är experimentell.")
                 .font(.caption).foregroundStyle(.secondary)
             if assessment.isAssessing {
@@ -184,6 +194,20 @@ struct PracticeView: View {
                     .buttonStyle(.bordered).frame(minHeight: 44)
             }
         }.padding(.top, 16)
+    }
+
+    private var phraseChoiceLocked: Bool {
+        recorder.hasRecording || recorder.isRecording || recorder.isRequestingPermission || assessment.isAssessing
+    }
+
+    private var phraseChoiceHint: String {
+        if recorder.hasRecording {
+            return "Valet hör till din inspelning. Radera inspelningen för att ändra det."
+        }
+        if recorder.isRecording || recorder.isRequestingPermission {
+            return "Läs frasen du valde innan inspelningen startade."
+        }
+        return "Välj före inspelningen. Recitatörens ljudklipp kan börja direkt med versen."
     }
 
     private func canPause(_ reference: AyahReference) -> Bool {

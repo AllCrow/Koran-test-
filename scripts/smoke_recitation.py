@@ -76,6 +76,8 @@ async def run(manifest: Path, threads: int) -> dict:
         "python": platform.python_version(), "torch": torch.__version__,
         "platform": platform.system() + " " + platform.machine(), "cpu_threads": threads,
         "model_load_seconds": round(load_seconds, 3), "peak_process_rss_mib": round(peak_mib, 1),
+        "backend_engine_sha256": hashlib.sha256((ROOT / "backend/engine.py").read_bytes()).hexdigest(),
+        "backend_schema_sha256": hashlib.sha256((ROOT / "backend/schemas.py").read_bytes()).hexdigest(),
         "health": health, "clips": results,
     }
 

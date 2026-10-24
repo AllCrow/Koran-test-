@@ -104,8 +104,12 @@ Ingen godtycklig borttagning av arabiska tecken görs för att passa modellens
 vokabulär. En inkompatibel referens ger `unavailable`.
 
 Antaganden: Hafs an Asim, madd munfasil 4, muttasil 4, muttasil vid waqf 4 och
-madd arid 4 harakat. Andra korrekta lässätt eller en paus efter Basmala kan
-påverka modellens indikationer. Stöd för dessa alternativ är inte verifierat.
+madd arid med referenslängd 4 harakat. Vid jämförelsen godtas nu 2, 4 eller 6
+för **samma långa vokal**, men bara när biblioteket anger exakt en typad
+`AaredMaddRule` och alla vokal-/längduppgifter stämmer. Undantaget döljer inte
+andra regler, vokalbyten, blandade avvikelser eller vanliga/tashkeel-fel. Andra
+korrekta lässätt och pauser efter Basmala kan fortfarande påverka resultatet;
+full täckning av giltiga Hafs-varianter är inte verifierad.
 
 Ljudfilen behandlas tillfälligt och raderas efter avkodning. Inga uppladdningar,
 filnamn eller ljudinnehåll skrivs till logg av serverkoden. En analys körs åt
@@ -121,8 +125,48 @@ backend/.venv/bin/python -W error::ResourceWarning -m unittest discover -s backe
 HTTP-kontrakttester använder en uttrycklig fake-motor och verifierar endast
 validering, resursgränser, avkodning och transport. De är ingen mätning av
 modellens kvalitet. Testet för M4A kör verklig ffmpeg-avkodning.
-Faktisk modellkörning och dess begränsningar redovisas separat i projektets
-statusrapport.
+**24 backendtester har passerat** i utvecklingsmiljön, inklusive de avgränsade
+madd arid-fallen. Dessutom har riktig CPU-inferens körts genom HTTP-API:t i
+samma process på fem insignalstester. Al-Afasy, al-Husary och al-Minshawi 1:1
+gav inga presenterade indikationer; 112:1 mot referens 1:1 gav 15 och tystnad
+gav `insufficient_audio`. Se [det faktiska provet](../docs/MODEL_SMOKE_RESULTS.md)
+och [rårapporten](../docs/evidence/model-smoke-2026-10-24.json).
+
+Ett separat [utökat prov med 35 indata](../docs/evidence/model-baseline-2026-10-24.json)
+har också körts: 33 referensklipp, alla verser i al-Fatiha och al-Ikhlas med tre
+recitatörer, samt annan-vers- och tystnadskontroller. 32 referensklipp gav noll
+indikationer; en `normal`/`delete` för initialt `ءَ` i al-Afasys 112:2 behöver
+sakkunnig källklippsgranskning. Den är inte klassificerad som ett modellfel
+eller ett verkligt uttalsfel; ingen noggrannhetsprocent beräknas. Samtliga
+referensklipp fick `assessed`, annan-vers-kontrollen gav 15 indikationer och
+tystnad gav `insufficient_audio`.
+
+I den körningen var modelladdningen 1,911 sekunder och processens topp-RSS
+3 240,5 MiB. Referensanropens tidsintervall var 1,343–8,475 sekunder, median
+2,351 sekunder. Det är lokala in-process CPU-mått, inte iPhone- eller publika
+nätverksmått. Se [sammanställningen](../docs/MODEL_SMOKE_RESULTS.md).
+
+Körningen använde lokala modellfiler och två CPU-trådar på Linux. Uppmätt
+modelladdning var 2,041 sekunder och processens topp-RSS 2 749,1 MiB. De tre
+1:1-anropen tog 2,283–3,282 sekunder i just denna in-process-körning. Dessa
+mått är ingen nätverks-, iPhone-, kallcache- eller energimätning. En enda vers,
+publicerade recitatörer och okänt träningsöverlapp räcker inte för en
+noggrannhetsstudie eller ett Tarteel-anspråk.
+
+Dockerbilden `sakina-analysis:dev` har byggts lokalt och startats som UID 10001
+med nätverk avstängt, utan publicerade värdportar eller modellcache. `/health`
+rapporterade säkert att modellen inte var redo; containern stoppades rent.
+Den patchade bilden har därefter byggts om och samma isolerade, icke-root
+hälsokontroll körts igen. Aktuell lokal image-ID är
+`sha256:7e1d0e70b0fed94cbc66598c7da2a8f9c3e6c1300ce029bfca130ac1527b2bba`.
+Modellvikter är inte inbakade. Det verifierar bygg-/startvägen och läget utan
+modell, inte modellinferens i containern eller en publik driftsättning. Dockerbilden sätter
+`SAKINA_ENABLE_MODEL=1`; utan i förväg hämtade modellfiler blir tjänsten ändå
+`unavailable`, eftersom nätbaserad modellhämtning vid start är avstängd.
+
+REA har också [inspekterat den faktiska viktfilen](../docs/REA_MODEL_INSPECTION.md)
+och verifierat tensorinventering och full SHA256. Den kontrollen är separat
+från både modellkörningen och de kontraktstester som använder en ersättningsmotor.
 
 ## Versioner och licenser
 

@@ -1,10 +1,9 @@
 -r requirements.txt
+-r requirements-reference.txt
 # Install CPU torch first using its official CPU index; the +cpu build satisfies this pin.
 torch==2.7.1
 transformers==4.55.4
-numpy==2.2.6
 huggingface-hub==0.34.4
 safetensors==0.6.2
 # Exact MIT-licensed release wheels; current git main has different license terms.
 quran-muaalem @ https://files.pythonhosted.org/packages/a8/20/c4eac3aa3deb6f85a5a40c1a1ba053dd76ea682b77236f16869085e745da/quran_muaalem-0.2.2-py3-none-any.whl#sha256=c5b5de2fbba2fe2b7a0ff3f155a669d75012609637f241df46f652d0089c10e9
-quran-transcript @ https://files.pythonhosted.org/packages/88/9f/355569ee077aeebcba700d8b010be2a3d11a9fe97d0b053a9b7aa1747245/quran_transcript-0.6.4-py3-none-any.whl#sha256=8db46fa8217514d44b81abfe548b92f7eb6d23988195ad2c193c7d69c13c50a9

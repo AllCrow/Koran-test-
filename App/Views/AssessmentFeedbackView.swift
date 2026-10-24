@@ -51,6 +51,7 @@ struct AssessmentFeedbackView: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
             .environment(\.layoutDirection, .rightToLeft)
             .accessibilityLabel(response.referenceText)
+            .accessibilityRepresentation { ArabicAccessibilityLabel(text: response.referenceText) }
             .textSelection(.enabled)
     }
 

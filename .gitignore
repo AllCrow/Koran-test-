@@ -10,3 +10,15 @@ xcuserdata/
 .cache/
 __pycache__/
 *.pyc
+.venv/
+.env
+.env.*
+!.env.example
+*.safetensors
+*.gguf
+*.wav
+*.m4a
+*.mp3
+*.p12
+*.p8
+*.mobileprovision

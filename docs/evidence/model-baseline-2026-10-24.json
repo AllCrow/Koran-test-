@@ -1,0 +1,1290 @@
+{
+  "verification": "Real CPU inference and in-process HTTP API execution; not expert accuracy evaluation",
+  "model": "obadx/muaalem-model-v3_2",
+  "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+  "python": "3.12.14",
+  "torch": "2.7.1+cpu",
+  "platform": "Linux x86_64",
+  "cpu_threads": 2,
+  "model_load_seconds": 1.911,
+  "peak_process_rss_mib": 3240.5,
+  "backend_engine_sha256": "8b3e996a5d44b641d9ede4c5a45b77e9d51af15766b8a64ab6c2ca109185b032",
+  "backend_schema_sha256": "5ff9359418d38b82d86256860fef3ae377e4ea56279765c43583836451030b11",
+  "health": {
+    "ready": true,
+    "status": "ready",
+    "model_loaded": true,
+    "experimental": true,
+    "model": "obadx/muaalem-model-v3_2",
+    "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+    "reference_source": "quran-transcript-0.6.4"
+  },
+  "clips": [
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/001001.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "36cd554e0ea8e3664176f014dcfe08a1c4f4f0063a10684ec926be98bc80d25c",
+      "upload_bytes": 51005,
+      "elapsed_seconds": 2.924,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 1
+        },
+        "reference_text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/001002.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "1b04a4650656c2cfa0536bd2b114e49324c07929bfe73da82d7e998406e47204",
+      "upload_bytes": 46801,
+      "elapsed_seconds": 2.695,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 2
+        },
+        "reference_text": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/001003.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "6b10b2cb96d9e909e876f797b306e02ba52c90631607cf598eafa4efe0ce6ef4",
+      "upload_bytes": 38887,
+      "elapsed_seconds": 2.2,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 3
+        },
+        "reference_text": "ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/001004.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "c5b0df80098e327b79ea7fb94fb0f617950f5757a4a24e25649a34c466eb2cf1",
+      "upload_bytes": 39085,
+      "elapsed_seconds": 2.288,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 4
+        },
+        "reference_text": "مَـٰلِكِ يَوْمِ ٱلدِّينِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/001005.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "2160e2e972a9f7f759618d2beac5e4ccaa8c4a0b578a17c43621b08b8b46c2fe",
+      "upload_bytes": 56058,
+      "elapsed_seconds": 2.989,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 5
+        },
+        "reference_text": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/001006.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "18f3f769a1ff65776333e4820e0d3a9c734af38e8d2985c0f673e6ef741ed098",
+      "upload_bytes": 46780,
+      "elapsed_seconds": 2.667,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 6
+        },
+        "reference_text": "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/001007.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "2c1aed483b15785c656c4e1681114baf8d09b0923928068338feb4d047d14941",
+      "upload_bytes": 109558,
+      "elapsed_seconds": 6.576,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 7
+        },
+        "reference_text": "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/112001.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "47209bb53827a648f6b21b80648b40736dbf41611b422dedc161bf36cedc6c4c",
+      "upload_bytes": 25360,
+      "elapsed_seconds": 1.542,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 1
+        },
+        "reference_text": "قُلْ هُوَ ٱللَّهُ أَحَدٌ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/112002.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "35b7b49e10fb3c295c7ec076403e241714c8cc75a72c2d909f145a62b47a2f6d",
+      "upload_bytes": 21619,
+      "elapsed_seconds": 1.479,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 2
+        },
+        "reference_text": "ٱللَّهُ ٱلصَّمَدُ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [
+          {
+            "kind": "normal",
+            "category": "delete",
+            "start_scalar": 0,
+            "end_scalar": 1,
+            "expected": "ءَ",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          }
+        ],
+        "message": "Experimentell analys klar. Gå igenom markeringarna med en kunnig lärare.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/112003.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "a0e02a08c2dd38b428e67d4d1df177901099eaab3cafd42c3e28d9e53ba50bc9",
+      "upload_bytes": 25185,
+      "elapsed_seconds": 1.343,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 3
+        },
+        "reference_text": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/112004.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "e29567067011cb505b464cfcb0be555521335c66621a2a8b99ec7811d548e18b",
+      "upload_bytes": 40732,
+      "elapsed_seconds": 2.198,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 4
+        },
+        "reference_text": "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/001001.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "09dcf9563cd6682335ce6c9403181adcbfdf91cff09cdc208aefec074ca9f9b7",
+      "upload_bytes": 45148,
+      "elapsed_seconds": 2.407,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 1
+        },
+        "reference_text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/001002.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "2e4374e3e61853707631b5d9026c0b9850f1f526712dad80cc73eed62793a8e5",
+      "upload_bytes": 54557,
+      "elapsed_seconds": 2.792,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 2
+        },
+        "reference_text": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/001003.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "fac42897923a25b1d875b6f8522e896e71d3599625345216d82d496fd1282d7b",
+      "upload_bytes": 40878,
+      "elapsed_seconds": 2.169,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 3
+        },
+        "reference_text": "ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/001004.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "b61d0f00f5c0d810041fea0c09fd3d54c1759d610b3b09fad6fa68c8393c873c",
+      "upload_bytes": 41991,
+      "elapsed_seconds": 2.261,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 4
+        },
+        "reference_text": "مَـٰلِكِ يَوْمِ ٱلدِّينِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/001005.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "e1ad6e50ef6e045d94c0b160755b938466508a7eb22a867c9012dad158f009fa",
+      "upload_bytes": 59870,
+      "elapsed_seconds": 3.257,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 5
+        },
+        "reference_text": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/001006.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "e3761500db41703c842571f26b997768ebacc34feed31f8ae19235e3652bab34",
+      "upload_bytes": 47086,
+      "elapsed_seconds": 2.49,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 6
+        },
+        "reference_text": "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/001007.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "e15774711a4b650ebfd6d75c3d48d4956ddea2c081067bfec7fbaf01a9efc8ca",
+      "upload_bytes": 128178,
+      "elapsed_seconds": 8.475,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 7
+        },
+        "reference_text": "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/112001.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "5ff7995897140eab7df5d1af95b7247693e51db21465d1bc30181e42bc5227a6",
+      "upload_bytes": 49371,
+      "elapsed_seconds": 2.848,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 1
+        },
+        "reference_text": "قُلْ هُوَ ٱللَّهُ أَحَدٌ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/112002.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "ab614fe70320a4234c21c5777176b24e91c65f0b6bdbf0a6ccf48ad11e3d956d",
+      "upload_bytes": 43172,
+      "elapsed_seconds": 2.351,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 2
+        },
+        "reference_text": "ٱللَّهُ ٱلصَّمَدُ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/112003.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "f60f5bcb3775ee0d2772ba3d19b1f5baba485df649c2d396ef76c746047d3ff7",
+      "upload_bytes": 50360,
+      "elapsed_seconds": 2.828,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 3
+        },
+        "reference_text": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/112004.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "00b6aa44fb4f97594b2b111633a4a508eeaf22b13dc71bec3624a5d78ea31cb5",
+      "upload_bytes": 67356,
+      "elapsed_seconds": 3.795,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 4
+        },
+        "reference_text": "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/001001.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "a4bb94543587084de1a3565ff628097830de45d835ff54774fb69612c4c280b3",
+      "upload_bytes": 40122,
+      "elapsed_seconds": 2.269,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 1
+        },
+        "reference_text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/001002.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "b32949f57f47deee08e83d83c465eb54403f073106f5996473585e19bdd9db85",
+      "upload_bytes": 47751,
+      "elapsed_seconds": 2.526,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 2
+        },
+        "reference_text": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/001003.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "07def71ad362161ad3571b9d8b874af7f11b7abe44b4132c3e4f23e46de41ca6",
+      "upload_bytes": 37397,
+      "elapsed_seconds": 2.081,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 3
+        },
+        "reference_text": "ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/001004.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "fa8119c1160b86cad2d0e8cc78dc51bad00e31a3436c292bb7e307d7469e0cf0",
+      "upload_bytes": 34806,
+      "elapsed_seconds": 1.99,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 4
+        },
+        "reference_text": "مَـٰلِكِ يَوْمِ ٱلدِّينِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/001005.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "a20404eed8bad1daa185e820b2f15867c1398c7b602727cda604881404bc5b6a",
+      "upload_bytes": 51101,
+      "elapsed_seconds": 2.903,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 5
+        },
+        "reference_text": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/001006.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "dee7ac95e1f22bcb7920735fe1bdc84fc7228c6b5a51a215f5f063f75e39c16a",
+      "upload_bytes": 43559,
+      "elapsed_seconds": 2.133,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 6
+        },
+        "reference_text": "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/001007.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "6962fd79efa3772fedd952c121b0437d772ae6e5f4e68a6afe2623ba775db78a",
+      "upload_bytes": 114591,
+      "elapsed_seconds": 6.209,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 7
+        },
+        "reference_text": "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/112001.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "8011199a71cf1ca6506c8ea997e927b768c58c11e5a04579ce2d6d07f3c812b7",
+      "upload_bytes": 28130,
+      "elapsed_seconds": 1.455,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 1
+        },
+        "reference_text": "قُلْ هُوَ ٱللَّهُ أَحَدٌ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/112002.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "aace1190d720b6921183d1456a2e6b3442923b6a3730d3097b50318e7e103f89",
+      "upload_bytes": 24044,
+      "elapsed_seconds": 1.383,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 2
+        },
+        "reference_text": "ٱللَّهُ ٱلصَّمَدُ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/112003.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "135fe5b97b97eb71250fe0d6a5fbd5e6f438f6bb950dff9f623952e219fabd6a",
+      "upload_bytes": 29841,
+      "elapsed_seconds": 1.685,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 3
+        },
+        "reference_text": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/112004.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "d12b22e56fbc8fa611e9cdd62627ef3a0f36a8acf6ae9d0c5b54c89c665e70cb",
+      "upload_bytes": 40899,
+      "elapsed_seconds": 2.213,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 4
+        },
+        "reference_text": "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/112001.mp3",
+      "control": "intentionally_wrong_verse",
+      "upload_sha256": "47209bb53827a648f6b21b80648b40736dbf41611b422dedc161bf36cedc6c4c",
+      "upload_bytes": 25360,
+      "elapsed_seconds": 1.678,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 1
+        },
+        "reference_text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [
+          {
+            "kind": "normal",
+            "category": "replace",
+            "start_scalar": 0,
+            "end_scalar": 2,
+            "expected": "بِ",
+            "observed": "قُ",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "delete",
+            "start_scalar": 2,
+            "end_scalar": 3,
+            "expected": "س",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "delete",
+            "start_scalar": 4,
+            "end_scalar": 6,
+            "expected": "مِ",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "tajweed",
+            "category": "replace",
+            "start_scalar": 9,
+            "end_scalar": 12,
+            "expected": "للَ",
+            "observed": "ل",
+            "message": "Modellen indikerar en möjlig tajweedavvikelse: Normal Madd."
+          },
+          {
+            "kind": "tashkeel",
+            "category": "delete",
+            "start_scalar": 9,
+            "end_scalar": 12,
+            "expected": "للَ",
+            "observed": "ل",
+            "message": "Modellen indikerar en möjlig skillnad i vokaliseringen."
+          },
+          {
+            "kind": "tajweed",
+            "category": "delete",
+            "start_scalar": 11,
+            "end_scalar": 12,
+            "expected": "اا",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig tajweedavvikelse."
+          },
+          {
+            "kind": "tashkeel",
+            "category": "replace",
+            "start_scalar": 12,
+            "end_scalar": 14,
+            "expected": "هِ",
+            "observed": "هُ",
+            "message": "Modellen indikerar en möjlig skillnad i vokaliseringen."
+          },
+          {
+            "kind": "normal",
+            "category": "replace",
+            "start_scalar": 17,
+            "end_scalar": 20,
+            "expected": "ررَ",
+            "observed": "وَ",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "replace",
+            "start_scalar": 20,
+            "end_scalar": 21,
+            "expected": "ح",
+            "observed": "للَ",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "delete",
+            "start_scalar": 22,
+            "end_scalar": 24,
+            "expected": "مَ",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "replace",
+            "start_scalar": 26,
+            "end_scalar": 28,
+            "expected": "نِ",
+            "observed": "هُ",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "replace",
+            "start_scalar": 31,
+            "end_scalar": 34,
+            "expected": "ررَ",
+            "observed": "ءَ",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "tashkeel",
+            "category": "replace",
+            "start_scalar": 34,
+            "end_scalar": 36,
+            "expected": "حِ",
+            "observed": "حَ",
+            "message": "Modellen indikerar en möjlig skillnad i vokaliseringen."
+          },
+          {
+            "kind": "tajweed",
+            "category": "replace",
+            "start_scalar": 36,
+            "end_scalar": 37,
+            "expected": "ۦۦۦۦ",
+            "observed": "دڇ",
+            "message": "Modellen indikerar en möjlig tajweedavvikelse: Aared Madd."
+          },
+          {
+            "kind": "normal",
+            "category": "delete",
+            "start_scalar": 37,
+            "end_scalar": 38,
+            "expected": "م",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          }
+        ],
+        "message": "Experimentell analys klar. Gå igenom markeringarna med en kunnig lärare.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": null,
+      "control": "silence",
+      "upload_sha256": "643f8a8dc8bd9c19225afffad2becfec5426180b3749cb208abdf1a6c8354efc",
+      "upload_bytes": 32044,
+      "elapsed_seconds": 0.009,
+      "assessment": {
+        "schema_version": 1,
+        "status": "insufficient_audio",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 1
+        },
+        "reference_text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Inspelningen är för tyst för att analysera. Försök igen nära mikrofonen.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    }
+  ]
+}
