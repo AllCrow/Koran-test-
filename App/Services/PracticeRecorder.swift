@@ -14,10 +14,25 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     @Published private(set) var errorMessage: String?
     @Published private(set) var permissionDenied = false
 
+    enum RecordingDataError: LocalizedError {
+        case missingRecording
+        case tooLarge
+
+        var errorDescription: String? {
+            switch self {
+            case .missingRecording:
+                return "Inspelningen kunde inte läsas. Spela in en ny tagning och försök igen."
+            case .tooLarge:
+                return "Inspelningen är för stor. Spela in en kortare tagning och försök igen."
+            }
+        }
+    }
+
     private var recorder: AVAudioRecorder?
     private var player: AVAudioPlayer?
     private var recordingURL: URL?
     private var permissionRequestID = UUID()
+    private var permissionTask: Task<Void, Never>?
     private let directory: URL
     private var interruptionToken: NSObjectProtocol?
 
@@ -40,13 +55,16 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     }
 
     deinit {
+        permissionTask?.cancel()
         if let interruptionToken { NotificationCenter.default.removeObserver(interruptionToken) }
         recorder?.stop()
         player?.stop()
         if let recordingURL { try? FileManager.default.removeItem(at: recordingURL) }
     }
 
-    func start(reference: AyahReference) async {
+    /// Reserve the request synchronously with the button action. A subsequent
+    /// screen exit can cancel it even before the permission task gets CPU time.
+    func beginRecording(reference: AyahReference) {
         guard !isRecording, !isRequestingPermission else { return }
         stopPlayback()
         errorMessage = nil
@@ -54,11 +72,24 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
         let requestID = UUID()
         permissionRequestID = requestID
         isRequestingPermission = true
+        permissionTask = Task { [weak self] in
+            guard let self else { return }
+            await self.requestPermissionAndStart(reference: reference, requestID: requestID)
+        }
+    }
+
+    private func requestPermissionAndStart(reference: AyahReference, requestID: UUID) async {
+        defer {
+            if permissionRequestID == requestID {
+                permissionTask = nil
+                isRequestingPermission = false
+            }
+        }
+        guard permissionRequestID == requestID, isRequestingPermission, !Task.isCancelled else { return }
         let allowed = await withCheckedContinuation { continuation in
             AVAudioApplication.requestRecordPermission { continuation.resume(returning: $0) }
         }
-        guard permissionRequestID == requestID else { return }
-        isRequestingPermission = false
+        guard permissionRequestID == requestID, !Task.isCancelled else { return }
         guard allowed else {
             permissionDenied = true
             errorMessage = "Tillåt mikrofonen i Inställningar för att spela in din recitation."
@@ -98,11 +129,14 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     func finishRecordingIfNeeded() {
         // Also invalidate a permission request if the user leaves the screen.
         permissionRequestID = UUID()
+        permissionTask?.cancel()
+        permissionTask = nil
         isRequestingPermission = false
         guard isRecording, let recorder else { return }
         recorder.stop()
         isRecording = false
-        hasRecording = recorder.currentTime > 0 || validFileExists()
+        hasRecording = validFileExists()
+        if !hasRecording { errorMessage = "Inspelningen blev för kort eller kunde inte sparas. Försök igen." }
         self.recorder = nil
         deactivateSession()
     }
@@ -148,6 +182,26 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
         errorMessage = nil
     }
 
+    /// Copy the finished local take for an explicit user-requested assessment.
+    /// No network request is made here and no mapped file can change underneath a caller.
+    func recordingData() throws -> Data {
+        guard !isRecording, hasRecording, recordedReference != nil, let recordingURL else {
+            throw RecordingDataError.missingRecording
+        }
+        let maximumBytes = 8 * 1_024 * 1_024
+        guard let values = try? recordingURL.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey]),
+              values.isRegularFile == true, let byteCount = values.fileSize, byteCount > 0 else {
+            throw RecordingDataError.missingRecording
+        }
+        guard byteCount <= maximumBytes else { throw RecordingDataError.tooLarge }
+        let data: Data
+        do { data = try Data(contentsOf: recordingURL) }
+        catch { throw RecordingDataError.missingRecording }
+        guard !data.isEmpty else { throw RecordingDataError.missingRecording }
+        guard data.count <= maximumBytes else { throw RecordingDataError.tooLarge }
+        return data
+    }
+
     nonisolated func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
         Task { @MainActor [weak self, weak recorder] in
             guard let self, let recorder, self.recorder === recorder else { return }
@@ -168,10 +222,33 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
         }
     }
 
+    nonisolated func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
+        Task { @MainActor [weak self, weak recorder] in
+            guard let self, let recorder, self.recorder === recorder else { return }
+            self.recorder = nil
+            self.isRecording = false
+            self.hasRecording = false
+            self.errorMessage = "Inspelningen kunde inte sparas. Försök igen med en ny tagning."
+            self.deactivateSession()
+        }
+    }
+
+    nonisolated func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+        Task { @MainActor [weak self, weak player] in
+            guard let self, let player, self.player === player else { return }
+            self.player = nil
+            self.isPlaying = false
+            self.errorMessage = "Inspelningen kunde inte spelas. Spela in en ny tagning."
+            self.deactivateSession()
+        }
+    }
+
     private func validFileExists() -> Bool {
         guard let recordingURL,
               let values = try? recordingURL.resourceValues(forKeys: [.fileSizeKey]) else { return false }
-        return (values.fileSize ?? 0) > 0
+        guard (values.fileSize ?? 0) > 0,
+              let audio = try? AVAudioPlayer(contentsOf: recordingURL) else { return false }
+        return audio.duration >= 0.1
     }
 
     private func deactivateSession() {

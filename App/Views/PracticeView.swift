@@ -1,12 +1,18 @@
 import SwiftUI
+import UIKit
 import QuranCore
 
+@MainActor
 struct PracticeView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var player: RecitationPlayer
     @EnvironmentObject private var recorder: PracticeRecorder
+    @EnvironmentObject private var assessment: RecitationAssessmentStore
+    @EnvironmentObject private var audioLibrary: AudioLibrary
     @State private var verseNumber = 1
     @State private var showSurahs = false
+    @State private var includeBasmala = true
+    @State private var uploadError: String?
 
     var body: some View {
         ScrollView {
@@ -31,6 +37,9 @@ struct PracticeView: View {
                        let reference = ayah.reference {
                         Card {
                             Text("\(reference.surahID):\(reference.ayahNumber)").font(.caption).foregroundStyle(.secondary)
+                            if let basmala = QuranPresentation.basmala(for: ayah) {
+                                ArabicText(text: basmala, tajweed: nil, colored: false).padding(.top, 14)
+                            }
                             ArabicText(text: QuranPresentation.verseText(ayah), tajweed: ayah.tajweed, colored: store.tajweedEnabled)
                                 .padding(.vertical, 14)
                         }
@@ -45,8 +54,10 @@ struct PracticeView: View {
                             ) {
                                 if recorder.isRecording { recorder.finishRecordingIfNeeded() }
                                 else {
+                                    assessment.reset()
+                                    uploadError = nil
                                     player.stop()
-                                    Task { await recorder.start(reference: reference) }
+                                    recorder.beginRecording(reference: reference)
                                 }
                             }.padding(.top, 16).disabled(recorder.isRequestingPermission)
                             if recorder.hasRecording && recorder.recordedReference == reference {
@@ -58,10 +69,13 @@ struct PracticeView: View {
                                         Label(recorder.isPlaying ? "Stoppa" : "Lyssna på mig", systemImage: recorder.isPlaying ? "stop.fill" : "play.fill")
                                     }.buttonStyle(.bordered).frame(minHeight: 44)
                                     Spacer()
-                                    Button(role: .destructive) { recorder.deleteRecording() } label: {
+                                    Button(role: .destructive) { assessment.reset(); recorder.deleteRecording() } label: {
                                         Image(systemName: "trash").frame(width: 44, height: 44)
                                     }.accessibilityLabel("Radera inspelningen")
                                 }.padding(.top, 10)
+                                if assessment.isAvailable {
+                                    assessmentControls(ayah: ayah)
+                                }
                             }
                             if let error = recorder.errorMessage {
                                 ErrorBanner(message: error).padding(.top, 10)
@@ -70,6 +84,8 @@ struct PracticeView: View {
                                 Link("Öppna Inställningar", destination: url).padding(.top, 10)
                             }
                         }
+                        if let feedback = assessment.response { AssessmentFeedbackView(response: feedback) }
+                        if let error = assessment.errorMessage ?? uploadError { ErrorBanner(message: error) }
                     }
                 } else if store.isLoading {
                     ProgressView("Öppnar suran …")
@@ -79,9 +95,13 @@ struct PracticeView: View {
                 }
                 Card {
                     Label("Om övningen", systemImage: "info.circle").font(.headline)
-                    Text("Automatisk tajweedbedömning är inte tillgänglig i den här versionen. Övningen hjälper dig att lyssna och jämföra; den ger inga uttalsbetyg eller rättningar.")
+                    Text(assessment.isAvailable
+                         ? "Den automatiska återkopplingen är en testfunktion. Modellen kan missa fel och ge felaktiga markeringar. Den är inte verifierad som ersättning för en kunnig lärare."
+                         : "Automatisk tajweedbedömning är inte tillgänglig i den här versionen. Övningen hjälper dig att lyssna och jämföra; den ger inga uttalsbetyg eller rättningar.")
                         .font(.callout).foregroundStyle(.secondary).padding(.top, 8)
-                    Text("Din röst stannar på din iPhone. Inspelningen sparas tillfälligt och ersätts när du spelar in på nytt.")
+                    Text(assessment.isAvailable
+                         ? "Ingen röst laddas upp automatiskt. När du väljer Analysera skickas din valda inspelning till analystjänsten."
+                         : "Din röst stannar på din iPhone. Inspelningen sparas tillfälligt och ersätts när du spelar in på nytt.")
                         .font(.caption).foregroundStyle(.secondary).padding(.top, 8)
                 }
             }.padding(24)
@@ -96,17 +116,27 @@ struct PracticeView: View {
             }
         }
         .onChange(of: store.chapter?.surah.id) { _, _ in
+            assessment.reset()
             recorder.deleteRecording()
             verseNumber = store.lastRead?.surahID == store.chapter?.surah.id ? (store.lastRead?.ayahNumber ?? 1) : 1
         }
         .onChange(of: verseNumber) { _, _ in
+            assessment.reset()
+            uploadError = nil
             recorder.deleteRecording()
             player.stop()
         }
         .onAppear {
+            // A practice reference must play once, even if normal reading was
+            // already playing this same verse with autoplay enabled.
+            player.stop()
             verseNumber = store.lastRead?.surahID == store.chapter?.surah.id ? (store.lastRead?.ayahNumber ?? 1) : 1
         }
-        .onDisappear { recorder.stopAll() }
+        .onDisappear {
+            assessment.cancel()
+            recorder.stopAll()
+            player.stop()
+        }
     }
 
     private func referenceControls(reference: AyahReference, chapter: QuranChapter) -> some View {
@@ -114,14 +144,49 @@ struct PracticeView: View {
             Picker("Recitatör", selection: Binding(get: { player.selectedReciter }, set: { player.selectReciter($0) })) {
                 ForEach(Reciter.allCases) { Text($0.displayName).tag($0) }
             }.pickerStyle(.menu)
-            PrimaryButton(title: player.isPlaying && player.requestedReference == reference ? "Pausa förebilden" : "Lyssna på förebilden", icon: "headphones") {
+            PrimaryButton(title: canPause(reference) ? "Pausa förebilden" : "Lyssna på förebilden", icon: "headphones") {
                 recorder.stopAll()
-                if player.isPlaying && player.requestedReference == reference { player.pause() }
-                else { player.playOnce(reference: reference, chapterVerseCount: chapter.surah.numberOfAyahs) }
+                if player.requestedReference == reference {
+                    if canPause(reference) { player.pause() } else { player.resume() }
+                } else {
+                    player.playOnce(reference: reference, chapterVerseCount: chapter.surah.numberOfAyahs)
+                }
             }
             if player.isBuffering { ProgressView("Hämtar recitation …") }
             if let error = player.errorMessage { ErrorBanner(message: error) }
-            Text("Recitationen strömmas och behöver internet.").font(.caption).foregroundStyle(.secondary)
+            Text(audioLibrary.localURL(for: reference, reciter: player.selectedReciter) != nil
+                 ? "Den här versens ljud finns sparat och kan spelas offline."
+                 : "Ljudet strömmas från internet. Spara suror för offline-lyssning under Mitt.")
+                .font(.caption).foregroundStyle(.secondary)
         }
+    }
+
+    private func assessmentControls(ayah: Ayah) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if QuranPresentation.basmala(for: ayah) != nil {
+                Toggle("Ta med Basmala i övningen", isOn: $includeBasmala)
+                    .onChange(of: includeBasmala) { _, _ in assessment.reset() }
+            }
+            Text("När du väljer Analysera skickas inspelningen för den här versen till analystjänsten. Funktionen är experimentell.")
+                .font(.caption).foregroundStyle(.secondary)
+            if assessment.isAssessing {
+                ProgressView("Analyserar recitation …")
+                Button("Avbryt analys") { assessment.cancel() }
+            } else {
+                Button {
+                    do {
+                        let audio = try recorder.recordingData()
+                        let withBasmala = QuranPresentation.basmala(for: ayah) != nil && includeBasmala
+                        uploadError = nil
+                        assessment.beginAssessment(audioData: audio, ayah: ayah, includeBasmala: withBasmala)
+                    } catch { uploadError = error.localizedDescription }
+                } label: { Label("Analysera min recitation", systemImage: "waveform") }
+                    .buttonStyle(.bordered).frame(minHeight: 44)
+            }
+        }.padding(.top, 16)
+    }
+
+    private func canPause(_ reference: AyahReference) -> Bool {
+        player.requestedReference == reference && (player.isPlaying || player.isBuffering)
     }
 }

@@ -1,10 +1,13 @@
 import SwiftUI
 
 @main
+@MainActor
 struct SakinaApp: App {
     @StateObject private var store = AppStore()
     @StateObject private var player = RecitationPlayer()
     @StateObject private var recorder = PracticeRecorder()
+    @StateObject private var audioLibrary = AudioLibrary.shared
+    @StateObject private var assessment = RecitationAssessmentStore()
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
@@ -13,16 +16,22 @@ struct SakinaApp: App {
                 .environmentObject(store)
                 .environmentObject(player)
                 .environmentObject(recorder)
+                .environmentObject(audioLibrary)
+                .environmentObject(assessment)
                 .tint(Palette.green)
                 .task { await store.load() }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { store.refreshDay() }
-                    if phase == .background { recorder.finishRecordingIfNeeded() }
+                    if phase == .background {
+                        recorder.finishRecordingIfNeeded()
+                        assessment.cancel()
+                    }
                 }
         }
     }
 }
 
+@MainActor
 struct RootView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var player: RecitationPlayer

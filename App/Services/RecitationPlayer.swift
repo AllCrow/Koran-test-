@@ -17,6 +17,7 @@ final class RecitationPlayer: ObservableObject {
     @Published var autoplay = true
 
     private let player = AVPlayer()
+    private let audioLibrary: AudioLibrary
     private let audioSession = AVAudioSession.sharedInstance()
     private var chapterVerseCount = 0
     private var wantsToPlay = false
@@ -29,7 +30,8 @@ final class RecitationPlayer: ObservableObject {
     private var interruptionNotification: NSObjectProtocol?
     private var routeNotification: NSObjectProtocol?
 
-    init() {
+    init(audioLibrary: AudioLibrary? = nil) {
+        self.audioLibrary = audioLibrary ?? .shared
         player.automaticallyWaitsToMinimizeStalling = true
 
         interruptionNotification = NotificationCenter.default.addObserver(
@@ -181,7 +183,9 @@ final class RecitationPlayer: ObservableObject {
         isBuffering = shouldPlay
         errorMessage = nil
 
-        let item = AVPlayerItem(url: selectedReciter.audioURL(for: reference))
+        let url = audioLibrary.localURL(for: reference, reciter: selectedReciter)
+            ?? selectedReciter.audioURL(for: reference)
+        let item = AVPlayerItem(url: url)
         player.replaceCurrentItem(with: item)
 
         itemStatusObservation = item.observe(\.status, options: [.initial, .new]) { [weak self, weak item] _, _ in

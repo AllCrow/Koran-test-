@@ -1,6 +1,7 @@
 import SwiftUI
 import QuranCore
 
+@MainActor
 struct HomeView: View {
     @EnvironmentObject private var store: AppStore
     let read: () -> Void

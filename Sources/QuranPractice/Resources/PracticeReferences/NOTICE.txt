@@ -1,0 +1,31 @@
+Sakina practice reference edition
+Source identifier: quran-transcript-0.6.4
+Script identifier: quran-transcript-0.6.4-uthmani-practice
+
+These references are exported verbatim from Aya(surah, ayah).get().uthmani in
+the verified quran-transcript==0.6.4 PyPI wheel. They are separate from Sakina's
+canonical reading resources; their orthography, marks and Unicode positions
+are not interchangeable with the reading edition or the colored Tajweed edition.
+
+Each chapter's basmala field is exported verbatim from the same source API's
+bismillah_uthmani value. It is null for chapters 1 and 9. The Basmala of chapter 1
+is itself verse 1. For other chapters, basmala is separate from verse text.
+An optional joined reference uses the exact basmala + one ASCII space + verse 1.
+Vocabulary compatibility of that joining does not establish that every pause
+between the Basmala and verse is acoustically equivalent; this needs evaluation.
+
+No source string is rewritten by this exporter. The public source API supplies
+a training-style Quran representation without the full reader's pause/hizb/sajda
+mark set. The included software and original text retain the complete MIT and
+Tanzil CC BY 3.0 notices in LICENSE-quran-transcript.txt and every chapter file.
+Source project: https://github.com/obadx/quran-transcript
+Source package: https://pypi.org/project/quran-transcript/0.6.4/
+Tanzil source: https://tanzil.net/
+
+The small model-vocab.json is copied from obadx/muaalem-model-v3_2
+at revision 01a1ef9fbe40d144ef845101e89ff924aed3fef5; its pinned model card declares MIT.
+It is metadata only. No model weights are contained in this dataset.
+
+The exporter validates the complete Quran inventory and all expected phonemes
+against the pinned vocabulary with one explicit Hafs configuration. It does not
+run speech recognition or certify pronunciation-feedback accuracy.

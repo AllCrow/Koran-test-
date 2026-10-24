@@ -10,6 +10,8 @@ Användaren valde först Android och iPhone men har därefter uttryckligen prior
 
 Användaren har en iPhone men ingen Mac. Utvecklings- och distributionsvägen behöver därför fungera utan en lokal Mac hos användaren. TestFlight via en molnbaserad Mac är den tänkta vägen, men kräver bland annat ett fungerande Xcode-bygge, signering och tillgång till ett lämpligt Apple Developer-konto och App Store Connect. Dessa förutsättningar är ännu inte klara. Eventuella Apple- och molnbyggkostnader är skilda från ett abonnemang för appens användare.
 
+Den senaste instruktionen är att **fortsätta självständigt så långt det går mot en app av hög kvalitet**, även medan användaren sover, och att bevara allt arbete. Implementation, tester och dokumentation ska fortsätta utan nya rutinfrågor. Det innebär inte att otestade funktioner får beskrivas som färdiga eller att kvalitets- och distributionskrav kan hoppas över.
+
 ## Funktionella krav
 
 | ID | Krav | Avsedd kontroll |
@@ -27,22 +29,37 @@ Användaren har en iPhone men ingen Mac. Utvecklings- och distributionsvägen be
 
 Sparad läsposition, bokmärken och lokal inspelning/återlyssning ingår i den byggda appgrunden som stöd för läsning och övning. Lokal återlyssning uppfyller inte K08 och ska inte beskrivas som automatisk tajweedbedömning.
 
+Ljud kan nu uttryckligen laddas ned per sura och recitatör; spelaren föredrar den lokala filen när den finns. Ingen recitation är förpaketerad. Denna implementation behöver fortfarande native-testas på iPhone. Amiri Quran är bundlad med originallicens och verifierad täckning av lästextens synliga tecken; faktisk återgivning på iPhone återstår.
+
 ## Prestanda och kostnad
 
 - Vanlig läsning och uppspelning ska använda så lite CPU och minne som rimligt möjligt. Läsning ska inte utlösa tung talanalys.
 - Låg värmeutveckling och rimlig batteriförbrukning är krav som måste mätas på riktiga iPhone-modeller. De är inte bevisade genom källkodsgranskning eller genom tester i Linux.
 - Jämför längre pass med läsning, uppspelning och framtida recitationsanalys. Följ energiförbrukning, termiskt tillstånd, minne och eventuell prestandasänkning. Konkreta gränsvärden behöver fastställas efter en baslinjemätning.
 - Inget obligatoriskt månadsabonnemang ska krävas av slutanvändaren. Drift, modellkörning, Apple-medlemskap och molnbyggen kan ändå medföra kostnader för projektet. Valet av affärsmodell och finansiering återstår.
-- Den nuvarande offlinefunktionen gäller **korantext och tajweeddata**. Ljudströmning och tafsir kräver internet. Offlinepaket för ljud eller tafsir är en senare fråga som även kräver rättighetskontroll.
+- Korantext och tajweeddata är paketerade för offlinebruk. Ljud ska kunna användas offline efter en uttrycklig nedladdning; hämtning och strömning kräver internet. Tafsir är fortfarande online. Ljudnedladdningens native-funktion och rättigheter behöver verifieras före release.
 
 ## Automatisk recitationshjälp
 
 Återkopplingen behöver kunna skilja mellan att hitta läsposition, upptäcka missade eller felaktiga ord och bedöma fonetiska tajweedfel. Exempelvis madd och ghunnah kräver bedömning av ljudet; en korrekt texttranskription räcker inte.
 
-Innan K08 kan godkännas behövs en lämplig tal-/uttalsmodell, tydligt avgränsade stödda regler och recitationsformer, lagligt användbara data och en jämförelse med sakkunnigas bedömningar. Modellen behöver kunna avstå från en rättning när ljud eller säkerhet inte räcker. Ingen sådan automatisk bedömning är ansluten i den nuvarande appen.
+Innan K08 kan godkännas behövs en lämplig tal-/uttalsmodell, tydligt avgränsade stödda regler och recitationsformer, lagligt användbara data och en jämförelse med sakkunnigas bedömningar. Modellen behöver kunna avstå från en rättning när ljud eller säkerhet inte räcker. En **experimentell Muaalem-backend, typad native-klient och återkopplingsvy är nu integrerade**, men funktionen är avstängd som standard, har ingen konfigurerad publik server och är inte kvalitetsgodkänd. Röst skickas bara efter en uttrycklig analysåtgärd i en aktiverad byggversion. Ingen automatisk uppladdning eller övergripande uttalspoäng ingår. Aktuell modellväg jämför fonetiska utdata och bedömer ännu inte alla sifat-egenskaper. Den första faktiska CPU-inferenskörningen är ännu inte bekräftad i denna status.
+
+En separat källfixerad övningsutgåva används gemensamt av backend och app, eftersom läsvyns rikare textutgåva inte direkt passar modellens vokabulär. Återkopplingen ska markeras i den exakta övningsreferensen, med tydlig källangivelse; dess positioner får inte appliceras på läsvyns andra textutgåva. Se [modellunderlaget](docs/RECITATION_RESEARCH.md).
 
 ## REA och källor
 
 [REA](https://github.com/morluto/rea) betyder Reverse Engineer Anything och är ett separat analysverktyg. Lokalt finns det i `/workspace/rea` på commit `f196ebf80665107aedc16892af25a1e1f9f26f43`. REA:s källkod ingår inte som del av Sakina. Verktyget är MIT-licensierat, men det ger inte tillgång till en annan tjänsts servermodell, modellvikter eller träningsdata. Ingen faktisk analys av Tarteels app har ännu utförts.
 
 Korantext och tajweed kommer från namngivna AlQuran Cloud-editioner. Originalögonblicksbilder, SHA256-hashar och källnotiser finns i projektet; se [CONTENT_SOURCES.json](CONTENT_SOURCES.json) och [NOTICE.txt](App/Resources/Quran/NOTICE.txt). Rättigheter för extern ljuddistribution och andra innehållspaket måste kontrolleras före publicering. Ingen svensk översättning eller svensk tafsir är utlovad eller paketerad.
+
+Undersökning av Muaalems faktiska vikter kan göras när deras separata nedladdning är klar. Vikterna finns i en extern utvecklingscache och ska inte läggas i Git. En inspektion av modellmetadata ersätter inte mätning av akustisk kvalitet.
+
+## Krav före offentlig release
+
+- Verkligt Xcode-bygge, simulatorprov och fysiska iPhone-tester av läsning, arabisk återgivning, ljud, nedladdning, inspelning och återkoppling.
+- Uppmätt värme-, energi- och minnesbeteende på representativa iPhone-modeller.
+- Sakkunnigt kontrollerad recitationshjälp och jämförelse som styrker kvalitetsanspråk. **Kravet om Tarteels betalnivå är inte uppfyllt.**
+- Färdigställd innehålls-/ljudrättighetskontroll, korrekt användarinformation och validerad hantering av eventuell skickad röst.
+- Fungerande signering, Apple Developer/App Store Connect och TestFlight-väg utan krav på egen Mac hos användaren.
+- Verifierad privat GitHub-lagring under AllCrow. Lokala Git-snapshots och dokumentation ska bevaras under tiden; skapandeförsöket är för närvarande blockerat av HTTP 403.

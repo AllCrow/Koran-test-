@@ -2,13 +2,13 @@ import Foundation
 import QuranCore
 
 /// The index is small; chapter text is decoded only when a reader requests it.
-actor QuranRepository {
-    enum RepositoryError: LocalizedError {
+public actor QuranRepository {
+    public enum RepositoryError: LocalizedError, Equatable {
         case missingResource(String)
         case invalidIndex
         case invalidChapter(Int)
 
-        var errorDescription: String? {
+        public var errorDescription: String? {
             switch self {
             case .missingResource:
                 return "Korantexten saknas i appen. Installera om appen och försök igen."
@@ -18,17 +18,23 @@ actor QuranRepository {
         }
     }
 
-    private let bundle: Bundle
+    private let resourceDirectory: URL
     private var cachedIndex: ContentIndex?
     private var chapters: [Int: QuranChapter] = [:]
     private var recentChapterIDs: [Int] = []
     private let chapterCacheLimit = 4
 
-    init(bundle: Bundle = .main) {
-        self.bundle = bundle
+    public init(bundle: Bundle = .main) {
+        resourceDirectory = (bundle.resourceURL ?? bundle.bundleURL)
+            .appendingPathComponent("Quran", isDirectory: true)
     }
 
-    func loadIndex() throws -> ContentIndex {
+    /// The directory contains index.json and one numbered JSON file per chapter.
+    public init(resourceDirectory: URL) {
+        self.resourceDirectory = resourceDirectory
+    }
+
+    public func loadIndex() throws -> ContentIndex {
         if let cachedIndex { return cachedIndex }
         let index = try decode(ContentIndex.self, named: "index")
         guard index.version == 1, !index.source.isEmpty,
@@ -44,7 +50,7 @@ actor QuranRepository {
         return index
     }
 
-    func loadChapter(id: Int) throws -> QuranChapter {
+    public func loadChapter(id: Int) throws -> QuranChapter {
         guard (1...AyahReference.ayahCounts.count).contains(id) else {
             throw RepositoryError.invalidChapter(id)
         }
@@ -77,7 +83,8 @@ actor QuranRepository {
     }
 
     private func decode<T: Decodable>(_ type: T.Type, named name: String) throws -> T {
-        guard let url = bundle.url(forResource: name, withExtension: "json", subdirectory: "Quran") else {
+        let url = resourceDirectory.appendingPathComponent(name).appendingPathExtension("json")
+        guard FileManager.default.fileExists(atPath: url.path) else {
             throw RepositoryError.missingResource(name)
         }
         return try JSONDecoder().decode(type, from: Data(contentsOf: url))

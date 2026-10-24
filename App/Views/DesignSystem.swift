@@ -1,6 +1,8 @@
 import SwiftUI
+import UIKit
 import QuranCore
 
+@MainActor
 enum Palette {
     static let background = Color(uiColor: .systemGroupedBackground)
     static let paper = Color(uiColor: .secondarySystemGroupedBackground)
@@ -26,11 +28,12 @@ enum Palette {
 }
 
 extension Color {
-    fileprivate init(light: UIColor, dark: UIColor) {
+    @MainActor fileprivate init(light: UIColor, dark: UIColor) {
         self.init(uiColor: UIColor { traits in traits.userInterfaceStyle == .dark ? dark : light })
     }
 }
 
+@MainActor
 struct Card<Content: View>: View {
     let content: Content
     init(@ViewBuilder content: () -> Content) { self.content = content() }
@@ -41,6 +44,7 @@ struct Card<Content: View>: View {
     }
 }
 
+@MainActor
 struct SectionLabel: View {
     let title: String
     var body: some View {
@@ -49,6 +53,7 @@ struct SectionLabel: View {
     }
 }
 
+@MainActor
 struct PrimaryButton: View {
     let title: String
     let icon: String
@@ -62,6 +67,7 @@ struct PrimaryButton: View {
     }
 }
 
+@MainActor
 struct ErrorBanner: View {
     let message: String
     var body: some View {
@@ -73,25 +79,43 @@ struct ErrorBanner: View {
     }
 }
 
+@MainActor
 struct ArabicText: View {
     let text: String
     let tajweed: String?
     let colored: Bool
 
     var body: some View {
-        rendered
-            .font(.custom("GeezaPro", size: 30, relativeTo: .title))
+        let spans = parsedSpans
+        let usesFallback = spans?.contains { $0.text.contains("[") || $0.text.contains("]") } ?? false
+        let safeSpans = usesFallback ? nil : spans
+        VStack(alignment: .trailing, spacing: 10) {
+            rendered(safeSpans)
+            .font(.custom("AmiriQuran-Regular", size: 30, relativeTo: .title))
             .lineSpacing(15)
             .multilineTextAlignment(.trailing)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .environment(\.layoutDirection, .rightToLeft)
-            .accessibilityLabel(colored ? TajweedParser.plainText(tajweed ?? text) : text)
+            .accessibilityLabel(safeSpans?.map(\.text).joined() ?? text)
+            .accessibilityRepresentation {
+                ArabicAccessibilityLabel(text: safeSpans?.map(\.text).joined() ?? text)
+            }
             .textSelection(.enabled)
+            if usesFallback {
+                Text("Tajweedfärger är inte tillgängliga för den här versen.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }
     }
 
-    private var rendered: Text {
-        guard colored, let tajweed else { return Text(text) }
-        return TajweedParser.parse(tajweed).reduce(Text("")) { accumulated, span in
+    private var parsedSpans: [TajweedSpan]? {
+        guard colored, let tajweed else { return nil }
+        return TajweedParser.parse(tajweed)
+    }
+
+    private func rendered(_ spans: [TajweedSpan]?) -> Text {
+        guard let spans else { return Text(text) }
+        return spans.reduce(Text("")) { accumulated, span in
             accumulated + Text(span.text).foregroundColor(ruleColor(span.rule))
         }
     }
@@ -101,6 +125,23 @@ struct ArabicText: View {
     }
 }
 
+/// SwiftUI's visible text remains selectable; VoiceOver gets an explicit Arabic language.
+@MainActor
+private struct ArabicAccessibilityLabel: UIViewRepresentable {
+    let text: String
+    func makeUIView(context: Context) -> UILabel {
+        let label = UILabel()
+        label.isAccessibilityElement = true
+        label.accessibilityLanguage = "ar"
+        label.accessibilityTraits = .staticText
+        return label
+    }
+    func updateUIView(_ label: UILabel, context: Context) {
+        label.accessibilityLabel = text
+    }
+}
+
+@MainActor
 struct TajweedLegend: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {

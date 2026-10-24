@@ -76,67 +76,83 @@ public struct TajweedSpan: Hashable, Sendable {
 }
 
 public enum TajweedParser {
-    /// Parses `[h:123[ٱ]` and `[n[ـٰ]` without using grapheme offsets.
-    /// Malformed and unknown annotations are preserved literally, never discarded.
+    /// Parses `[h:123[ٱ]`, `[n[ـٰ]` and nested annotations without
+    /// grapheme offsets. Inner annotations take precedence over outer rules.
+    /// Malformed and unknown annotations remain literal, never discarded.
     public static func parse(_ source: String) -> [TajweedSpan] {
         let scalars = Array(source.unicodeScalars)
-        var spans: [TajweedSpan] = []
-        var plain = ""
-        var index = 0
 
         func scalarString(_ range: Range<Int>) -> String {
             String(String.UnicodeScalarView(scalars[range]))
         }
-        func flushPlain() {
-            guard !plain.isEmpty else { return }
-            spans.append(TajweedSpan(text: plain))
-            plain = ""
-        }
-
-        while index < scalars.count {
-            guard scalars[index] == "[", index + 2 < scalars.count,
-                  (97...122).contains(scalars[index + 1].value) else {
-                plain.unicodeScalars.append(scalars[index])
-                index += 1
-                continue
+        func header(at start: Int) -> (rule: TajweedRule?, contentStart: Int)? {
+            guard start + 2 < scalars.count, scalars[start] == "[",
+                  (97...122).contains(scalars[start + 1].value) else { return nil }
+            var end = start + 2
+            if scalars[end] == ":" {
+                end += 1
+                let digitsStart = end
+                while end < scalars.count, (48...57).contains(scalars[end].value) { end += 1 }
+                guard end > digitsStart else { return nil }
             }
-            var headerEnd = index + 2
-            if scalars[headerEnd] == ":" {
-                headerEnd += 1
-                let digitsStart = headerEnd
-                while headerEnd < scalars.count, (48...57).contains(scalars[headerEnd].value) {
-                    headerEnd += 1
+            guard end < scalars.count, scalars[end] == "[" else { return nil }
+            return (TajweedRule(rawValue: String(scalars[start + 1])), end + 1)
+        }
+        func annotation(at start: Int) -> (spans: [TajweedSpan], next: Int)? {
+            guard let annotationHeader = header(at: start) else { return nil }
+            var spans: [TajweedSpan] = []
+            var plain = ""
+            var index = annotationHeader.contentStart
+            func flush() {
+                guard !plain.isEmpty else { return }
+                spans.append(TajweedSpan(text: plain, rule: annotationHeader.rule))
+                plain = ""
+            }
+            while index < scalars.count {
+                if scalars[index] == "]" {
+                    if annotationHeader.rule == nil {
+                        return ([TajweedSpan(text: scalarString(start..<(index + 1)))], index + 1)
+                    }
+                    flush()
+                    return (spans, index + 1)
                 }
-                guard headerEnd > digitsStart else {
+                if scalars[index] == "[" {
+                    guard let child = annotation(at: index) else { return nil }
+                    flush()
+                    spans.append(contentsOf: child.spans)
+                    index = child.next
+                } else {
                     plain.unicodeScalars.append(scalars[index])
                     index += 1
-                    continue
                 }
             }
-            guard headerEnd < scalars.count, scalars[headerEnd] == "[" else {
-                plain.unicodeScalars.append(scalars[index])
-                index += 1
-                continue
-            }
-            var end = headerEnd + 1
-            while end < scalars.count, scalars[end] != "]", scalars[end] != "[" { end += 1 }
-            guard end < scalars.count, scalars[end] == "]" else {
-                // Do not partially interpret a broken or nested annotation.
+            return nil
+        }
+
+        var result: [TajweedSpan] = []
+        var plain = ""
+        var index = 0
+        func flush() {
+            guard !plain.isEmpty else { return }
+            result.append(TajweedSpan(text: plain))
+            plain = ""
+        }
+        while index < scalars.count {
+            if let token = annotation(at: index) {
+                flush()
+                result.append(contentsOf: token.spans)
+                index = token.next
+            } else if header(at: index) != nil {
+                // An incomplete outer annotation must not be partly stripped.
                 plain += scalarString(index..<scalars.count)
                 index = scalars.count
-                continue
-            }
-            if let rule = TajweedRule(rawValue: String(scalars[index + 1])) {
-                flushPlain()
-                let content = scalarString((headerEnd + 1)..<end)
-                if !content.isEmpty { spans.append(TajweedSpan(text: content, rule: rule)) }
             } else {
-                plain += scalarString(index..<(end + 1))
+                plain.unicodeScalars.append(scalars[index])
+                index += 1
             }
-            index = end + 1
         }
-        flushPlain()
-        return spans
+        flush()
+        return result
     }
 
     public static func plainText(_ source: String) -> String {

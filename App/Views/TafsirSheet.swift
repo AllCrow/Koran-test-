@@ -1,5 +1,6 @@
 import SwiftUI
 import QuranCore
+import QuranData
 
 struct TafsirSheet: View {
     let reference: AyahReference

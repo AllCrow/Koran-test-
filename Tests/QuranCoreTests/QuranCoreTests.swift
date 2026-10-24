@@ -146,11 +146,134 @@ final class TajweedParserTests: XCTestCase {
         XCTAssertEqual(TajweedParser.parse(source).filter { $0.rule != nil }.map(\.rule), [.maddPermissible, .ghunnah])
     }
 
+    func testNestedSourceAnnotationsKeepCombiningMarksAndInnerRulePrecedence() {
+        // Real nested form from the quran-tajweed edition of 2:190.
+        let source = "[o[ُوٓ[s[اْ]‌ۚ]"
+        let spans = TajweedParser.parse(source)
+        XCTAssertEqual(spans.map(\.text).joined().unicodeScalars.map(\.value), "ُوٓاْ‌ۚ".unicodeScalars.map(\.value))
+        XCTAssertEqual(spans.map(\.rule), [.maddObligatory, .silent, .maddObligatory])
+        // Missing the outer closing bracket leaves the entire token intact.
+        let incomplete = "[o[ُوٓ[s[اْ]‌ۚ"
+        XCTAssertEqual(TajweedParser.plainText(incomplete).unicodeScalars.map(\.value), incomplete.unicodeScalars.map(\.value))
+    }
+
+    func testUnknownUpstreamSquareBracketsRemainVerbatim() {
+        let source = "ٱفْتَرَ[ٮٰ]هُ"
+        XCTAssertEqual(TajweedParser.plainText(source).unicodeScalars.map(\.value), source.unicodeScalars.map(\.value))
+    }
+
     func testEmptyTextAndAllKnownRuleCodes() {
         XCTAssertTrue(TajweedParser.parse("").isEmpty)
         for rule in TajweedRule.allCases {
             let spans = TajweedParser.parse("[\(rule.rawValue)[ن]")
             XCTAssertEqual(spans, [TajweedSpan(text: "ن", rule: rule)])
         }
+    }
+}
+
+final class QuranPresentationTests: XCTestCase {
+    private let standard = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ "
+    private let sourceVariant = "بِّسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ "
+
+    private func ayah(surah: Int, number: Int = 1, text: String) -> Ayah {
+        Ayah(id: 1, surahID: surah, numberInSurah: number, text: text)
+    }
+
+    private func chapter(_ ayah: Ayah) -> QuranChapter {
+        let surah = Surah(id: ayah.surahID, name: "", englishName: "", englishNameTranslation: "", numberOfAyahs: 1, revelationType: "")
+        return QuranChapter(surah: surah, ayahs: [ayah])
+    }
+
+    func testBothRecognizedPrefixesAreExtractedVerbatimAndReconstructRawText() throws {
+        for (surah, prefix) in [(2, standard), (95, sourceVariant), (97, sourceVariant)] {
+            let raw = prefix + "نَصُّ الْآيَةِ"
+            let original = ayah(surah: surah, text: raw)
+            let header = try XCTUnwrap(QuranPresentation.basmala(for: original))
+            XCTAssertEqual(Array(header.utf8), Array(prefix.dropLast().utf8))
+            XCTAssertEqual(QuranPresentation.basmala(for: chapter(original)), header)
+            XCTAssertEqual(QuranPresentation.verseText(original), "نَصُّ الْآيَةِ")
+            XCTAssertEqual(Array((header + " " + QuranPresentation.verseText(original)).utf8), Array(raw.utf8))
+            XCTAssertEqual(Array(original.text.utf8), Array(raw.utf8))
+        }
+    }
+
+    func testFatihaAndTawbaRemainUnchangedEvenWithRecognizedText() {
+        for surah in [1, 9] {
+            let original = ayah(surah: surah, text: standard + "نَصٌّ")
+            XCTAssertNil(QuranPresentation.basmala(for: original))
+            XCTAssertNil(QuranPresentation.basmala(for: chapter(original)))
+            XCTAssertEqual(QuranPresentation.verseText(original), original.text)
+        }
+    }
+
+    func testNoHeaderIsInventedForUnknownOrAbsentPrefix() {
+        for raw in ["نَصُّ الْآيَةِ", "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ نَصٌّ", standard.dropLast().description] {
+            let original = ayah(surah: 2, text: raw)
+            XCTAssertNil(QuranPresentation.basmala(for: original))
+            XCTAssertNil(QuranPresentation.basmala(for: chapter(original)))
+            XCTAssertEqual(Array(QuranPresentation.verseText(original).utf8), Array(raw.utf8))
+        }
+    }
+
+    func testLaterAyahsAreNeverSplit() {
+        let original = ayah(surah: 2, number: 2, text: standard + "نَصٌّ")
+        XCTAssertNil(QuranPresentation.basmala(for: original))
+        XCTAssertNil(QuranPresentation.basmala(for: chapter(original)))
+        XCTAssertEqual(QuranPresentation.verseText(original), original.text)
+    }
+}
+
+final class BundledQuranPresentationTests: XCTestCase {
+    /// This is a repository integration test: missing bundled resources fail.
+    func testEveryBundledVerseKeepsItsRawScalarsWhenRendered() throws {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let directory = root.appendingPathComponent("App/Resources/Quran", isDirectory: true)
+        let markup = try NSRegularExpression(pattern: #"\[[a-z](?::\d+)?\[([^\[\]]*)\]"#)
+        var verseCount = 0
+        var headerCount = 0
+        var preservedUnknownMarkup: [String] = []
+        for surahID in 1...114 {
+            let file = directory.appendingPathComponent(String(format: "%03d.json", surahID))
+            let chapter = try JSONDecoder().decode(QuranChapter.self, from: Data(contentsOf: file))
+            XCTAssertEqual(chapter.surah.id, surahID)
+            XCTAssertEqual(chapter.ayahs.count, AyahReference.ayahCounts[surahID - 1])
+            let opening = try XCTUnwrap(chapter.ayahs.first)
+            if surahID == 1 || surahID == 9 {
+                XCTAssertNil(QuranPresentation.basmala(for: chapter))
+            } else {
+                let header = try XCTUnwrap(QuranPresentation.basmala(for: chapter), "Missing Basmala for surah \(surahID)")
+                XCTAssertEqual(Array((header + " " + QuranPresentation.verseText(opening)).utf8), Array(opening.text.utf8))
+                headerCount += 1
+            }
+            for ayah in chapter.ayahs {
+                verseCount += 1
+                XCTAssertNotNil(ayah.reference)
+                if let header = QuranPresentation.basmala(for: ayah) {
+                    XCTAssertEqual(Array((header + " " + QuranPresentation.verseText(ayah)).utf8), Array(ayah.text.utf8))
+                } else {
+                    XCTAssertEqual(Array(QuranPresentation.verseText(ayah).utf8), Array(ayah.text.utf8))
+                }
+                let annotation = try XCTUnwrap(ayah.tajweed)
+                let rendered = TajweedParser.plainText(annotation)
+                if rendered.contains("[") || rendered.contains("]") {
+                    preservedUnknownMarkup.append("\(surahID):\(ayah.numberInSurah)")
+                }
+                // An independent regex removes only annotation syntax; comparing
+                // scalars detects lost/reordered harakat and unmarked text.
+                var expected = annotation
+                while true {
+                    let replacement = markup.stringByReplacingMatches(in: expected, range: NSRange(expected.startIndex..., in: expected), withTemplate: "$1")
+                    if replacement == expected { break }
+                    expected = replacement
+                }
+                XCTAssertEqual(rendered.unicodeScalars.map(\.value), expected.unicodeScalars.map(\.value))
+            }
+        }
+        XCTAssertEqual(headerCount, 112)
+        XCTAssertEqual(verseCount, 6_236)
+        // The upstream edition contains an uncoded literal [ٮٰ] in 32:3.
+        // Keep it intact at the parser boundary; UI uses canonical-text fallback.
+        XCTAssertEqual(preservedUnknownMarkup, ["32:3"])
     }
 }

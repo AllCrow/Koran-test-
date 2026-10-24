@@ -1,9 +1,11 @@
 import SwiftUI
 import QuranCore
 
+@MainActor
 struct SettingsView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var player: RecitationPlayer
+    @EnvironmentObject private var assessment: RecitationAssessmentStore
 
     var body: some View {
         List {
@@ -17,6 +19,7 @@ struct SettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section("Läsning och ljud") {
+                NavigationLink("Ljud för offline-lyssning") { AudioDownloadsView() }
                 Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: store.setTajweedEnabled))
                 Picker("Recitatör", selection: Binding(get: { player.selectedReciter }, set: { player.selectReciter($0) })) {
                     ForEach(Reciter.allCases) { Text($0.displayName).tag($0) }
@@ -47,7 +50,9 @@ struct SettingsView: View {
                 NavigationLink("Integritet") { PrivacyView() }
                 Text("Ingen prenumeration, inget konto och inga annonser i den här versionen.")
                     .font(.footnote).foregroundStyle(.secondary)
-                Text("Tafsir och recitation behöver internet. Automatisk tajweedbedömning ingår ännu inte.")
+                Text(assessment.isAvailable
+                     ? "Tafsir och frivillig analys behöver internet. Tajweedhjälpen är en experimentell testfunktion."
+                     : "Tafsir och nytt ljud behöver internet. Sparat ljud kan spelas offline. Automatisk tajweedbedömning ingår ännu inte.")
                     .font(.footnote).foregroundStyle(.secondary)
             }
         }
@@ -64,6 +69,7 @@ struct SettingsView: View {
     }
 }
 
+@MainActor
 private struct BookmarkDestination: View {
     let reference: AyahReference
     @EnvironmentObject private var store: AppStore
@@ -80,6 +86,7 @@ private struct BookmarkDestination: View {
     }
 }
 
+@MainActor
 struct SourceNoticeView: View {
     @State private var notice = ""
     var body: some View {
@@ -90,6 +97,8 @@ struct SourceNoticeView: View {
                 Link("Tanzil.net – korantext", destination: URL(string: "https://tanzil.net")!)
                 Link("AlQuran Cloud – käll-API", destination: URL(string: "https://alquran.cloud")!)
                 Link("Tajweednotation och färgförklaring", destination: URL(string: "https://alquran.cloud/tajweed-guide")!)
+                Text("Typsnitt: Amiri Quran, SIL Open Font License 1.1. Originallicensen finns med i appen.").font(.footnote)
+                Link("Amiri – typsnittsprojektet", destination: URL(string: "https://github.com/aliftype/amiri")!)
                 Text("Recitation").font(.title2.bold())
                 Text("Mishary Rashid al-Afasy, Mahmoud Khalil al-Husary och Muhammad Siddiq al-Minshawi. Inspelningarna strömmas från EveryAyah, en fil per vers. Textmarkeringen följer versen, inte enskilda ord.")
                 Link("EveryAyah", destination: URL(string: "https://everyayah.com")!)
@@ -107,16 +116,25 @@ struct SourceNoticeView: View {
     }
 }
 
+@MainActor
 struct PrivacyView: View {
+    @EnvironmentObject private var assessment: RecitationAssessmentStore
     var body: some View {
         List {
             Section("Sparas på din iPhone") {
-                Text("Läsposition, bokmärken, läsmål och streak sparas lokalt. Appen kräver inget konto och innehåller ingen analys- eller annonsspårning.")
-                Text("Inspelningar stannar på telefonen, kan raderas i övningsvyn och tas bort vid nästa appstart. De laddas inte upp.")
+                Text("Läsposition, bokmärken, läsmål och streak sparas lokalt. Appen kräver inget konto och innehåller ingen användningsspårning eller annonser.")
+                Text("Inspelningar kan raderas i övningsvyn och tas bort vid nästa appstart. Ingen röst laddas upp automatiskt.")
             }
             Section("När du använder internet") {
                 Text("När du lyssnar kontaktar appen EveryAyah. När du öppnar tafsir kontaktar den AlQuran Cloud. Tjänsterna får din IP-adress och vilken vers du begär, men ingen röstinspelning från appen.")
                 Text("Du kan läsa hela korantexten med tajweedfärger utan internet.")
+                Text("Ljud som du väljer att ladda ned sparas på telefonen tills du raderar det under Offline-lyssning.")
+            }
+            if assessment.isAvailable {
+                Section("Frivillig recitationsanalys") {
+                    Text("När du själv väljer Analysera skickas den valda inspelningen till analystjänsten. Om du bara spelar in och lyssnar tillbaka stannar den på telefonen.")
+                    Text("Analysfunktionen är experimentell. Ingen automatisk uppladdning sker när du öppnar appen eller läser Koranen.")
+                }
             }
         }.navigationTitle("Integritet").navigationBarTitleDisplayMode(.inline)
     }

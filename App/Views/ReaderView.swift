@@ -1,6 +1,7 @@
 import SwiftUI
 import QuranCore
 
+@MainActor
 struct ReaderView: View {
     var initialReference: AyahReference? = nil
     @EnvironmentObject private var store: AppStore
@@ -16,10 +17,9 @@ struct ReaderView: View {
                 LazyVStack(spacing: 16) {
                     if let chapter = store.chapter {
                         chapterHeading(chapter)
-                        if chapter.surah.id != 1 && chapter.surah.id != 9 {
-                            ArabicText(text: QuranPresentation.basmala, tajweed: nil, colored: false)
+                        if let basmala = QuranPresentation.basmala(for: chapter) {
+                            ArabicText(text: basmala, tajweed: nil, colored: false)
                                 .padding(.vertical, 12).padding(.horizontal, 8)
-                                .accessibilityLabel(QuranPresentation.basmala)
                         }
                         if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
                         ForEach(chapter.ayahs) { ayah in
@@ -89,7 +89,7 @@ struct ReaderView: View {
                     Text("\(chapter.surah.numberOfAyahs) verser").font(.subheadline).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 12)
-                Text(chapter.surah.name).font(.custom("GeezaPro", size: 26, relativeTo: .title2))
+                Text(chapter.surah.name).font(.custom("AmiriQuran-Regular", size: 26, relativeTo: .title2))
                     .environment(\.layoutDirection, .rightToLeft)
             }
         }
@@ -98,6 +98,8 @@ struct ReaderView: View {
     private func verseCard(_ ayah: Ayah, chapter: QuranChapter) -> some View {
         let reference = ayah.reference
         let active = reference != nil && player.activeReference == reference
+        let requested = reference != nil && player.requestedReference == reference
+        let canPause = requested && (player.isPlaying || player.isBuffering)
         let loading = reference != nil && player.requestedReference == reference && player.isBuffering
         return Card {
             HStack {
@@ -122,13 +124,16 @@ struct ReaderView: View {
                 HStack(spacing: 8) {
                     Button {
                         recorder.stopAll()
-                        if active && player.isPlaying { player.pause() }
-                        else { player.play(reference: reference, chapterVerseCount: chapter.surah.numberOfAyahs) }
+                        if requested {
+                            if canPause { player.pause() } else { player.resume() }
+                        } else {
+                            player.play(reference: reference, chapterVerseCount: chapter.surah.numberOfAyahs)
+                        }
                         store.setLastRead(reference)
                     } label: {
-                        Image(systemName: active && player.isPlaying ? "pause.fill" : "play.fill")
+                        Image(systemName: canPause ? "pause.fill" : "play.fill")
                             .frame(width: 44, height: 44)
-                    }.accessibilityLabel(active && player.isPlaying ? "Pausa versen" : "Lyssna på vers \(ayah.numberInSurah)")
+                    }.accessibilityLabel(canPause ? "Pausa versen" : "Lyssna på vers \(ayah.numberInSurah)")
                     Button { store.toggleBookmark(reference) } label: {
                         Image(systemName: store.bookmarks.contains(reference) ? "bookmark.fill" : "bookmark")
                             .frame(width: 44, height: 44)
@@ -149,21 +154,7 @@ struct ReaderView: View {
     }
 }
 
-enum QuranPresentation {
-    static let basmala = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ"
-
-    /// The source places Basmala inside the first Uthmani verse of these surahs.
-    /// Show that exact prefix as a separate header; never change the stored text.
-    static func verseText(_ ayah: Ayah) -> String {
-        let prefix = basmala + " "
-        if ayah.numberInSurah == 1, ayah.surahID != 1, ayah.surahID != 9,
-           ayah.text.hasPrefix(prefix) {
-            return String(ayah.text.dropFirst(prefix.count))
-        }
-        return ayah.text
-    }
-}
-
+@MainActor
 struct SurahPicker: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
@@ -184,7 +175,7 @@ struct SurahPicker: View {
                             Text("\(surah.numberOfAyahs) verser").font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Text(surah.name).font(.custom("GeezaPro", size: 21, relativeTo: .title3))
+                        Text(surah.name).font(.custom("AmiriQuran-Regular", size: 21, relativeTo: .title3))
                             .foregroundStyle(Palette.green)
                     }.padding(.vertical, 6)
                 }
@@ -196,13 +187,32 @@ struct SurahPicker: View {
     }
     private var filtered: [Surah] {
         let surahs = store.index?.surahs ?? []
-        guard !search.isEmpty else { return surahs }
+        let query = normalizedSearchText(search)
+        guard !query.isEmpty else { return surahs }
         return surahs.filter {
-            $0.englishName.localizedStandardContains(search) || $0.name.contains(search) || String($0.id) == search
+            normalizedSearchText($0.englishName).contains(query) ||
+            normalizedSearchText($0.name).contains(query) ||
+            normalizedSearchText($0.englishNameTranslation).contains(query) ||
+            String($0.id) == query
         }
+    }
+
+    /// Quran source names carry Arabic vowel marks; normal keyboard input does not.
+    /// Normalize only this search copy, never any displayed or stored Quran text.
+    private func normalizedSearchText(_ input: String) -> String {
+        let folded = input.folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+        let scalars = folded.unicodeScalars.filter {
+            !CharacterSet.nonBaseCharacters.contains($0) &&
+            !CharacterSet.whitespacesAndNewlines.contains($0) &&
+            !CharacterSet.punctuationCharacters.contains($0) && $0.value != 0x0640
+        }
+        return String(String.UnicodeScalarView(scalars)).map { character in
+            character.wholeNumberValue.map { String($0) } ?? String(character)
+        }.joined()
     }
 }
 
+@MainActor
 struct PlaybackBar: View {
     @EnvironmentObject private var player: RecitationPlayer
     @EnvironmentObject private var recorder: PracticeRecorder

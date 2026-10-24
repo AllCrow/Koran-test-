@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.cache/
+.env
+*.wav
+*.m4a
+*.safetensors
+*.bin

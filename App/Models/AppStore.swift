@@ -1,6 +1,7 @@
 import Combine
 import Foundation
 import QuranCore
+import QuranData
 
 @MainActor
 final class AppStore: ObservableObject {
@@ -148,6 +149,17 @@ final class AppStore: ObservableObject {
     func refreshDay() {
         summaryDate = Date()
         currentDay = ReadingDay(date: summaryDate, calendar: .current)
+        // Detailed verse marks are needed only for the current week. Completed
+        // civil days remain in StreakTracker, so pruning never erases a streak.
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .current
+        let retainedDays = Set((0..<7).compactMap { offset in
+            calendar.date(byAdding: .day, value: -offset, to: summaryDate)
+                .map { ReadingDay(date: $0, calendar: calendar).id }
+        })
+        let previousCount = readAyahsByDay.count
+        readAyahsByDay = readAyahsByDay.filter { retainedDays.contains($0.key) }
+        if readAyahsByDay.count != previousCount { persist() }
         todayReadCount = readAyahsByDay[currentDay.id]?.count ?? 0
         dailyGoalMet = streak.isCompleted(on: summaryDate, calendar: .current)
     }

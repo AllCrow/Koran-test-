@@ -1,0 +1,13 @@
+.git
+.build
+.build-*
+.cache
+.swiftpm
+DerivedData
+**/__pycache__
+**/*.pyc
+**/*.safetensors
+**/*.gguf
+**/*.wav
+**/*.m4a
+**/*.mp3

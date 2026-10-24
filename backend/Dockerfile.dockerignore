@@ -1,0 +1,15 @@
+.git
+.build
+.build-data
+.cache
+App
+Tests
+scripts
+Sakina.xcodeproj
+**/__pycache__
+**/.venv
+**/*.pyc
+**/*.safetensors
+**/*.bin
+**/*.wav
+**/*.m4a

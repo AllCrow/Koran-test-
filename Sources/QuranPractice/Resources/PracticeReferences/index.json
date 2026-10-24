@@ -1,0 +1,602 @@
+{
+  "version": 1,
+  "source": "quran-transcript-0.6.4",
+  "script": "quran-transcript-0.6.4-uthmani-practice",
+  "package_version": "0.6.4",
+  "package_wheel_sha256": "8db46fa8217514d44b81abfe548b92f7eb6d23988195ad2c193c7d69c13c50a9",
+  "source_data_sha256": "76513995151fc5e4a47e07eceb61d3bd87db23a6be831a1e55ca689cc24b7f7f",
+  "source_utils_sha256": "ce1b4fa976381f2a847137b3d1d493513e1d932d2decaf52d518d6f7b131dbf7",
+  "model_repository": "obadx/muaalem-model-v3_2",
+  "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+  "ayah_count": 6236,
+  "surahs": [
+    {
+      "id": 1,
+      "count": 7
+    },
+    {
+      "id": 2,
+      "count": 286
+    },
+    {
+      "id": 3,
+      "count": 200
+    },
+    {
+      "id": 4,
+      "count": 176
+    },
+    {
+      "id": 5,
+      "count": 120
+    },
+    {
+      "id": 6,
+      "count": 165
+    },
+    {
+      "id": 7,
+      "count": 206
+    },
+    {
+      "id": 8,
+      "count": 75
+    },
+    {
+      "id": 9,
+      "count": 129
+    },
+    {
+      "id": 10,
+      "count": 109
+    },
+    {
+      "id": 11,
+      "count": 123
+    },
+    {
+      "id": 12,
+      "count": 111
+    },
+    {
+      "id": 13,
+      "count": 43
+    },
+    {
+      "id": 14,
+      "count": 52
+    },
+    {
+      "id": 15,
+      "count": 99
+    },
+    {
+      "id": 16,
+      "count": 128
+    },
+    {
+      "id": 17,
+      "count": 111
+    },
+    {
+      "id": 18,
+      "count": 110
+    },
+    {
+      "id": 19,
+      "count": 98
+    },
+    {
+      "id": 20,
+      "count": 135
+    },
+    {
+      "id": 21,
+      "count": 112
+    },
+    {
+      "id": 22,
+      "count": 78
+    },
+    {
+      "id": 23,
+      "count": 118
+    },
+    {
+      "id": 24,
+      "count": 64
+    },
+    {
+      "id": 25,
+      "count": 77
+    },
+    {
+      "id": 26,
+      "count": 227
+    },
+    {
+      "id": 27,
+      "count": 93
+    },
+    {
+      "id": 28,
+      "count": 88
+    },
+    {
+      "id": 29,
+      "count": 69
+    },
+    {
+      "id": 30,
+      "count": 60
+    },
+    {
+      "id": 31,
+      "count": 34
+    },
+    {
+      "id": 32,
+      "count": 30
+    },
+    {
+      "id": 33,
+      "count": 73
+    },
+    {
+      "id": 34,
+      "count": 54
+    },
+    {
+      "id": 35,
+      "count": 45
+    },
+    {
+      "id": 36,
+      "count": 83
+    },
+    {
+      "id": 37,
+      "count": 182
+    },
+    {
+      "id": 38,
+      "count": 88
+    },
+    {
+      "id": 39,
+      "count": 75
+    },
+    {
+      "id": 40,
+      "count": 85
+    },
+    {
+      "id": 41,
+      "count": 54
+    },
+    {
+      "id": 42,
+      "count": 53
+    },
+    {
+      "id": 43,
+      "count": 89
+    },
+    {
+      "id": 44,
+      "count": 59
+    },
+    {
+      "id": 45,
+      "count": 37
+    },
+    {
+      "id": 46,
+      "count": 35
+    },
+    {
+      "id": 47,
+      "count": 38
+    },
+    {
+      "id": 48,
+      "count": 29
+    },
+    {
+      "id": 49,
+      "count": 18
+    },
+    {
+      "id": 50,
+      "count": 45
+    },
+    {
+      "id": 51,
+      "count": 60
+    },
+    {
+      "id": 52,
+      "count": 49
+    },
+    {
+      "id": 53,
+      "count": 62
+    },
+    {
+      "id": 54,
+      "count": 55
+    },
+    {
+      "id": 55,
+      "count": 78
+    },
+    {
+      "id": 56,
+      "count": 96
+    },
+    {
+      "id": 57,
+      "count": 29
+    },
+    {
+      "id": 58,
+      "count": 22
+    },
+    {
+      "id": 59,
+      "count": 24
+    },
+    {
+      "id": 60,
+      "count": 13
+    },
+    {
+      "id": 61,
+      "count": 14
+    },
+    {
+      "id": 62,
+      "count": 11
+    },
+    {
+      "id": 63,
+      "count": 11
+    },
+    {
+      "id": 64,
+      "count": 18
+    },
+    {
+      "id": 65,
+      "count": 12
+    },
+    {
+      "id": 66,
+      "count": 12
+    },
+    {
+      "id": 67,
+      "count": 30
+    },
+    {
+      "id": 68,
+      "count": 52
+    },
+    {
+      "id": 69,
+      "count": 52
+    },
+    {
+      "id": 70,
+      "count": 44
+    },
+    {
+      "id": 71,
+      "count": 28
+    },
+    {
+      "id": 72,
+      "count": 28
+    },
+    {
+      "id": 73,
+      "count": 20
+    },
+    {
+      "id": 74,
+      "count": 56
+    },
+    {
+      "id": 75,
+      "count": 40
+    },
+    {
+      "id": 76,
+      "count": 31
+    },
+    {
+      "id": 77,
+      "count": 50
+    },
+    {
+      "id": 78,
+      "count": 40
+    },
+    {
+      "id": 79,
+      "count": 46
+    },
+    {
+      "id": 80,
+      "count": 42
+    },
+    {
+      "id": 81,
+      "count": 29
+    },
+    {
+      "id": 82,
+      "count": 19
+    },
+    {
+      "id": 83,
+      "count": 36
+    },
+    {
+      "id": 84,
+      "count": 25
+    },
+    {
+      "id": 85,
+      "count": 22
+    },
+    {
+      "id": 86,
+      "count": 17
+    },
+    {
+      "id": 87,
+      "count": 19
+    },
+    {
+      "id": 88,
+      "count": 26
+    },
+    {
+      "id": 89,
+      "count": 30
+    },
+    {
+      "id": 90,
+      "count": 20
+    },
+    {
+      "id": 91,
+      "count": 15
+    },
+    {
+      "id": 92,
+      "count": 21
+    },
+    {
+      "id": 93,
+      "count": 11
+    },
+    {
+      "id": 94,
+      "count": 8
+    },
+    {
+      "id": 95,
+      "count": 8
+    },
+    {
+      "id": 96,
+      "count": 19
+    },
+    {
+      "id": 97,
+      "count": 5
+    },
+    {
+      "id": 98,
+      "count": 8
+    },
+    {
+      "id": 99,
+      "count": 8
+    },
+    {
+      "id": 100,
+      "count": 11
+    },
+    {
+      "id": 101,
+      "count": 11
+    },
+    {
+      "id": 102,
+      "count": 8
+    },
+    {
+      "id": 103,
+      "count": 3
+    },
+    {
+      "id": 104,
+      "count": 9
+    },
+    {
+      "id": 105,
+      "count": 5
+    },
+    {
+      "id": 106,
+      "count": 4
+    },
+    {
+      "id": 107,
+      "count": 7
+    },
+    {
+      "id": 108,
+      "count": 3
+    },
+    {
+      "id": 109,
+      "count": 6
+    },
+    {
+      "id": 110,
+      "count": 3
+    },
+    {
+      "id": 111,
+      "count": 5
+    },
+    {
+      "id": 112,
+      "count": 4
+    },
+    {
+      "id": 113,
+      "count": 5
+    },
+    {
+      "id": 114,
+      "count": 6
+    }
+  ],
+  "audit": {
+    "all_ayahs_passed": 6236,
+    "opening_phrases_passed": 112,
+    "unsupported_phonemes": [],
+    "moshaf": {
+      "rewaya": "hafs",
+      "madd_monfasel_len": 4,
+      "madd_mottasel_len": 4,
+      "madd_mottasel_waqf": 4,
+      "madd_aared_len": 4
+    },
+    "scope": "Phoneticizer and mapping compatibility only; no acoustic model execution."
+  },
+  "hashes": {
+    "001.json": "5ce505119d82b3639d4b4fcbb7095d4e59f33554ba780a70e2189dff39a402cb",
+    "002.json": "1db69988a1a9e788906736938ae400380e1f578dbd05f69c5a638d7669476e60",
+    "003.json": "89009906cf98e08130bf8f3865292323afc72211c22acdc66f468f99f42f70d6",
+    "004.json": "30e117e124540b9e8921b645823eb283b2a432bf2ca3ac6abd326d9b8321b1df",
+    "005.json": "a1977a2017b2687075eb1747e80381d0c8bf2d892337b0b36403145d8edbe0dc",
+    "006.json": "976bd205463977eb05d8e330aed4118db844f45b93c0e5cd0948347b68b17628",
+    "007.json": "54068d6b29ea26c8b1dfc67aaaeee105954a2394b7a992bb22ace3927e979637",
+    "008.json": "7e3a38ffe5449896641673fb64d238ef1848e1ddf4409373cde6ca4251ddff5e",
+    "009.json": "2b02568f8cd7810b4d44e7a37661b9cfbe7b806feb79f4ff5d06c90d34cc2667",
+    "010.json": "ddcc54bdce6ad315013063d007184d93e0b6095e774ff5df43c95827fe23c007",
+    "011.json": "924e2f4c556a9501fc18b0a9cba7fd3c68a46beec012f64fab753fbb511b0305",
+    "012.json": "ca02880f46c9ac0775f1c8d681571520817acc1796b3b95b24d159f9541f0bb1",
+    "013.json": "d2eee9864862cd665b8dd32a5bb246660240c0da549c5c61ea844c2b77a72aa2",
+    "014.json": "68313b191441e06800ab9c0de9768a0543dc9c5898a857160f7b32ef4251f405",
+    "015.json": "4b093d9905e912cf31d9a55189480c0b6c9c472d925c8a5430f1ed898a4c9040",
+    "016.json": "3ceabd6a66a77ff12e94349d07d323f4fbb93c432a190fadf57916299156a74b",
+    "017.json": "32fd9ccbf0ebebcac2480fe0f416458dd5c265aaf1e7448eebeeaf004e761e5d",
+    "018.json": "d902b28eca466c7d43f62cd7a113d794fdf2a6fbac854807f269b1cec41d7675",
+    "019.json": "92b8f9aaa55de462d3ffe00ed54aeaaaa5e14a2de41aa11dcbe21dbf2e346840",
+    "020.json": "b913283e2d944222110ccf7d43d4ae1b3b765c19bfb74dfe79f85aa63d7ef839",
+    "021.json": "a11e81d9d31b6c35a73b0404d7802f5df7927530adec3e5e6fcabe081696bd45",
+    "022.json": "ee7eb1d09b66036a78a86b8a0fdf16f76ba20afc4a9528fe8fc67d151332a971",
+    "023.json": "8d80c04e93c15e180340352e40cdd01e30888e7bc21ff9bed15ef08592d5faaa",
+    "024.json": "585bab1bb6b2f1fcab9128ca0bf7feaf7c1f623abb37ca93a7e234898155e734",
+    "025.json": "b08a01788ac7e2cdac9045ba6175a2467f0b03beca4086047775aa156ac7e779",
+    "026.json": "7a1e3a833839da87fc8df99d24c2d000635dbd2d3f4f9fc4cccc92cb84d5c508",
+    "027.json": "1acd034b8e8aa9844fd3bfb747eb7e270cbca5209c77761290f13ec16f561de7",
+    "028.json": "5876e480c55457f49ef9b5f4f8fa4b1e3134dcb7a5cf6c8b63d466554faf8984",
+    "029.json": "ac10b1a5af802cd601b9f8db138a75a1ed2c7d32b528f716f6b4b0adeeb9157c",
+    "030.json": "143c1cce9180195d83256a5a9a4a784c7f71f23fc4fb673f364f5dbc10ae2852",
+    "031.json": "1741626ca0a71e86db162f0fd100e7e4b4690969172406c143a0c1e999c0ab4e",
+    "032.json": "8f2725bf5d969a772b306c0a1d9196c85fc0b15a57d67008c0c10ec81205e8e5",
+    "033.json": "c71714c4eae323c43480f3f8e6d40f070ed3ba3add15f456a95294b188ff2e10",
+    "034.json": "70d8a68884f6465bb3a42031a8bc4a037a35731a8b721bd3739c6b34459e4f68",
+    "035.json": "335d5da95b9157980ea44a4cb397ad8b77870beca737806591291cea2165cdd9",
+    "036.json": "a22b9953250552d54b4c2f41e74158bffc6c8b487a276008a024856fcf646740",
+    "037.json": "52efc7bea671c889bcbd6ac56391594990b62f93174ae8ea90dcecdb9fa2204c",
+    "038.json": "d40f21ef3f319cb44e8fd5f2b5b16e1bb4640f42ead22cfa60db85303c31edd7",
+    "039.json": "461154fec919d4ad07c9b255f46a772937879f6e5e99dc7c041db4a21d31cab6",
+    "040.json": "63225425bcf5246da71b403abf856967702a9aca6216066c2133bc47d8cd3842",
+    "041.json": "847cd4f245ff70487d0ae5add7742cb04e455c16f19ce6f2d263fc10b16b7cf5",
+    "042.json": "2d24df6fb646efcbac06e26b110e766bddcc89d987cdb2007ae60043820dae6a",
+    "043.json": "24819882cae7cf43ac33da19c80aaa4cf7f823b2761f27ce24197f6b0a280240",
+    "044.json": "907d17d8a80c946022c17c0ba9c0540fd7e23d0784357ba406517107128e2d28",
+    "045.json": "9ea465b77a38435842afac2c065ef39cbaba030865e54df13a5f051775158bf2",
+    "046.json": "31c949b5b1ce7561d3225f11c19009379a5df1571c83503fa0ce834914368d2d",
+    "047.json": "6a10776c397db981122825eb5fef9d8b9320f701b6c8112d6cee3203a38f1178",
+    "048.json": "7c0612820e8b545cb24f3b7b6838e78e2742f9ee070c2e644e7b5a1b05d65afa",
+    "049.json": "4e9e916868cbd9f1b5687be06c3decfcca7ff5a1a879f45f5f99e062c4e8d709",
+    "050.json": "5c5d6a91fe428bb0315324f22701847e1e4cd62ee39ddf169c40cf4f26b4a32b",
+    "051.json": "612309a2e6b50a30078a51f35e1886122f0814f5879255401d64a5c83873459f",
+    "052.json": "523f456f6a590a442f0a4a93534993421b789f3b18cd54b87cffae37819b4160",
+    "053.json": "9a6defdb74dc7bf02c3eb475573f81081537aecd3c64c9c9303c4d1b32e3a7b2",
+    "054.json": "a58e387428a6992f616321b08568b7717e65ed7b87988fbed6dcabe9421494ef",
+    "055.json": "410a19a96403b214c220e03a963ca273034ff56fec8f97995d1fa4f052ac1850",
+    "056.json": "6f032dac48f232ca10f307813bf7744062dc07bb880bdf920163467072cc7ec1",
+    "057.json": "de07f7c8603e0617456e40850b50e5c2681492da879befc5afb28ad376b5f208",
+    "058.json": "30be038fc3e1913d0100cbd4ca0ff6b65e1e9932739bc19a4280aa6f73b6b505",
+    "059.json": "57c8c8ed55fd2a1750ebae214ff3ca3816c64cc2275d6e23d931232852b68bfd",
+    "060.json": "8eec8dfa6bea192fe8a5a9dce78381bb54dd736841d9631bc19c96c9cbe90249",
+    "061.json": "96e8f5cb314c267fdd6281c5a791bc78edbef4ae7b9afb5585c85d132abcce6f",
+    "062.json": "a6f79137b4470d23f554beefd9b885c94e97d3838b653a3d8760f2b2f813fe68",
+    "063.json": "ca1c03accbbc13982acc33a0597a718cfa3223d09fcff73f673f5e4576693284",
+    "064.json": "e65f50174b6155adebb3b77eab8520da88599e4266a8852a3872f5b4d6177828",
+    "065.json": "03977f16d530bf610976a7f1f1903683b25efcf1f9f1a8f72445a5560e0ce918",
+    "066.json": "7249f5ec65059fe696635b6cf4755da03462a6f76eb9788bac90e71953f91ef6",
+    "067.json": "240faa04c2e38b800856ecde90a5e274b61596ef9591d63788388812dd38b99a",
+    "068.json": "ef4393ac75a8574eb8ba403073f83b121d8a9dd14f1792520a90dae651b34fd9",
+    "069.json": "56d69e9e93e59449ca4ec12fa48b3adbf5a7efbc1ecda48de095e2eede43d13a",
+    "070.json": "3d5ecde0de09132a545654ff5f2345372b59736fe902af493e1c960f63248ecf",
+    "071.json": "1f9d1e220700e839b203fd33d5bb82f392106bef1bd5ba9ab5b58f559399a805",
+    "072.json": "64a788ab1c27f5baa4013ebb9a46686495d175bf82ea2b43f198eb10aedd8ea6",
+    "073.json": "46217f3b5bef830c07eaa2110eea1b13c632503bced51b9c950f3c8387744d19",
+    "074.json": "a24900f138cf97a57fa8df427168117bd14d9f82fc6a49f5d3a78d53dc3796af",
+    "075.json": "348e74fc1615b8c4ef05e199b35c4196c1d780b86959d4263f8e16329ac1cfe5",
+    "076.json": "8daaa6c6fc2137cb68a0e0e0c64ea941ea2c5e2c168b7b98df251293c222e7af",
+    "077.json": "024939b3e18b3eb1dc7a691761fb9e060d9fed8d178019c7921a309efc7ac182",
+    "078.json": "1be1c482f0c2120141fe87a2b75d4738e4410894aeea86e588872271f8472b97",
+    "079.json": "a017201d19a1e7dd523b564a73b443d9eeb13258c05d05af3cd8cdbc0bf26a6b",
+    "080.json": "76b0b1a892bbb15a97bcaeb15008abf1c97ceadbbbe328dfa4fd6f2f1306952a",
+    "081.json": "7f2d902d16e254cf506cf4e2aa1f65f6cd4bf8437b1b990d76152eb0da9caa5a",
+    "082.json": "039069827f5f0c664a4b9449273486bdd91d7b8521209df289e4964beae6764a",
+    "083.json": "c71150030a8e6aa828c81995f53d108b4c84559fdeea19ed82482224088fc03e",
+    "084.json": "72d0819a84fefa58aa1a0f69263bd2990522ef9461c0687c1ee7fa6a3c491edc",
+    "085.json": "8dd1c84f0bcb49a85ebec7851172caa019ef7e5b1e119f9a44b450e221e16d5e",
+    "086.json": "48e098e113e17e336abad6de492726172dce14236851ecf33b8c9cf9a1ce493f",
+    "087.json": "65df0866b843ea5d62ea54f9408bf7d08d2a7ed2c7c5a20e9aeee1651d6d18ed",
+    "088.json": "ea3ae9d88330ed28289aad944cb95a2e01485468b7fa80cc27aa505686494445",
+    "089.json": "a57149b25b08ba13214276a20259ace92bd8f7cc6c82b8b4976c48633ddaf0ec",
+    "090.json": "c3153392fa2874153c166267a24f94af5ec98d692676c0f7e3503914ded90e3f",
+    "091.json": "93840ca2e3594984225d6af04352d1692c684e703d6cf528054a0735cd336ec1",
+    "092.json": "e28dcd64df418fba0189b7c7baf89c0951af1f7fc38436ee10c28418e0e336af",
+    "093.json": "226dbc33482caadee0bdf8095d280046cb62673377348c52d74c3c3d8a2c019c",
+    "094.json": "487ac305fb26bcef096083feb631790339484f5c5ddf8d559d49f7e97b6409fc",
+    "095.json": "5317650d67f0cffc5ad93aa85a820ddc256c242f133ea29f7827c5278b5cb460",
+    "096.json": "2cdfca7e71bf944037da569e90fb5f2b910fe85ad77c9441bc0dc31cde8b0690",
+    "097.json": "bf1f10419599c0eae8e34e6ccb785b62c3ea496b703a153e9826f1860d33af30",
+    "098.json": "a83ffaa4e4fef2bf191c268644c2dcf38425590b93df55a46022144a1b1d9ea6",
+    "099.json": "9dcd719d12acf94c3d937f4c41e7c73c39dde022d892b5a9789fa51e225697fd",
+    "100.json": "62c35a82ac178aebf27a336a3610734e0738a043615409c481676b6100d3be6d",
+    "101.json": "886f8032e1cdd844ebb6acfcdaa853502534333d70ac7fb0c0b16cacd49a26aa",
+    "102.json": "a576d90c587dca824dba2ebc98197a9b01b33631a360994883b9ce255d58f8e5",
+    "103.json": "08d5d84475a1b67bce9b4d15447d33c4d38a34a5c6b641d46260a95a0d11c1de",
+    "104.json": "02e1fb6e9d8291aa524d99899c0a0111b511e890a0ae88f26d9304069fbfe8ce",
+    "105.json": "1acdbf13e0a66c36f5c11deceb347f6c6581eb1b767a515d3b2990f198f9b5c7",
+    "106.json": "b7eb873f145672cc278c74c3877ca16cca4b96e9d8f2bfc2ac2558ea6754428f",
+    "107.json": "7eb9b97ad893eb1ec74d34b9e62f4855d3c37ce16ec6161a34767af63101678a",
+    "108.json": "d97ce43eb6cf60c71ff94dc367f13c92ee591c6b648e96c4b25d10734f425e68",
+    "109.json": "6335bfb45568053a64b90ff6c401c8aa184ef01af06a0c8fd0962dc48e654504",
+    "110.json": "943baf4c139d73748c4e1fc225d047ee29c54c35bbf071d0fb9f7ab00a7ea7f5",
+    "111.json": "4be538c475ac6f55714156db78ba4c8a028854bdf76d293a25d455480c6d79dc",
+    "112.json": "af19ae835fe2cffdb980cabd91e14ba7b93b707248576ca7c7b53cc67d7c79cb",
+    "113.json": "4d7d9897f2e3d1908b5706e9c2fd7c569d66ac2c96f89520a0e524e1b5bd164b",
+    "114.json": "603e464dc60e4aadd12b25c5cb83a0df19115b6b94e52b2058c4d441d9d69899",
+    "LICENSE-quran-transcript.txt": "2991d19b574fd24f24fd069e02da7fa1f65d75cc55d5b88c7d7e0fbd9832dd8e",
+    "NOTICE.txt": "4183174450c40273e624ea4f3b4066471504f07eced1fe9aaa872374c0546c5d",
+    "model-vocab.json": "dcbdac0162632df023002ca1cdd48e74f0f77a328d7f69503f9ff021afb19473"
+  }
+}

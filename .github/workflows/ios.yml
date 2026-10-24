@@ -15,13 +15,16 @@ concurrency:
 
 jobs:
   validate-and-build:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Validate bundled Quran against source snapshots
-        run: python3 scripts/verify_content.py
-      - name: Test core logic
+        run: |
+          python3 scripts/verify_content.py
+          python3 scripts/export_practice_references.py --verify
+          python3 scripts/verify_assets.py
+      - name: Test core, data and assessment contracts
         run: swift test --parallel
       - name: Check reproducible Xcode project
         run: |
@@ -37,3 +40,18 @@ jobs:
           name: Sakina-simulator
           path: DerivedData/Build/Products/Debug-iphonesimulator/Sakina.app
           retention-days: 7
+  backend-contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install audio decoder and lightweight test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install -r backend/requirements-test.txt
+      - name: Test API contracts and real audio decoding
+        run: python -W error::ResourceWarning -m unittest discover -s backend/tests -v

@@ -4,19 +4,19 @@ import FoundationNetworking
 #endif
 import QuranCore
 
-struct TafsirEntry: Hashable, Sendable {
-    let text: String
-    let sourceName: String
+public struct TafsirEntry: Hashable, Sendable {
+    public let text: String
+    public let sourceName: String
     /// ISO language identifier; this source is Arabic, not a Swedish tafsir.
-    let language: String
+    public let language: String
 }
 
-actor TafsirRepository {
-    enum TafsirError: LocalizedError {
+public actor TafsirRepository {
+    public enum TafsirError: LocalizedError, Equatable {
         case unavailable
         case unexpectedContent
 
-        var errorDescription: String? {
+        public var errorDescription: String? {
             switch self {
             case .unavailable:
                 return "Tafsiren kunde inte hämtas. Kontrollera din internetanslutning och försök igen."
@@ -51,7 +51,7 @@ actor TafsirRepository {
     private let cacheLimit = 64
     private let session: URLSession
 
-    init() {
+    public init() {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = 20
         configuration.timeoutIntervalForResource = 30
@@ -59,7 +59,12 @@ actor TafsirRepository {
         session = URLSession(configuration: configuration)
     }
 
-    func tafsir(for reference: AyahReference) async throws -> TafsirEntry {
+    public init(session: URLSession) {
+        self.session = session
+    }
+
+    public func tafsir(for reference: AyahReference) async throws -> TafsirEntry {
+        try Task.checkCancellation()
         if let entry = entries[reference] {
             touch(reference)
             return entry

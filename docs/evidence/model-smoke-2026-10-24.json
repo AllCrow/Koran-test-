@@ -1,0 +1,328 @@
+{
+  "verification": "Real CPU inference and in-process HTTP API execution; not expert accuracy evaluation",
+  "model": "obadx/muaalem-model-v3_2",
+  "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+  "python": "3.12.14",
+  "torch": "2.7.1+cpu",
+  "platform": "Linux x86_64",
+  "cpu_threads": 2,
+  "model_load_seconds": 2.552,
+  "peak_process_rss_mib": 2748.9,
+  "health": {
+    "ready": true,
+    "status": "ready",
+    "model_loaded": true,
+    "experimental": true,
+    "model": "obadx/muaalem-model-v3_2",
+    "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+    "reference_source": "quran-transcript-0.6.4"
+  },
+  "clips": [
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/001001.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "36cd554e0ea8e3664176f014dcfe08a1c4f4f0063a10684ec926be98bc80d25c",
+      "upload_bytes": 51005,
+      "elapsed_seconds": 2.856,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 1
+        },
+        "reference_text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil at waqf: 4; madd arid: 4.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Husary_128kbps/001001.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "09dcf9563cd6682335ce6c9403181adcbfdf91cff09cdc208aefec074ca9f9b7",
+      "upload_bytes": 45148,
+      "elapsed_seconds": 2.248,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 1
+        },
+        "reference_text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil at waqf: 4; madd arid: 4.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/001001.mp3",
+      "control": "reference_recitation",
+      "upload_sha256": "a4bb94543587084de1a3565ff628097830de45d835ff54774fb69612c4c280b3",
+      "upload_bytes": 40122,
+      "elapsed_seconds": 2.327,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 1
+        },
+        "reference_text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [
+          {
+            "kind": "tajweed",
+            "category": "replace",
+            "start_scalar": 36,
+            "end_scalar": 37,
+            "expected": "ۦۦۦۦ",
+            "observed": "ۦۦ",
+            "message": "Modellen indikerar en möjlig tajweedavvikelse: Aared Madd."
+          }
+        ],
+        "message": "Experimentell analys klar. Gå igenom markeringarna med en kunnig lärare.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil at waqf: 4; madd arid: 4.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": "https://everyayah.com/data/Alafasy_128kbps/112001.mp3",
+      "control": "intentionally_wrong_verse",
+      "upload_sha256": "47209bb53827a648f6b21b80648b40736dbf41611b422dedc161bf36cedc6c4c",
+      "upload_bytes": 25360,
+      "elapsed_seconds": 1.512,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 1
+        },
+        "reference_text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [
+          {
+            "kind": "normal",
+            "category": "replace",
+            "start_scalar": 0,
+            "end_scalar": 2,
+            "expected": "بِ",
+            "observed": "قُ",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "delete",
+            "start_scalar": 2,
+            "end_scalar": 3,
+            "expected": "س",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "delete",
+            "start_scalar": 4,
+            "end_scalar": 6,
+            "expected": "مِ",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "tajweed",
+            "category": "replace",
+            "start_scalar": 9,
+            "end_scalar": 12,
+            "expected": "للَ",
+            "observed": "ل",
+            "message": "Modellen indikerar en möjlig tajweedavvikelse: Normal Madd."
+          },
+          {
+            "kind": "tashkeel",
+            "category": "delete",
+            "start_scalar": 9,
+            "end_scalar": 12,
+            "expected": "للَ",
+            "observed": "ل",
+            "message": "Modellen indikerar en möjlig skillnad i vokaliseringen."
+          },
+          {
+            "kind": "tajweed",
+            "category": "delete",
+            "start_scalar": 11,
+            "end_scalar": 12,
+            "expected": "اا",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig tajweedavvikelse."
+          },
+          {
+            "kind": "tashkeel",
+            "category": "replace",
+            "start_scalar": 12,
+            "end_scalar": 14,
+            "expected": "هِ",
+            "observed": "هُ",
+            "message": "Modellen indikerar en möjlig skillnad i vokaliseringen."
+          },
+          {
+            "kind": "normal",
+            "category": "replace",
+            "start_scalar": 17,
+            "end_scalar": 20,
+            "expected": "ررَ",
+            "observed": "وَ",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "replace",
+            "start_scalar": 20,
+            "end_scalar": 21,
+            "expected": "ح",
+            "observed": "للَ",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "delete",
+            "start_scalar": 22,
+            "end_scalar": 24,
+            "expected": "مَ",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "replace",
+            "start_scalar": 26,
+            "end_scalar": 28,
+            "expected": "نِ",
+            "observed": "هُ",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "normal",
+            "category": "replace",
+            "start_scalar": 31,
+            "end_scalar": 34,
+            "expected": "ررَ",
+            "observed": "ءَ",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          },
+          {
+            "kind": "tashkeel",
+            "category": "replace",
+            "start_scalar": 34,
+            "end_scalar": 36,
+            "expected": "حِ",
+            "observed": "حَ",
+            "message": "Modellen indikerar en möjlig skillnad i vokaliseringen."
+          },
+          {
+            "kind": "tajweed",
+            "category": "replace",
+            "start_scalar": 36,
+            "end_scalar": 37,
+            "expected": "ۦۦۦۦ",
+            "observed": "دڇ",
+            "message": "Modellen indikerar en möjlig tajweedavvikelse: Aared Madd."
+          },
+          {
+            "kind": "normal",
+            "category": "delete",
+            "start_scalar": 37,
+            "end_scalar": 38,
+            "expected": "م",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          }
+        ],
+        "message": "Experimentell analys klar. Gå igenom markeringarna med en kunnig lärare.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil at waqf: 4; madd arid: 4.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    },
+    {
+      "source_url": null,
+      "control": "silence",
+      "upload_sha256": "643f8a8dc8bd9c19225afffad2becfec5426180b3749cb208abdf1a6c8354efc",
+      "upload_bytes": 32044,
+      "elapsed_seconds": 0.003,
+      "assessment": {
+        "schema_version": 1,
+        "status": "insufficient_audio",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 1,
+          "ayah_number": 1
+        },
+        "reference_text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [],
+        "message": "Inspelningen är för tyst för att analysera. Försök igen nära mikrofonen.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil at waqf: 4; madd arid: 4.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    }
+  ]
+}

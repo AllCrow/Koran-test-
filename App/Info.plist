@@ -23,7 +23,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Spela in din recitation för att lyssna tillbaka. Din röst stannar på din iPhone.</string>
+	<string>Appen behöver mikrofonen när du väljer att spela in din recitation för att lyssna tillbaka och öva.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
@@ -36,5 +36,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Fonts/AmiriQuran-Regular.ttf</string>
+	</array>
+	<key>SAKINA_ENABLE_EXPERIMENTAL_ANALYSIS</key>
+	<false/>
+	<key>SAKINA_ANALYSIS_URL</key>
+	<string></string>
 </dict>
 </plist>

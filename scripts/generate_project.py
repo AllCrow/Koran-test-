@@ -45,7 +45,7 @@ def generate():
 
     resources = []
     resource_refs = []
-    for path, file_type in [("App/Resources/Quran", "folder"), ("App/PrivacyInfo.xcprivacy", "text.xml"), ("App/Assets.xcassets", "folder.assetcatalog")]:
+    for path, file_type in [("App/Resources/Quran", "folder"), ("App/Resources/Fonts", "folder"), ("App/PrivacyInfo.xcprivacy", "text.xml"), ("App/Assets.xcassets", "folder.assetcatalog")]:
         ref = add("ref:" + path, "PBXFileReference", lastKnownFileType=quoted(file_type), path=quoted(path), sourceTree=quoted("<group>"))
         resource_refs.append(ref)
         resources.append(add("build:" + path, "PBXBuildFile", fileRef=ref))
@@ -58,11 +58,15 @@ def generate():
     main_group = add("main", "PBXGroup", children=items([source_group, resource_group, product_group]), sourceTree=quoted("<group>"))
 
     local_package = add("package", "XCLocalSwiftPackageReference", relativePath=quoted("."))
-    package_product = add("packageProduct", "XCSwiftPackageProductDependency", package=local_package, productName=quoted("QuranCore"))
-    package_build = add("packageBuild", "PBXBuildFile", productRef=package_product)
+    package_products = []
+    package_builds = []
+    for product in ["QuranCore", "QuranData", "QuranPractice"]:
+        dependency = add("packageProduct:" + product, "XCSwiftPackageProductDependency", package=local_package, productName=quoted(product))
+        package_products.append(dependency)
+        package_builds.append(add("packageBuild:" + product, "PBXBuildFile", productRef=dependency))
     source_phase = add("sourcePhase", "PBXSourcesBuildPhase", buildActionMask="2147483647", files=items(sources), runOnlyForDeploymentPostprocessing="0")
     resources_phase = add("resourcesPhase", "PBXResourcesBuildPhase", buildActionMask="2147483647", files=items(resources), runOnlyForDeploymentPostprocessing="0")
-    frameworks_phase = add("frameworksPhase", "PBXFrameworksBuildPhase", buildActionMask="2147483647", files=items([package_build]), runOnlyForDeploymentPostprocessing="0")
+    frameworks_phase = add("frameworksPhase", "PBXFrameworksBuildPhase", buildActionMask="2147483647", files=items(package_builds), runOnlyForDeploymentPostprocessing="0")
 
     project_settings = {
         "CLANG_ENABLE_MODULES": "YES", "CLANG_ENABLE_OBJC_ARC": "YES",
@@ -93,7 +97,7 @@ def generate():
             entries.append(add(owner + mode, "XCBuildConfiguration", buildSettings=settings(values), name=quoted(mode)))
         configs[owner] = add(owner + "Config", "XCConfigurationList", buildConfigurations=items(entries), defaultConfigurationIsVisible="0", defaultConfigurationName=quoted("Release"))
 
-    target = add("target", "PBXNativeTarget", buildConfigurationList=configs["app"], buildPhases=items([source_phase, frameworks_phase, resources_phase]), buildRules="()", dependencies="()", name=quoted("Sakina"), packageProductDependencies=items([package_product]), productName=quoted("Sakina"), productReference=product_ref, productType=quoted("com.apple.product-type.application"))
+    target = add("target", "PBXNativeTarget", buildConfigurationList=configs["app"], buildPhases=items([source_phase, frameworks_phase, resources_phase]), buildRules="()", dependencies="()", name=quoted("Sakina"), packageProductDependencies=items(package_products), productName=quoted("Sakina"), productReference=product_ref, productType=quoted("com.apple.product-type.application"))
     project = add("projectRoot", "PBXProject", attributes="{ BuildIndependentTargetsInParallel = YES; LastUpgradeCheck = 1600; }", buildConfigurationList=configs["project"], compatibilityVersion=quoted("Xcode 14.0"), developmentRegion=quoted("sv"), hasScannedForEncodings="0", knownRegions=items([quoted("sv"), quoted("en"), quoted("ar"), quoted("Base")]), mainGroup=main_group, packageReferences=items([local_package]), productRefGroup=product_group, projectDirPath=quoted(""), projectRoot=quoted(""), targets=items([target]))
 
     PROJECT.mkdir(exist_ok=True)
@@ -121,7 +125,7 @@ def generate():
     workspace = PROJECT / "project.xcworkspace"
     workspace.mkdir(exist_ok=True)
     (workspace / "contents.xcworkspacedata").write_text('<?xml version="1.0" encoding="UTF-8"?><Workspace version="1.0"><FileRef location="self:"/></Workspace>\n')
-    print(f"Generated {PROJECT.name}: {len(swift_files)} Swift files + QuranCore")
+    print(f"Generated {PROJECT.name}: {len(swift_files)} Swift files + {len(package_products)} local libraries")
 
 
 if __name__ == "__main__":
