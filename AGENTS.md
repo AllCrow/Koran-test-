@@ -9,6 +9,15 @@ installation. This Linux environment has no Xcode or physical iPhone. Never
 describe syntax checks or Linux tests as a verified native build. Do not claim
 Tarteel parity or low heat without the corresponding measurements.
 
+Latest clarification: the user wants a local personal installation and explicitly
+REJECTED a Safari/PWA rewrite. Preserve the native app. A separate CI job prepares
+an unsigned physical-iPhone IPA for subsequent personal signing; this is distinct
+from the simulator artifact and cannot be installed by tapping it in Files.
+SideStore with an ordinary Apple account is a possible free route if a computer
+can be borrowed for initial setup/recovery. That computer availability is not yet
+confirmed. See `docs/PERSONAL_IPHONE_INSTALL.md`; no signing or device install is
+verified, and never request passwords or pairing files in chat.
+
 ## Ownership and data
 
 - `QuranCore`: validated references, calendar streaks, lossless tajweed parsing.

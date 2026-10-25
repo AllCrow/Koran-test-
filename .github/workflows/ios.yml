@@ -80,3 +80,28 @@ jobs:
           python -m pip install -r backend/requirements-test.txt
       - name: Test API contracts and real audio decoding
         run: python -W error::ResourceWarning -m unittest discover -s backend/tests -v
+  personal-iphone-package:
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build a physical iPhone app without signing credentials
+        run: >-
+          xcodebuild -project Sakina.xcodeproj -scheme Sakina
+          -configuration Release -destination 'generic/platform=iOS'
+          -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO build
+      - name: Verify iPhoneOS platform and package for personal signing
+        run: >-
+          python3 scripts/package_iphone.py
+          --app DerivedData/Build/Products/Release-iphoneos/Sakina.app
+          --output Sakina-iPhone-unsigned.ipa --report iPhone-build-info.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sakina-iPhone-personal-unsigned
+          path: |
+            Sakina-iPhone-unsigned.ipa
+            iPhone-build-info.json
+            docs/PERSONAL_IPHONE_INSTALL.md
+          if-no-files-found: error
+          retention-days: 7
