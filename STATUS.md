@@ -8,6 +8,15 @@ fysisk installation och en offentlig apprelease är inte verifierade.
 
 ## Aktuell samlad verifieringspunkt
 
+PR6 samlar pausgrenarna med bevarad historik. Körning39:s iOS26-fel vid
+återstart är dessutom visuellt utrett: hela badgen2:255 ligger vid y129–155,
+inom provets y101–251, och versens början syns. Endast läsetikettens
+`isHittable` är falsk på den höga native-cellen. Positionshjälparen behåller
+alla fyra femsekunderskrav och hela badgen nära toppen, men kontrollerar
+app i förgrunden och exakt etikett mot global versidentitet i stället för
+textens tapppunkt. Alla interaktiva kontroller behåller hittability och
+verkliga tryck. Ingen läsarkod ändras. **Den samlade kandidaten behöver ny CI.**
+
 Kompaktjobbet i körning39 är nu **failure**: alla åtta UI-flöden passerar,
 men MP3-provet för hörlursnotis ser rate1 igen efter att rate-KVO kvitterat0.
 Det räcker alltså inte att skärpa väntan på appens flagga. Branch
