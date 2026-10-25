@@ -200,3 +200,27 @@ oförändrade krav på förgrund, hela ändliga gränser, aktivering och nåbarh
 Ett riktigt tryck måste fortfarande följas av exakt radering och omstart.
 Ingen godtycklig första träff, etikettersättning eller koordinatgest används.
 Den rättade frågans faktiska operabilitet återstår för nästa native-körning.
+
+[Huvudkörning60](https://github.com/AllCrow/Koran-test-/actions/runs/40212259656)
+på `c9457a7473d2d94cabe14e62b7fd45460a8a59f5` underkändes i iOS26:s
+hostade inventeringsprov före UI-grinden. Ett kontrollerat svar hade inte
+registrerats inom testets tvåsekunders uppstartsväntan. Testet fortsatte ändå
+och fick sedan `missingRequest`; själva kontraktet för avbrytning och ett
+sent icke-samarbetande svar hann inte prövas. Intilliggande filsystemprov tog
+22,105 respektive8,811 sekunder, men underlaget lokaliserar inte fördröjningen
+till ett bestämt exekveringssteg. UI-fallen hoppades över på den varianten.
+Det oberoende kontrollerade IPA-paketet60 bevaras som underlag för en
+underkänd körning och godkänns inte som nytt ägarutkast.
+
+Rättningen gäller endast provens synkronisering. Alla fyra hållna
+skanningsstarter har nu en separat, begränsad tiosekunders säkerhetsbudget
+för att kräva en faktiskt registrerad fortsättning, aktiv skanning och rätt
+okontrollerat tillstånd innan avbrytning, ersättning eller radering utförs.
+Om förutsättningen uteblir avbryts ägda jobb, testgaten stängs och testet
+underkänns med avgränsad diagnostik utan att fortsätta till senare faser.
+Stängd testgate avvisar även sent anländande jobb, vilket hindrar läckta
+fortsättningar efter städningen. Strikt `complete`/`fail`, de tio testfallen
+och deras slutliga beteendekrav behålls. Produktionskod, prioritet,
+ljudspelarens tvåsekunderskrav och UI-provens femsekunderskrav är oförändrade.
+Den här uttryckliga ändringen av provens uppstartsbudget kräver ny native-
+verifiering; den gör inte huvudkörning60 godkänd i efterhand.
