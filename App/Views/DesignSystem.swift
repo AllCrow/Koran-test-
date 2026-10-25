@@ -54,8 +54,10 @@ enum Palette {
     /// a large font. Increased Contrast receives the stronger 7:1 variant.
     private static func readableTajweedColor(hue: CGFloat, saturation: CGFloat, brightness: CGFloat,
                                              style: UIUserInterfaceStyle, contrast: UIAccessibilityContrast) -> UIColor {
-        let traits = UITraitCollection(traitsFrom: [UITraitCollection(userInterfaceStyle: style),
-                                                   UITraitCollection(accessibilityContrast: contrast)])
+        let traits = UITraitCollection {
+            $0.userInterfaceStyle = style
+            $0.accessibilityContrast = contrast
+        }
         let background = UIColor.secondarySystemGroupedBackground.resolvedColor(with: traits)
         let minimum = contrast == .high ? 7.05 : 4.55
         func color(_ saturation: CGFloat, _ brightness: CGFloat) -> UIColor {

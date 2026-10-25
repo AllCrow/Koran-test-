@@ -10,8 +10,10 @@ final class ArabicTextPreparationTests: XCTestCase {
     func testPrimaryActionTextRemainsReadableAgainstItsFillInEveryAppearance() throws {
         for style in [UIUserInterfaceStyle.light, .dark] {
             for contrast in [UIAccessibilityContrast.normal, .high] {
-                let traits = UITraitCollection(traitsFrom: [UITraitCollection(userInterfaceStyle: style),
-                                                           UITraitCollection(accessibilityContrast: contrast)])
+                let traits = UITraitCollection {
+                    $0.userInterfaceStyle = style
+                    $0.accessibilityContrast = contrast
+                }
                 var foreground = UIColor.clear
                 var background = UIColor.clear
                 traits.performAsCurrent {
@@ -26,8 +28,10 @@ final class ArabicTextPreparationTests: XCTestCase {
 
     func testTajweedLettersRemainReadableOnLightAndDarkPaper() throws {
         for style in [UIUserInterfaceStyle.light, .dark] {
-            let traits = UITraitCollection(traitsFrom: [UITraitCollection(userInterfaceStyle: style),
-                                                       UITraitCollection(accessibilityContrast: .normal)])
+            let traits = UITraitCollection {
+                $0.userInterfaceStyle = style
+                $0.accessibilityContrast = .normal
+            }
             for rule in TajweedRule.allCases {
                 let (foreground, background) = resolvedColors(rule, traits: traits)
                 XCTAssertGreaterThanOrEqual(try contrastRatio(foreground, background), 4.5,
@@ -38,8 +42,10 @@ final class ArabicTextPreparationTests: XCTestCase {
 
     func testIncreasedContrastPreservesTajweedHuesAndReachesStrongerThreshold() throws {
         for style in [UIUserInterfaceStyle.light, .dark] {
-            let traits = UITraitCollection(traitsFrom: [UITraitCollection(userInterfaceStyle: style),
-                                                       UITraitCollection(accessibilityContrast: .high)])
+            let traits = UITraitCollection {
+                $0.userInterfaceStyle = style
+                $0.accessibilityContrast = .high
+            }
             for rule in TajweedRule.allCases {
                 let (foreground, background) = resolvedColors(rule, traits: traits)
                 XCTAssertGreaterThanOrEqual(try contrastRatio(foreground, background), 7,

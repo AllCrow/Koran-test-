@@ -31,6 +31,19 @@ final class AppStoreTests: XCTestCase {
         try XCTUnwrap(AyahReference(surahID: surah, ayahNumber: ayah))
     }
 
+    private func backup(completedOn days: ClosedRange<Int>) throws -> Data {
+        var instant = date(days.lowerBound)
+        let source = AppStore(defaults: try defaults(), now: { instant }, calendar: { self.calendar() })
+        source.setDailyGoal(1)
+        for day in days {
+            instant = date(day)
+            source.markRead(try reference(1))
+        }
+        // Export completed days after the detail retention window has passed.
+        instant = date(31)
+        return try source.readingBackupData()
+    }
+
     func testExplicitUniqueVersesCompleteGoalAndSurviveRelaunch() throws {
         let storage = try defaults()
         let today = date(24)
@@ -521,5 +534,100 @@ final class AppStoreTests: XCTestCase {
         let relaunched = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
         XCTAssertEqual(relaunched.appearance, .light)
         XCTAssertEqual(relaunched.bookmarks, [verse])
+    }
+
+    func testCombinedReadingBackupLimitRejectsWithoutPublishingOrReplacingSavedState() throws {
+        let first = try backup(completedOn: 1...12)
+        let second = try backup(completedOn: 13...24)
+        let budget = max(first.count, second.count) + 256
+        let storage = try defaults()
+        let today = date(31)
+        let target = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() },
+                              readingDataByteLimit: budget)
+        let existing = try reference(255, surah: 2)
+        target.setLastRead(existing)
+        target.toggleBookmark(existing)
+        target.setAppearance(.dark)
+        target.setArabicTextSize(.large)
+        try target.mergeReadingBackup(first)
+        let originalSaved = try XCTUnwrap(storage.data(forKey: "sakina.reading-state.v1"))
+        let originalExport = try target.readingBackupData()
+        let originalSummary = target.streakSummary
+        let originalHistory = target.recentReadingDays
+        XCTAssertLessThan(first.count, budget)
+        XCTAssertLessThan(second.count, budget, "The incoming file itself fits; the union must be checked")
+        XCTAssertLessThanOrEqual(originalSaved.count, budget)
+        var publications = 0
+        let subscription = target.objectWillChange.sink { _ in publications += 1 }
+        defer { subscription.cancel() }
+
+        XCTAssertThrowsError(try target.mergeReadingBackup(second)) { error in
+            guard case AppStore.ReadingBackupError.combinedDataTooLarge = error else {
+                return XCTFail("Expected combined-data limit, received \(error)")
+            }
+        }
+        XCTAssertEqual(publications, 0, "Rejected imports must not publish partially merged state")
+        XCTAssertEqual(storage.data(forKey: "sakina.reading-state.v1"), originalSaved)
+        XCTAssertEqual(try target.readingBackupData(), originalExport)
+        XCTAssertEqual(target.streakSummary, originalSummary)
+        XCTAssertEqual(target.recentReadingDays, originalHistory)
+        XCTAssertEqual(target.lastRead, existing)
+        XCTAssertEqual(target.bookmarks, [existing])
+        XCTAssertEqual(target.appearance, .dark)
+        XCTAssertEqual(target.arabicTextSize, .large)
+        let relaunched = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() },
+                                  readingDataByteLimit: budget)
+        XCTAssertEqual(relaunched.streak.completionDays.count, 12)
+        XCTAssertEqual(relaunched.bookmarks, [existing])
+        XCTAssertEqual(relaunched.lastRead, existing)
+        XCTAssertEqual(relaunched.appearance, .dark)
+        XCTAssertEqual(relaunched.arabicTextSize, .large)
+    }
+
+    func testReadingBackupAtExactSerializedStateLimitSurvivesRelaunch() throws {
+        let backup = try backup(completedOn: 1...12)
+        let today = date(31)
+        let probeStorage = try defaults()
+        let probe = AppStore(defaults: probeStorage, now: { today }, calendar: { self.calendar() })
+        probe.setDailyGoal(9)
+        probe.setAppearance(.dark)
+        probe.setArabicTextSize(.extraLarge)
+        try probe.mergeReadingBackup(backup)
+        let exactBudget = try XCTUnwrap(probeStorage.data(forKey: "sakina.reading-state.v1")).count
+        XCTAssertLessThan(backup.count, exactBudget)
+
+        let storage = try defaults()
+        let target = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() },
+                              readingDataByteLimit: exactBudget)
+        target.setDailyGoal(9)
+        target.setAppearance(.dark)
+        target.setArabicTextSize(.extraLarge)
+        try target.mergeReadingBackup(backup)
+        XCTAssertEqual(storage.data(forKey: "sakina.reading-state.v1")?.count, exactBudget)
+        XCTAssertLessThanOrEqual(try target.readingBackupData().count, exactBudget)
+        let relaunched = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() },
+                                  readingDataByteLimit: exactBudget)
+        XCTAssertEqual(relaunched.streak.completionDays.count, 12)
+        XCTAssertEqual(relaunched.streakSummary.best, 12)
+        XCTAssertEqual(relaunched.dailyGoal, 9)
+        XCTAssertEqual(relaunched.lastRead, try reference(1))
+        XCTAssertEqual(relaunched.appearance, .dark)
+        XCTAssertEqual(relaunched.arabicTextSize, .extraLarge)
+
+        let smallerStorage = try defaults()
+        let smaller = AppStore(defaults: smallerStorage, now: { today }, calendar: { self.calendar() },
+                               readingDataByteLimit: exactBudget - 1)
+        smaller.setDailyGoal(9)
+        smaller.setAppearance(.dark)
+        smaller.setArabicTextSize(.extraLarge)
+        let before = smallerStorage.data(forKey: "sakina.reading-state.v1")
+        XCTAssertThrowsError(try smaller.mergeReadingBackup(backup)) { error in
+            guard case AppStore.ReadingBackupError.combinedDataTooLarge = error else {
+                return XCTFail("Expected one-byte-over-bound rejection, received \(error)")
+            }
+        }
+        XCTAssertEqual(smallerStorage.data(forKey: "sakina.reading-state.v1"), before)
+        XCTAssertTrue(smaller.streak.completionDays.isEmpty)
+        XCTAssertNil(smaller.lastRead)
     }
 }
