@@ -14,6 +14,8 @@ för din telefon innan den kan öppnas.
    textstorleken i iOS-inställningarna.
    Kontrollera bokstäver, diakritik och högerjustering. Prova även en lång vers,
    mörkt läge och telefonens största textstorlek.
+   Välj till exempel sura 2, öppna **aA → Gå till vers** och skriv **255**.
+   Hoppet ska visa 2:255 utan att räknas som en läst vers.
 3. Markera en vers som läst och spara ett bokmärke. Stäng och öppna appen igen.
    Markeringen och bokmärket ska finnas kvar. Att bara öppna eller hoppa till en
    vers ska inte ge läskredit; samma vers räknas en gång per dag.

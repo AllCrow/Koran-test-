@@ -8,8 +8,8 @@ fysisk installation och en offentlig apprelease är inte verifierade.
 
 ## Aktuell källversion och verifiering
 
-[Körning 40161887485](https://github.com/AllCrow/Koran-test-/actions/runs/40161887485)
-testar exakt app-/testversion **b6d983648f87c849a9fa3bb86ee80961f263b39e**.
+[Körning 40163850515](https://github.com/AllCrow/Koran-test-/actions/runs/40163850515)
+testar exakt app-/testversion **7657e3ad31c58a49f99d19b0db8f37913d249ee2**.
 Senare dokumentationscommits ändrar ingen appkod, testkod eller bygginställning.
 Mac-miljön använder Xcode 16.4 och iPhone 16 Pro/iOS 18.5-simulator, arm64.
 
@@ -36,12 +36,12 @@ beständigt tajweedval. [Omfattning](docs/IOS_VERIFICATION.md) och
 
 ## Installation när en dator finns
 
-En riktig osignerad **iPhoneOS/arm64-IPA, version 0.1.0 (19)** är byggd och hämtad:
+En riktig osignerad **iPhoneOS/arm64-IPA, version 0.1.0 (23)** är byggd och hämtad:
 
-- Fil: Sakina-iPhone-unsigned.ipa, **3 105 454 byte**, iOS **17.0+**.
-- SHA256: **2eb0b1bab9944fca26e4f7d5d3b885c748fc08ca67b34f6c3f4df10551f0b30c**.
-- Artefakt: Sakina-iPhone-personal-unsigned, ID **12585743898**,
-  i [körning 40161887485](https://github.com/AllCrow/Koran-test-/actions/runs/40161887485).
+- Fil: Sakina-iPhone-unsigned.ipa, **3 104 771 byte**, iOS **17.0+**.
+- SHA256: **e9d1a927d131656e92f91eaffc8aacc8dbb41d4bb277eaf259323b572c1d911e**.
+- Artefakt: Sakina-iPhone-personal-unsigned, ID **12586829932**,
+  i [körning 40163850515](https://github.com/AllCrow/Koran-test-/actions/runs/40163850515).
 
 Det hämtade paketets ZIP, plist, arm64 Mach-O, exekverbara rättigheter och
 plattform **IOS** är återkontrollerade. Alla 115 koran-JSON-filer, fonten och
