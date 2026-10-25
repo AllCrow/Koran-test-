@@ -32,8 +32,17 @@ def main():
         "__SOURCE_COMMIT__": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
         "__MANIFEST_SHA256__": digest(manifest),
     }
-    code = {p: digest(ROOT / p) for p in ["App/Services/AudioLibrary.swift", "App/Services/AudioFileDownloader.swift",
-                                         "App/Services/RecitationPlayer.swift", "Sources/QuranCore/Models.swift"]}
+    # Storage admission now lives outside AudioLibrary, and the player uses the
+    # shared finite-loop contract. Include both implementations in the emitted
+    # fingerprints rather than pinning only their callers.
+    code = {p: digest(ROOT / p) for p in [
+        "App/Services/AudioLibrary.swift",
+        "App/Services/AudioFileDownloader.swift",
+        "App/Services/AudioStorageInventory.swift",
+        "App/Services/RecitationPlayer.swift",
+        "Sources/QuranCore/Models.swift",
+        "Sources/QuranCore/RecitationLoop.swift",
+    ]}
     # Escape a JSON string for its single Swift string literal.
     substitutions["__CODE_SHA256_JSON__"] = json.dumps(code, sort_keys=True).replace('\\', '\\\\').replace('"', '\\"')
     for reciter in ("alafasy", "husary", "minshawi"):
