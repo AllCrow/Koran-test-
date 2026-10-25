@@ -12,9 +12,19 @@ struct ReaderView: View {
     @State private var tafsirReference: AyahReference?
     @State private var showVerseJump = false
     @State private var prefersLatestReadingPosition = false
+    @State private var pendingJumpReference: AyahReference?
+    @State private var scrollPosition: String?
+    @State private var scrollAnchor: UnitPoint = .top
+    @State private var scrollRequest: ScrollRequest?
+
+    private struct ScrollRequest {
+        let id = UUID()
+        let targetID: String
+        let anchor: UnitPoint
+    }
 
     var body: some View {
-        ScrollViewReader { proxy in
+        Group {
             ScrollView {
                 LazyVStack(spacing: 16) {
                     if let chapter = store.chapter {
@@ -24,13 +34,11 @@ struct ReaderView: View {
                                 .padding(.vertical, 12).padding(.horizontal, 8)
                         }
                         if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
-                        ForEach(chapter.ayahs) { ayah in
-                            // Verse numbers repeat in every sura. A global
-                            // identity keeps recycled controls bound to this
-                            // chapter when the reader changes its content.
-                            verseCard(ayah, chapter: chapter).id("\(ayah.surahID):\(ayah.numberInSurah)")
+                        ForEach(chapter.ayahs, id: \.readerScrollID) { ayah in
+                            // The lazy layout and its scroll position use the
+                            // same global identity, including for distant rows.
+                            verseCard(ayah, chapter: chapter).id(ayah.readerScrollID)
                         }
-                        .id(chapter.surah.id)
                         Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
                             .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)
                     } else if store.isLoading {
@@ -42,29 +50,46 @@ struct ReaderView: View {
                             .frame(minHeight: 44)
                             .accessibilityIdentifier("reader.retry")
                     }
-                }.padding(20)
+                }
+                .scrollTargetLayout()
+                .padding(20)
+                .id(store.chapter?.surah.id)
             }
+            .scrollPosition(id: $scrollPosition, anchor: scrollAnchor)
             .task(id: store.chapter?.surah.id) {
                 guard store.chapter != nil else { return }
                 await Task.yield()
                 guard !Task.isCancelled else { return }
-                if let reference = preferredReference {
-                    proxy.scrollTo(reference.id, anchor: .top)
-                } else {
-                    proxy.scrollTo("chapter-heading", anchor: .top)
-                }
+                requestScroll(to: preferredReference?.id ?? "chapter-heading", anchor: .top)
+            }
+            .task(id: scrollRequest?.id) {
+                guard let request = scrollRequest else { return }
+                // Clearing the binding makes a repeated explicit jump work
+                // even when its verse is already the currently tracked row.
+                scrollPosition = nil
+                scrollAnchor = request.anchor
+                await Task.yield()
+                guard !Task.isCancelled else { return }
+                scrollPosition = request.targetID
             }
             .onAppear {
                 if let reference = preferredReference {
-                    proxy.scrollTo(reference.id, anchor: .top)
+                    requestScroll(to: reference.id, anchor: .top)
                 }
             }
             .onChange(of: player.activeReference) { _, reference in
                 guard let reference, reference.surahID == store.chapter?.surah.id else { return }
                 store.setLastRead(reference)
-                proxy.scrollTo(reference.id, anchor: .center)
+                requestScroll(to: reference.id, anchor: .center)
             }
-            .sheet(isPresented: $showVerseJump) {
+            .sheet(isPresented: $showVerseJump, onDismiss: {
+                guard let reference = pendingJumpReference else { return }
+                pendingJumpReference = nil
+                guard reference.surahID == store.chapter?.surah.id else { return }
+                // Wait for the keyboard/sheet viewport to be restored. The
+                // semantic target then survives lazy row-height corrections.
+                requestScroll(to: reference.id, anchor: .top)
+            }) {
                 if let chapter = store.chapter {
                     VerseJumpSheet(surah: chapter.surah) { reference in
                         guard reference.surahID == store.chapter?.surah.id else { return }
@@ -72,7 +97,7 @@ struct ReaderView: View {
                         player.stop()
                         prefersLatestReadingPosition = true
                         store.setLastRead(reference)
-                        proxy.scrollTo(reference.id, anchor: .top)
+                        pendingJumpReference = reference
                     }
                 }
             }
@@ -85,7 +110,7 @@ struct ReaderView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button { showVerseJump = true } label: {
+                    Button { pendingJumpReference = nil; showVerseJump = true } label: {
                         Label("Gå till vers", systemImage: "number")
                     }
                     .disabled(store.chapter == nil)
@@ -151,6 +176,10 @@ struct ReaderView: View {
         return nil
     }
 
+    private func requestScroll(to targetID: String, anchor: UnitPoint) {
+        scrollRequest = ScrollRequest(targetID: targetID, anchor: anchor)
+    }
+
     private func verseCard(_ ayah: Ayah, chapter: QuranChapter) -> some View {
         let reference = ayah.reference
         let active = reference != nil && player.activeReference == reference
@@ -213,6 +242,10 @@ struct ReaderView: View {
             RoundedRectangle(cornerRadius: 24).strokeBorder(active ? Palette.green : .clear, lineWidth: 2)
         }
     }
+}
+
+private extension Ayah {
+    var readerScrollID: String { "\(surahID):\(numberInSurah)" }
 }
 
 /// A jump is a reading position, never an automatic reading-completion action.
