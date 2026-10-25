@@ -1,0 +1,157 @@
+{
+  "verified_on_utc": "2026-10-25",
+  "verification": "Completed main51 jobs/logs read; CI artifact independently downloaded and compared with all release asset metadata, Mach-O, Info.plist, source resources and disabled-analysis configuration.",
+  "source_commit": "c907121e59eab81ae8848e2ca0311ab54f2aa6ec",
+  "main_with_maintenance_at_check": "3e0f343dbe7db1fa9f3ca08c55aaca6bf15c5f36",
+  "normal_app_test_build_inputs_unchanged_after_source_commit": true,
+  "normal_ci": {
+    "run_id": 40186048325,
+    "url": "https://github.com/AllCrow/Koran-test-/actions/runs/40186048325",
+    "status": "completed",
+    "conclusion": "success",
+    "variants": [
+      {
+        "device": "iPhone SE (3rd generation)",
+        "ios": "18.5",
+        "xcode": "16.4",
+        "job_id": 121146937518,
+        "hosted_cases": 91,
+        "ui_cases": 8,
+        "portable_cases": 82,
+        "result": "success",
+        "logs_read": true
+      },
+      {
+        "device": "iPhone 16 Pro",
+        "ios": "18.5",
+        "xcode": "26.2",
+        "job_id": 121146937568,
+        "hosted_cases": 91,
+        "ui_cases": 8,
+        "portable_cases": 82,
+        "result": "success",
+        "logs_read": true
+      },
+      {
+        "device": "iPhone 16e",
+        "ios": "26.2",
+        "xcode": "26.2",
+        "job_id": 121146937488,
+        "hosted_cases": 91,
+        "ui_cases": 8,
+        "portable_cases": 82,
+        "result": "success",
+        "logs_read": true
+      }
+    ],
+    "backend": {
+      "job_id": 121146937411,
+      "cases": 36,
+      "result": "success",
+      "logs_read": true
+    },
+    "physical_package": {
+      "job_id": 121146937540,
+      "result": "success",
+      "xcode": "26.2",
+      "sdk": "26.2",
+      "logs_read": true
+    },
+    "save_owner_draft": {
+      "job_id": 121150657740,
+      "result": "success",
+      "logs_read": true
+    }
+  },
+  "previous_candidate": {
+    "run_id": 40184479157,
+    "head": "0d85b19426980c8f2c3c5ae46ac6a71458c11162",
+    "actual_checkout": "7d29ca28190cb24171c6ebaf61c7a8d203d55a3b",
+    "checkout_and_integrated_main_tree": "188fe37ce0dfb1d2eaee63e78427f68482e8480d",
+    "conclusion": "success",
+    "all_logs_read": true,
+    "all_three_2_255_images_hash_checked_and_viewed": true
+  },
+  "independent_real_source_audit": {
+    "run_id": 40185506975,
+    "head": "3d980b3d97a7ac4c690eca0e5e5648209cd288e7",
+    "cases": 3,
+    "configuration": "iPhone16e/iOS26.2/Xcode26.2",
+    "downloaded_and_native_decoded_files": 12,
+    "played_to_native_eof": 3,
+    "saved_evidence": "docs/evidence/live-recitation-native-2026-10-25.json",
+    "separate_from_normal_hosted_ui_counts": true
+  },
+  "artifact": {
+    "id": 12596352350,
+    "head_sha": "c907121e59eab81ae8848e2ca0311ab54f2aa6ec",
+    "zip_bytes": 3221335,
+    "zip_sha256": "0c38c04d9d018eedcbe198825f38e680e02357dc844f40dcb955ef1b2037c3a2",
+    "expires_at": "2026-11-01T10:46:28Z",
+    "independently_downloaded": true
+  },
+  "package": {
+    "version": "0.1.0",
+    "build": "51",
+    "bytes": 3269813,
+    "sha256": "279803799a1f3d72626c42ab7e7a651e3859cb528a80625e0c5ef26de5e6854b",
+    "platform": "iPhoneOS",
+    "cpu": "arm64",
+    "minimum_ios": "17.0",
+    "sdk": "26.2",
+    "xcode": "2620/17C52",
+    "mach_o_lc_build_version_checked": true,
+    "provisioning_profile_present": false,
+    "personal_signing_required": true,
+    "direct_files_install": false,
+    "physical_iphone_tested": false,
+    "analysis_enabled": false,
+    "analysis_server_url": "",
+    "source_resource_byte_comparison": {
+      "quran_files": 118,
+      "quran_json_files": 115,
+      "font_files_including_licence": 3,
+      "practice_reference_files": 118
+    },
+    "test_bundles_present": false,
+    "audio_or_model_weights_present": false
+  },
+  "release": {
+    "id": 423341980,
+    "url": "https://github.com/AllCrow/Koran-test-/releases/tag/untagged-0252af83caff1c018033",
+    "tag": "personal-build-51-1",
+    "draft": true,
+    "prerelease": true,
+    "target": "c907121e59eab81ae8848e2ca0311ab54f2aa6ec",
+    "assets": [
+      {
+        "id": 674814669,
+        "name": "iPhone-build-info.json",
+        "bytes": 741,
+        "sha256": "9788fdd41242e5fa02ed3221f84b66f9b5e0f5b783dc15788f0ecb126c0337ec"
+      },
+      {
+        "id": 674814668,
+        "name": "PERSONAL_IPHONE_INSTALL.md",
+        "bytes": 5451,
+        "sha256": "0085c8f846d3dfdf2a47decce983845cb93f7a0589d88f76b7c6cbb301a6cd3b"
+      },
+      {
+        "id": 674814672,
+        "name": "Sakina-iPhone-unsigned.ipa",
+        "bytes": 3269813,
+        "sha256": "279803799a1f3d72626c42ab7e7a651e3859cb528a80625e0c5ef26de5e6854b"
+      }
+    ],
+    "all_three_asset_digests_and_sizes_match_downloaded_artifact": true,
+    "older_drafts_preserved": true
+  },
+  "remaining": [
+    "Personal signing and actual iPhone installation.",
+    "Physical microphone, network/offline-radio changes, audio routes/interruptions, Files providers and VoiceOver.",
+    "Actual iPhone energy/heat measurements.",
+    "Content/tafsir/audio rights clearance and human reciter/clip-boundary review.",
+    "Representative expert-labelled learner/tajweed accuracy and Tarteel comparison; full sifat assessment.",
+    "A signed distribution path or accepted App Store Connect/TestFlight upload if selected."
+  ]
+}

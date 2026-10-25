@@ -3,8 +3,8 @@
 Uppdaterat **2026-10-25**. Native-app för personligt iPhone-bruk, **iOS 17+**.
 Läskomfort, veckohistorik, offline-tafsir, ljudåterhämtning och verkliga
 HTTP-nedladdningar har förbättrats. Den samlade kandidaten har passerat på
-tre iPhone-simulatorer. **Huvudgrenens slutkörning 46 är godkänd och
-bygge 46 finns som ägaråtkomligt releaseutkast.**
+tre iPhone-simulatorer. **Huvudgrenens körning 51 är godkänd och
+bygge 51 finns som ägaråtkomligt, paketkontrollerat releaseutkast.**
 Personlig signering och fysisk iPhone-provning är inte verifierade.
 
 **Automatisk tajweedbedömning är fortsatt experimentell och avstängd. Ingen
@@ -30,9 +30,14 @@ två-/femsekunderskrav. Bilderna av 2:255 från alla tre varianter är hämtade,
 hashkontrollerade och visuellt granskade.
 
 [Efterföljande main51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)
-på `c907121` är **fortfarande pågående** vid denna uppdatering. Den är
-inte ett godkänt huvudgrensresultat ännu och inget nytt beständigt
-ägarutkast påstås. Bygge46 nedan är senast verifierade ägarnedladdning.
+på `c907121` är **avslutad med success i alla sex jobb**. De faktiska
+loggarna har lästs: samma 91+8 per variant, 82 unika Swift-fall per Mac,
+36 backendprov och båda byggena. Save-personal-download har bekräftat ett
+nytt ägarutkast51. IPA, byggrapport och guide har återhämtats oberoende
+och deras storlek/hash matchar releasepostens samtliga tre assets.
+[Fullständig leveransverifiering](docs/evidence/delivery-51-2026-10-25.json).
+App-/ordinarie test-/byggindata i senare underlagsmerge `3e0f343` matchar
+den godkända huvudgrenskällan; inget nytt native-utfall på metadata påstås.
 
 ## Tidigare godkänd verifiering och ägarnedladdning46
 
@@ -113,23 +118,23 @@ oförändrad. [Provens omfattning](docs/IOS_VERIFICATION.md).
 
 ## Personligt iPhone-paket och installation
 
-**Bygge 46 är byggt, hämtat och oberoende paketkontrollerat efter
+**Bygge 51 är byggt, hämtat och oberoende paketkontrollerat efter
 huvudkörningens samtliga godkända verifieringsjobb:**
 
-- `Sakina-iPhone-unsigned.ipa`, **0.1.0 (46)**, **3 257 522 byte**.
-- SHA256: `c9844553d63bd8bfa1917472614f118062f6ed33f10ddfa69e77a507f64d5d6f`.
-- CI-artefakt **12593165562**, källa **8cd977c4f2063e51784cc0b7c3fbca75b1760ec3**.
+- `Sakina-iPhone-unsigned.ipa`, **0.1.0 (51)**, **3 269 813 byte**.
+- SHA256: `279803799a1f3d72626c42ab7e7a651e3859cb528a80625e0c5ef26de5e6854b`.
+- CI-artefakt **12596352350**, källa **c907121e59eab81ae8848e2ca0311ab54f2aa6ec**.
 - iPhoneOS, arm64 Mach-O, minsta iOS **17.0**, bygg-SDK **26.2**.
-- Alla **115 koran-JSON-filer, fonten och 118 övningsresurser** matchar
+- Alla **118 koranresurser (115 JSON), tre font-/licensfiler och 118 övningsresurser** matchar
   källfilerna exakt. Inga provisioneringsprofiler, testpaket eller externa
   biblioteksbinärer ingår. Analysflaggan är avstängd och serveradressen tom.
 
 Paketets yttre artefakt-ZIP har SHA256
-`d6b279db457815d392d77c0e93f3b09feea853dab01c9a3af7923293b52ac6a7`.
-Releaseutkast **423266346**, tagg **personal-build-46-1**, är bekräftat
+`0c38c04d9d018eedcbe198825f38e680e02357dc844f40dcb955ef1b2037c3a2`.
+Releaseutkast **423341980**, tagg **personal-build-51-1**, är bekräftat
 med `draft=true`, `prerelease=true` och rätt källcommit. Dess IPA, byggrapport
 och installationsguide har jämförts mot de hämtade filernas storlek och
-SHA256; samtliga matchar. Hämta **Sakina – privat testbygge 46** under
+SHA256; samtliga matchar. Hämta **Sakina – privat testbygge 51** under
 [Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som
 **AllCrow**. Utkastet är inte offentligt publicerat. Tidigare paket och
 resultat bevaras i historiken.

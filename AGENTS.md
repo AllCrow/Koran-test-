@@ -214,5 +214,11 @@ and its saved JSON evidence. Verification/EveryAyahLiveSourceTests.swift stays
 outside AppTests; staging adds it only in the isolated audit checkout, so
 normal CI remains deterministic. No audio is attached or committed. This is
 one simulator configuration, no physical/offline-radio/rights/expert proof.
-Main51 is still pending in STATUS.md at this update; read its actual result
-and save-personal-download before replacing the verified owner draft46.
+Main51 completed successfully on c907121: all six job logs were read with
+91 hosted + eight UI cases on every variant, 82 portable cases/Mac, backend36
+and both builds. Owner draft51 is release423341980, personal-build-51-1; all
+three asset sizes/digests match the independently retrieved CI artifact12596352350.
+IPA51 is unsigned iPhoneOS/arm64, 3269813 bytes, SHA256
+279803799a1f3d72626c42ab7e7a651e3859cb528a80625e0c5ef26de5e6854b.
+See docs/evidence/delivery-51-2026-10-25.json. Older owner drafts remain
+preserved; this does not establish personal signing or a physical installation.

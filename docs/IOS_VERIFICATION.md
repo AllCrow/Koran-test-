@@ -7,15 +7,15 @@ inte dessa prov. **Ingen fysisk iPhone eller personlig signering är verifierad.
 
 ## Automatiska prov på macOS
 
-Den samlade kandidaten har passerat [PR-körning 44](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
-på alla tre varianter. Huvudgrenens byteidentiska källa
-`8cd977c4f2063e51784cc0b7c3fbca75b1760ec3` passerade också
-[slutkörning 46](https://github.com/AllCrow/Koran-test-/actions/runs/40176707574)
-med alla sex jobb godkända, inklusive ägarnedladdningen.
-Varje variant utförde **80 hostade + åtta UI-prov**, samt separat
-**82 portabla Swift-prov**. Backendjobbet har **36 godkända prov**.
-Exakta utfall finns i [STATUS.md](../STATUS.md) och
-[verifieringsunderlaget](evidence/premium-readiness-2026-10-25.md).
+Den aktuella kandidaten passerade [PR-körning50](https://github.com/AllCrow/Koran-test-/actions/runs/40184479157)
+på alla tre varianter. Huvudgrenens integration
+`c907121e59eab81ae8848e2ca0311ab54f2aa6ec` passerade också
+[huvudkörning51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)
+med **alla sex jobb godkända**, inklusive ägarnedladdningen. Varje variant
+utförde **91 hostade + åtta UI-prov**, samt **82 unika portabla Swift-prov**.
+Backendjobbet har **36 godkända prov**. Alla faktiska loggar har lästs.
+[Leverans-/paketbevis](evidence/delivery-51-2026-10-25.json) kompletterar
+[STATUS.md](../STATUS.md); äldre44/46-resultat bevaras i historiken.
 
 | Variant | Byggverktyg / simulator | Enhet |
 | --- | --- | --- |
@@ -36,16 +36,20 @@ bevarar `HostedTests.xcresult` och, när tjänsterna passerat,
 `UITestResults.xcresult`. Skärmbilder exporteras från UI-resultatet, eller
 från tjänsteresultatet om körningen stannade där.
 [Körning45](https://github.com/AllCrow/Koran-test-/actions/runs/40176541522)
-har verifierat denna konfiguration på samtliga tre varianter: 80 hostade
-prov följs av åtta UI-flöden, alla godkända. Artefakt12593107496 har båda
-kompletta resultatbundlarna. PR7 är integrerad somd6d73e5; app- och testkod
-är samma som i det godkända personliga main-bygget46.
+verifierade först denna konfiguration med 80 hostade och åtta UI-flöden.
+Artefakt12593107496 har båda kompletta resultatbundlarna. PR7 är integrerad
+somd6d73e5. Senare50/51 har samma upplägg med 91 hostade och åtta UI-fall;
+dessa nya resultat ska inte blandas ihop med äldre paket46.
 
 Det genererade Xcode-projektet har tre mål: `Sakina`, `SakinaTests` och
 `SakinaUITests`. Schemat `Sakina` kopplar båda testmålen till appen.
 De hostade proven använder isolerade inställningar, temporära filer, kontrollerad
 transport och egna korta PCM-/MP3-ljud. Inga privata inspelningar eller hämtade
-recitationsfiler ingår i testerna eller repot.
+recitationsfiler ingår i den ordinarie matrisen eller repot. Ett separat
+[opt-in-prov](LIVE_RECITATION_AUDIT.md) har faktiskt hämtat12 riktiga
+recitationsfiler och spelat hashpinnad112:2 från lokal lagring för alla tre
+recitatörer. Det körs utanför den vanliga matrisen; rått ljud sparas inte i Git
+eller resultatartefakten. Fysiska ljud-/radioprov och sakkunnig kontroll återstår.
 
 På en Mac med Xcode och en installerad iPhone-simulator:
 

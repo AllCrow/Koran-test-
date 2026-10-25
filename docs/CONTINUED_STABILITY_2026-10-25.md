@@ -19,6 +19,18 @@ att en tidigare misslyckad körning har blivit godkänd. Ny Mac-verifiering krä
 Användaren bad om fortsatt förbättringsarbete efter det godkända personliga
 bygget 46. Det paketet och dess fullständiga historik/backup bevaras.
 
+**Senaste utfall:** PR8 är integrerad som `c907121`. Både
+[PR50](https://github.com/AllCrow/Koran-test-/actions/runs/40184479157) och
+[main51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)
+har faktiskt passerat alla tre simulatorvarianter: 91 hostade och åtta
+UI-prov per variant, 82 portabla fall per Mac, backendens 36 fall och
+båda byggena. Alla sex main51-jobbloggar har lästs. Ägarutkast51 är sparat
+och dess IPA återkontrollerad mot källan och releasepostens hash-/storleksdata.
+Se [leveransbevis](evidence/delivery-51-2026-10-25.json). De tidigare
+avsnitten nedan bevarar utveckling/fel före detta godkännande.
+Det [separata provet av riktiga ljudkällor](LIVE_RECITATION_AUDIT.md)
+tillför tre native-fall på en simulator och räknas inte in i 91+8-matrisen.
+
 ## Avgränsade rättningar
 
 - **Förlorad ljudtjänst:** spelaren hanterar nu iOS-notisen om förlust direkt,

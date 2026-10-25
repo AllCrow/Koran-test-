@@ -21,7 +21,7 @@ Den utökade stabilitetsrundan förbättrar läskomfort, veckohistorik, offline-
 - Återhämtning när iOS ljudtjänst startas om: recitationsvalet behålls och uppspelning återupptas först efter en uttrycklig åtgärd.
 - En integrerad **experimentell analysväg** med separat Muaalem-backend, typad iOS-klient och återkopplingsvy. Den är **avstängd som standard** och har ingen konfigurerad serveradress.
 
-Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline. Ny tafsir kräver nät; lokalt sparade förklaringar kan öppnas även efter appstart utan nät. Cachen prioriterar nyligen öppnade förklaringar och omfattar högst 64 poster, 4 MiB totalt och 128 KiB per sparad post. Hela tafsiren är inte paketerad för offlinebruk. Ljudproven omfattar kontrollerad transport och riktiga URLSession-överföringar över lokal HTTP; nät och ljud på fysisk iPhone återstår.
+Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline. Ny tafsir kräver nät; lokalt sparade förklaringar kan öppnas även efter appstart utan nät. Cachen prioriterar nyligen öppnade förklaringar och omfattar högst 64 poster, 4 MiB totalt och 128 KiB per sparad post. Hela tafsiren är inte paketerad för offlinebruk. Ljudproven omfattar kontrollerad lokal HTTP och ett separat opt-in-prov av verkliga EveryAyah-filer genom native HTTPS, cache, avkodning och lokal uppspelning på simulator. Nät-/radioväxling och ljud på fysisk iPhone återstår.
 
 **Tarteel-kvalitetsmålet är inte uppnått eller verifierat.** Analysvägen ger inga övergripande uttalsbetyg och laddar inte automatiskt upp inspelningar. Ingen publik analystjänst är driftsatt. Verklig CPU-inferens har körts genom API:t: ett tidigare prov med 35 indata och ett senare prov med **18 hela referensklipp från sex ytterligare suror**, med samtliga tre recitatörer. De 18 nya klippen gav inga presenterade indikationer. Ett tidigare fall i al-Afasys 112:2 behöver fortfarande sakkunnig granskning och har inte klassificerats som rätt eller fel. Proven mäter inte generell träffsäkerhet eller vilka elevfel som missas. Se [resultaten](docs/MODEL_SMOKE_RESULTS.md).
 
@@ -63,18 +63,21 @@ behöver fortfarande verifieras. Minsta körversion iOS17 är en annan
 inställning än bygg-SDK:n. Den personliga installationsvägen
 beskrivs i [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
-**Aktuell verifiering:** [PR-körning 44](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
-passerade **80 hostade iOS-prov och åtta UI-flöden på var och en av tre
-simulatorvarianter**, samt **82 portabla Mac-prov och 36 backendprov**.
-Det är 88 unika native-/UI-fall och 264 exekveringar över matrisen.
-Den integrerade huvudgrenens filträd är byteidentiskt med kandidaten.
-[Huvudkörning 46](https://github.com/AllCrow/Koran-test-/actions/runs/40176707574)
-är också **godkänd i alla sex jobb** med samma testantal. **Bygge 46** är
-sparat som ett ägaråtkomligt utkast under
-[Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som AllCrow.
-Den osignerade IPA:n är oberoende kontrollerad mot källan; fysisk
-installation och värme/batteri återstår.
-Se [aktuell status](STATUS.md) och [exakt verifieringsunderlag](docs/evidence/premium-readiness-2026-10-25.md).
+**Aktuell verifiering:** [huvudkörning51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)
+är avslutad med **alla sex jobb godkända** på `c907121` efter godkänd
+[PR-körning50](https://github.com/AllCrow/Koran-test-/actions/runs/40184479157).
+Varje simulatorvariant utförde **91 hostade + åtta UI-prov** och
+**82 portabla Swift-prov**; backendens **36 prov** och båda byggena passerade.
+Det är 99 unika native-/UI-fall, utförda tre gånger. **Bygge51** finns som
+[ägaråtkomligt releaseutkast](https://github.com/AllCrow/Koran-test-/releases/tag/untagged-0252af83caff1c018033),
+inloggad som AllCrow. IPA, byggrapport och guide är oberoende återkontrollerade
+mot releaseposten. Personlig signering, fysisk installation och energi återstår.
+
+Ett [separat native-källprov](docs/LIVE_RECITATION_AUDIT.md) passerade också
+på iPhone16e/iOS26.2: tolv riktiga EveryAyah-filer hämtades och avkodades,
+och hashkontrollerad112:2 spelades lokalt till faktiskt native-EOF för
+alla tre recitatörer. Dessa tre opt-in-fall är skilda från den vanliga matrisen.
+Se [aktuell status](STATUS.md) och [paket-/leveransbevis](docs/evidence/delivery-51-2026-10-25.json).
 
 Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, personlig signering och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
 
