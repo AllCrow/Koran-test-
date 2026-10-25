@@ -60,6 +60,10 @@ eller sakkunnig granskning kan ersättas med syntetiska testresultat.
 | K14 | Personlig övningskö. | Lägg till och ta bort verser utan läskredit. Kön bevaras vid omstart och ingår i nya läskopior; gamla kopior kan fortfarande läsas utan att radera kön. Befintliga inspelningar ersätts först efter ett uttryckligt val. |
 | K15 | Uppdateringskompatibilitet. | Frysta äldre sparformat provas mot den nya appen: läsposition, bokmärken, streak, läsinställningar, ljudval och sparade ljudfiler ska finnas kvar efter omskrivning och återöppning. Fysisk installation av en uppdatering återstår. |
 | K16 | Frivillig lokal felsökningsrapport. | Skapa, granska och exportera en rapport på användarens initiativ. Endast avgränsade versions- och statusuppgifter får ingå; ingen automatisk överföring, röst, läshistorik, versreferens, rå feltext eller kontouppgift. |
+| K17 | Fortsätt läsa från den synliga versen efter manuell rullning. | Spara versreferensen vid vanlig läsning och återställ rätt vers efter omstart. Rullning, sökträffar och annan navigering får aldrig ge läskredit. Senare uttryckliga läs-/ljudval ska vinna över en äldre rullningsposition. |
+| K18 | Sök efter ord i den lokala arabiska korantexten. | Matcha med och utan vokaltecken på separata sökkopior, visa ordagrann källtext och öppna rätt global versreferens utan läskredit. Avbrutna och äldre sökningar får inte ersätta nya resultat. Svensk och translittererad verstext behöver egna kontrollerade källor innan de kan ingå. |
+| K19 | Frivilligt underlag för granskning av innehåll vid en vers. | Fäst en lokal rapport vid vald vers, innehållstyp och namngiven källa. Användaren skriver en beskrivning, granskar allt innehåll och väljer själv export. Ingen automatisk sändning, läshistorik, inspelning eller insamling av konto-/filuppgifter. Detta är en separat funktion från statusrapporten i K16. |
+| K20 | Begripliga källor och tillgängliga läsflöden. | Visa textutgåvor, Hafs-numrering och separata tafsir-/ljudkällor. Var tydlig med faktiskt språkstöd. Sökning, återupptagning och innehållsgranskning ska fungera med stora texter och tydligt märkta kontroller; verklig VoiceOver-provning ska redovisas separat. |
 
 Senare beslut 2026-10-25: användaren skapade [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-) och godkände uttryckligen att repot får vara **publikt tills vidare**, med möjlighet att göra det privat senare. Det beslutet ersätter det tidigare privatkravet för den aktuella uppladdningen. Ägare, synlighet och den faktiska uppladdningen ska fortfarande verifieras.
 
@@ -137,3 +141,21 @@ REA har nu faktiskt undersökt Muaalems viktfil och verifierat dess fullfilshash
 - Färdigställd innehålls-/ljudrättighetskontroll, korrekt användarinformation och validerad hantering av eventuell skickad röst.
 - Fungerande signering, Apple Developer/App Store Connect och TestFlight-väg utan krav på egen Mac hos användaren.
 - Verifierad GitHub-lagring under AllCrow enligt det uppdaterade synlighetsbeslutet. Lokala Git-snapshots och dokumentation ska bevaras; en senare ändring till privat kräver ägarens inställningsändring eftersom integrationen nekas den åtgärden (403).
+
+## Godkänd förbättringsomgång 2026-10-25
+
+Efter förslagen om återupptagning, sökning, memorering, tillgänglighet,
+offlineläge, källkontroll och användarflöden svarade användaren:
+**”Okej kör på, kör dina rekommendationer”**. Arbetet ska genomföras i den
+befintliga native-appen med tidigare krav och källtexter bevarade.
+
+K17–K20 konkretiserar de kvarvarande glappen efter genomgång av appen.
+Repetition, lokala ljudnedladdningar, arabiska textstorlekar, mörkt läge och
+strukturell/ordagrann innehållskontroll finns redan och ska behållas.
+Återupptagningen i denna omgång avser en **versposition**, inte en sparad
+sekundposition i ljudet. Verstextsökningen omfattar den befintliga arabiska
+källan offline; ingen svensk översättning läggs till eller framställs som
+befintlig. Genomförandet och avsedd verifiering beskrivs i
+[omgångens dokument](docs/READING_IMPROVEMENTS_2026-10-25.md).
+Krav och skriven kod är inte bevis för ett godkänt native-prov; aktuella utfall
+och exakta källversioner ska fortsatt anges i [STATUS.md](STATUS.md).
