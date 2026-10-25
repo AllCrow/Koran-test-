@@ -6,6 +6,33 @@ Direkt vershopp och säkerhetskopiering av läsdata är tillagda.
 **Native-listläsaren, skärpta positionstester och samtliga 61 native-prov har passerat.** Personlig signering,
 fysisk installation och en offentlig apprelease är inte verifierade.
 
+## Pågående verifiering av HTTP-nedladdning
+
+Branch `codex/native-download-transport-verification` tillför fem hostade
+`AudioDownloadTransportTests` med en server bunden till 127.0.0.1 och riktiga
+URLSession-download tasks. Proven kontrollerar avkodningsbara sparade MP3-filer
+för alla tre recitatörer, diskåteröppning, HTTP-fel/återupptagning, avbrytning av
+ett öppet svar samt annonserad och okänd överföringsstorlek över gränsen.
+Överstorleksproven lämnar kroppen ofullständig; nedladdningsdelegaten måste
+avbryta före EOF för att de ska passera. Den befintliga genererade MP3-tonen
+delas utan ändrade ljudbytes.
+
+Testadaptern skickar bytes över lokal HTTP och återställer den begärda
+HTTPS-adressen i svarens metadata så att AudioLibrary:s ordinarie
+filantagning kan köras. Det är inte ett prov av extern TLS, EveryAyah,
+innehållsrättigheter, fysisk mikrofon eller energi. Källtext, HTTPS-/ATS-policy
+och uppladdningsbeteende ändras inte.
+
+[Första körningen 40167394800](https://github.com/AllCrow/Koran-test-/actions/runs/40167394800)
+klarade tre nya transportprov, men båda överstorleksfallen nådde nätverkstimeout
+(-1001) i stället för storleksavbrott. Övriga hostade prov och alla fem UI-flöden
+passerade. En native nedladdningsbrygga använder nu URLSessionDownloadTask med
+sessionens download-delegate för progress/avbrytning. Den bevarar en hämtad
+fil innan Foundations callback återvänder och äger fortsättning/avbrytning
+med låsskydd. Appen använder samma brygga som den verkliga HTTP-testtransporten;
+separat HTTPS-policy och befintlig filantagning är kvar.
+**Rättningen och samma oförsvagade överföringsprov inväntar ny Mac-/iOS-CI.**
+
 ## MP3-verifiering och läsflöden
 
 [PR #2](https://github.com/AllCrow/Koran-test-/pull/2), branch
