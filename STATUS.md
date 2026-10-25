@@ -18,8 +18,13 @@ fel- och ofullständiga filer, ID3-metadata, omvalidering efter filändring,
 ny biblioteksinstans, avgränsad radering och otillgänglig lagring. Proven använder
 egna temporära filer och syntetiska MPEG-ramar, aldrig nätverk, mikrofon eller
 verkliga inspelningar. De kontrollerar filhanteringen och fastställer inte
-ljudets avkodningskvalitet eller energiförbrukning. **De nya proven är ännu inte
-körda i iOS**; resultatet måste hämtas från den nya macOS-körningen.
+ljudets avkodningskvalitet eller energiförbrukning.
+
+[Körningen på `4466679`](https://github.com/AllCrow/Koran-test-/actions/runs/40153320675)
+godkände samtliga **15 hostade iOS-prov: åtta AppStore- och sju AudioLibrary-prov**,
+liksom appbygget, de portabla paketen och backend. De tre UI-proven hade samma
+identifierarfel som baslinjen. Efterföljande ändringar av läsvyn måste fortfarande
+klara en ny fullständig simulatoromgång.
 
 Lokalt passerar koran-, övningsreferens- och resurskontroller efter tillägget.
 Denna miljö saknar fortfarande Swift/Xcode; inga nya lokala Swift-resultat påstås.
@@ -27,9 +32,11 @@ Denna miljö saknar fortfarande Swift/Xcode; inga nya lokala Swift-resultat pås
 [Omkörningen på `4645f6c`](https://github.com/AllCrow/Koran-test-/actions/runs/40153076721)
 klarade Xcode-bygget och samtliga åtta hostade AppStore-prov. De tre UI-proven
 misslyckades: simulatorns tillgänglighetsträd visade att verskortets yttre
-`reader.verse`-identifierare skrevs över läs- och bokmärkesknapparnas egna
-identifierare. Den oanvända yttre identifieraren tas därför bort; knapparnas
-namn, handlingar och själva testkraven bevaras. Ny simulatorverifiering återstår.
+`reader.verse`-identifierare spreds till läs- och bokmärkesknapparna och ersatte
+deras egna identifierare. Den yttre identifieraren tas därför bort; knapparnas
+namn, handlingar och själva testkraven bevaras. Den parallella rättningen
+`e7e859d`, som flyttar versidentifieraren till versnumrets text, har integrerats
+utan att skriva över andra ändringar. Ny fullständig simulatorverifiering återstår.
 
 ## Senaste finjusteringar
 

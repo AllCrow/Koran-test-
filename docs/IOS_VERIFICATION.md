@@ -1,16 +1,18 @@
 # Native iPhone-verifiering
 
-Uppdaterat 2026-10-25. Detta är förberedda prov, **inte genomförda eller godkända
-iOS-körningar**. Linuxmiljön saknar Apple SDK, simulator och fysisk iPhone.
-Portabla testresultat finns i [statusen](../STATUS.md).
+Uppdaterat 2026-10-25. Ett riktigt Xcode-simulatorbygge och 15 hostade iOS-prov
+har nu passerat i GitHub Actions på macOS. De tre UI-flödena misslyckades på
+överskrivna knappidentifierare; omkörning efter rättningen återstår.
+Linuxmiljön saknar fortfarande Apple SDK, simulator och fysisk iPhone.
+Exakta källversioner och [körningslänkar finns i statusen](../STATUS.md).
 
 ## Automatiska prov på macOS
 
 Det genererade Xcode-projektet har tre mål: `Sakina`, `SakinaTests` och
 `SakinaUITests`. Schemat `Sakina` kopplar båda testmålen till appen.
 `AppTests/AudioLibraryTests.swift` tillför sju prov av offlineljudets lokala
-filhantering. De behöver fortfarande köras i iOS; de använder syntetiska
-MPEG-ramar och testar inte verklig avkodning eller ljudrutter.
+filhantering. Alla sju passerade i [körningen på 4466679](https://github.com/AllCrow/Koran-test-/actions/runs/40153320675).
+De använder syntetiska MPEG-ramar och testar inte verklig avkodning eller ljudrutter.
 
 På en Mac med Xcode och en installerad iPhone-simulator:
 
@@ -25,8 +27,8 @@ xcodebuild -project Sakina.xcodeproj -scheme Sakina \
 
 Välj ett faktiskt tillgängligt simulatornamn från det första kommandot.
 [GitHub Actions-flödet](../.github/workflows/ios.yml) väljer ett tillgängligt
-iPhone-ID och sparar en `.xcresult` även om teststeget misslyckas. Flödet är
-förberett men har inte körts i det begärda privata repot.
+iPhone-ID och sparar en `.xcresult` även om teststeget misslyckas. Flödet har
+körts i det användarvalda repot `AllCrow/Koran-test-`; full UI-verifiering återstår.
 
 | Testgrupp | Avsikt |
 | --- | --- |
