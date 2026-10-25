@@ -103,6 +103,9 @@ start-/resumehändelse. Uppstartens befintliga 12-sekundersbudget behålls;
 pauskravet är fortfarande två sekunder, både rate0 och `.paused`, inget
 versslut samt kvarvarande ljud i samma tresekunderston. Ingen av de
 underkända rate-assertionerna har tagits bort eller ersatts med en appflagga.
+Det separata MP3-provet för direkt paus efter första aktiva versen är
+oförändrat, liksom WAV-regressionen som uttryckligen tvingar en sen positiv
+native-start efter paus och kräver återpaus inom två sekunder före EOF.
 En begränsad KVO-diagnostik visar publicerade och aktuella nativevärden
 om samma kontroll faller igen. Inga timers eller ändrad produktionskod
 införs. Detta är en oprövad verifieringskorrigering tills faktisk Mac CI
