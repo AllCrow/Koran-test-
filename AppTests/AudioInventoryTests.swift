@@ -145,7 +145,7 @@ final class AudioInventoryTests: XCTestCase {
         defer { Task { await gate.finishAll() } }
         let library = AudioLibrary(directory: try directory(), inventoryScan: { _ in try await gate.scan() })
         let job = Task { await library.refreshInventory() }
-        await fulfillment(of: [started], timeout: 2)
+        guard await requireHeldScan(0, signal: started, gate: gate, library: library, jobs: [job]) else { return }
 
         job.cancel()
         try await gate.complete(0, with: [entry()])
@@ -164,9 +164,10 @@ final class AudioInventoryTests: XCTestCase {
         defer { Task { await gate.finishAll() } }
         let library = AudioLibrary(directory: try directory(), inventoryScan: { _ in try await gate.scan() })
         let oldJob = Task { await library.refreshInventory() }
-        await fulfillment(of: [first], timeout: 2)
+        guard await requireHeldScan(0, signal: first, gate: gate, library: library, jobs: [oldJob]) else { return }
         let newJob = Task { await library.refreshInventory() }
-        await fulfillment(of: [second], timeout: 2)
+        guard await requireHeldScan(1, signal: second, gate: gate, library: library,
+                                    jobs: [oldJob, newJob]) else { return }
         let newest = entry(surah: 112, reciter: .husary)
         try await gate.complete(1, with: [newest])
         await newJob.value
@@ -193,7 +194,7 @@ final class AudioInventoryTests: XCTestCase {
         defer { Task { await gate.finishAll() } }
         let library = AudioLibrary(directory: root, inventoryScan: { _ in try await gate.scan() })
         let job = Task { await library.refreshInventory() }
-        await fulfillment(of: [started], timeout: 2)
+        guard await requireHeldScan(0, signal: started, gate: gate, library: library, jobs: [job]) else { return }
 
         library.deleteSurah(surah(1), reciter: .alafasy)
         try await gate.complete(0, with: oldSnapshot)
@@ -266,6 +267,31 @@ final class AudioInventoryTests: XCTestCase {
         XCTAssertNotNil(library.inventoryError)
     }
 
+    /// Worker registration is a prerequisite, not an inventory/cancellation
+    /// latency promise. Never exercise later phases after a missing handshake.
+    private func requireHeldScan(_ index: Int, signal: XCTestExpectation, gate: ScanGate,
+                                 library: AudioLibrary, jobs: [Task<Void, Never>],
+                                 file: StaticString = #filePath, line: UInt = #line) async -> Bool {
+        let result = await XCTWaiter.fulfillment(of: [signal], timeout: 10)
+        let state = await gate.registrationState(for: index)
+        guard result == .completed, state.isPending, !state.isClosed,
+              library.isScanning, !library.hasCurrentInventory else {
+            let diagnostics = "wait=\(result.rawValue), requested=\(index), next=\(state.nextIndex), "
+                + "closed=\(state.isClosed), pendingCount=\(state.pendingCount), pendingPrefix=\(state.pendingPrefix), "
+                + "scanning=\(library.isScanning), current=\(library.hasCurrentInventory), "
+                + "entries=\(library.entries.count), bytes=\(library.inventoryBytes), "
+                + "inventoryError=\(String((library.inventoryError ?? "none").prefix(160))), "
+                + "storageError=\(String((library.errorMessage ?? "none").prefix(160)))"
+            jobs.forEach { $0.cancel() }
+            library.cancelInventoryScan()
+            await gate.finishAll()
+            XCTFail("Inventory worker did not register its held response within the 10s safety budget. \(diagnostics)",
+                    file: file, line: line)
+            return false
+        }
+        return true
+    }
+
     private func entry(surah: Int = 1, reciter: Reciter = .alafasy) -> AudioDownloadEntry {
         AudioDownloadEntry(surahID: surah, reciter: reciter, verseCount: 1,
             totalVerses: AyahReference.ayahCounts[surah - 1], bytes: Int64(frames().count), firstAvailableVerse: 1)
@@ -326,19 +352,33 @@ private actor ScanOutcomeSequence {
 /// Deliberately ignores cancellation to prove actual stale-result suppression.
 private actor ScanGate {
     enum GateError: Error { case missingRequest, unavailable }
+    struct RegistrationState: Sendable {
+        let isPending: Bool
+        let isClosed: Bool
+        let nextIndex: Int
+        let pendingCount: Int
+        let pendingPrefix: [Int]
+    }
     private let onStart: @Sendable (Int) -> Void
     private var next = 0
+    private var closed = false
     private var pending: [Int: CheckedContinuation<[AudioDownloadEntry], Error>] = [:]
 
     init(onStart: @escaping @Sendable (Int) -> Void) { self.onStart = onStart }
 
     func scan() async throws -> [AudioDownloadEntry] {
+        guard !closed else { throw CancellationError() }
         let index = next
         next += 1
         return try await withCheckedThrowingContinuation { continuation in
             pending[index] = continuation
             onStart(index)
         }
+    }
+
+    func registrationState(for index: Int) -> RegistrationState {
+        RegistrationState(isPending: pending[index] != nil, isClosed: closed, nextIndex: next,
+                          pendingCount: pending.count, pendingPrefix: Array(pending.keys.sorted().prefix(4)))
     }
 
     func complete(_ index: Int, with entries: [AudioDownloadEntry]) throws {
@@ -352,6 +392,7 @@ private actor ScanGate {
     }
 
     func finishAll() {
+        closed = true
         let values = Array(pending.values)
         pending.removeAll()
         for continuation in values { continuation.resume(throwing: CancellationError()) }

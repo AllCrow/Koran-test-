@@ -200,3 +200,53 @@ oförändrade krav på förgrund, hela ändliga gränser, aktivering och nåbarh
 Ett riktigt tryck måste fortfarande följas av exakt radering och omstart.
 Ingen godtycklig första träff, etikettersättning eller koordinatgest används.
 Den rättade frågans faktiska operabilitet återstår för nästa native-körning.
+
+[Huvudkörning60](https://github.com/AllCrow/Koran-test-/actions/runs/40212259656)
+på `c9457a7473d2d94cabe14e62b7fd45460a8a59f5` underkändes i iOS26:s
+hostade inventeringsprov före UI-grinden. Ett kontrollerat svar hade inte
+registrerats inom testets tvåsekunders uppstartsväntan. Testet fortsatte ändå
+och fick sedan `missingRequest`; själva kontraktet för avbrytning och ett
+sent icke-samarbetande svar hann inte prövas. Intilliggande filsystemprov tog
+22,105 respektive8,811 sekunder, men underlaget lokaliserar inte fördröjningen
+till ett bestämt exekveringssteg. UI-fallen hoppades över på den varianten.
+Det oberoende kontrollerade IPA-paketet60 bevaras som underlag för en
+underkänd körning och godkänns inte som nytt ägarutkast.
+
+Rättningen gäller endast provens synkronisering. Alla fyra hållna
+skanningsstarter har nu en separat, begränsad tiosekunders säkerhetsbudget
+för att kräva en faktiskt registrerad fortsättning, aktiv skanning och rätt
+okontrollerat tillstånd innan avbrytning, ersättning eller radering utförs.
+Om förutsättningen uteblir avbryts ägda jobb, testgaten stängs och testet
+underkänns med avgränsad diagnostik utan att fortsätta till senare faser.
+Stängd testgate avvisar även sent anländande jobb, vilket hindrar läckta
+fortsättningar efter städningen. Strikt `complete`/`fail`, de tio testfallen
+och deras slutliga beteendekrav behålls. Produktionskod, prioritet,
+ljudspelarens tvåsekunderskrav och UI-provens femsekunderskrav är oförändrade.
+Den här uttryckliga ändringen av provens uppstartsbudget kräver ny native-
+verifiering; den gör inte huvudkörning60 godkänd i efterhand.
+
+[PR-körning61](https://github.com/AllCrow/Koran-test-/actions/runs/40213854041)
+på `f701ab0fe8e6c4af4ed98c469e277a641997846d` passerade alla139 hostade
+fall och89 portabla Mac-fall på tre varianter, inklusive de rättade
+registreringsvillkoren. iOS18 och den mindre telefonen passerade12 av12 UI;
+iOS26 passerade11 av12. Alla24 exekveringar av de åtta äldre UI-fallen
+passerade. Hela körningen är ändå underkänd och ägarutkastgrinden hoppades över.
+
+I iOS26:s biblioteksfall utfördes det riktiga raderingstrycket. Felbild och
+AX-diagnostik visar därefter korrekt borttagen112/Husary, kvarvarande
+al-Fatiha och exakt `1 668 byte`. Den unika lagringsetikettens hela ram
+`{{16,469},{358,52}}` ligger mellan navigationens underkant101 och
+flikfältets överkant761 i fönstret390×844. Testet hade skickat denna rent
+läsbara etikett till den interaktiva hjälpfunktionen; en tidigare beredskaps-
+avläsning misslyckades, men underlaget fastställer inte den tillfälliga orsaken.
+De senare kontrollerna efter denna punkt utfördes inte på iOS26 i61.
+
+De läsbara biblioteksuppgifterna får därför en separat kontroll med en färsk,
+sammanhängande native-ögonblicksbild: exakt en identifierare, exakt normaliserat
+värde, hela ändliga gränser i aktuell läsyta och appen i förgrunden inom samma
+fem sekunder. Geometrisk bläddring för att visa uppgiften förblir avgränsad.
+Ingen aktiveringspunkt krävs för en etikett som inte är en knapp. Samtliga
+riktiga knappar, väljare, stegknappar och raderingsbekräftelsen behåller
+nåbarhetskrav och verkliga tryck. Exakt borttagen rad, omstart och ingen
+läskredit måste fortfarande verifieras. Inga äldre UI-fall eller testantal
+ändras, och rättningen kräver nya faktiska native-resultat.
