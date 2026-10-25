@@ -1,6 +1,7 @@
 import AVFoundation
 import Combine
 import Foundation
+import MediaPlayer
 import QuranCore
 
 /// One player for all recitations. Verse changes follow player events, never a timer.
@@ -14,8 +15,15 @@ final class RecitationPlayer: ObservableObject {
     @Published private(set) var isPlaying = false
     @Published private(set) var isBuffering = false
     @Published private(set) var errorMessage: String?
-    @Published var autoplay = true
+    @Published var autoplay = true {
+        didSet {
+            if autoplay != oldValue { defaults.set(autoplay, forKey: Self.autoplayPreferenceKey) }
+        }
+    }
 
+    private static let reciterPreferenceKey = "sakina.audio.reciter.v1"
+    private static let autoplayPreferenceKey = "sakina.audio.autoplay.v1"
+    private let defaults: UserDefaults
     private let player = AVPlayer()
     private let audioLibrary: AudioLibrary
     private let audioSession = AVAudioSession.sharedInstance()
@@ -29,10 +37,16 @@ final class RecitationPlayer: ObservableObject {
     private var itemNotifications: [NSObjectProtocol] = []
     private var interruptionNotification: NSObjectProtocol?
     private var routeNotification: NSObjectProtocol?
+    private var ownsAudioSession = false
+    private var remoteCommandTargets: [(MPRemoteCommand, Any)] = []
 
-    init(audioLibrary: AudioLibrary? = nil) {
+    init(audioLibrary: AudioLibrary? = nil, defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         self.audioLibrary = audioLibrary ?? .shared
+        selectedReciter = defaults.string(forKey: Self.reciterPreferenceKey).flatMap(Reciter.init(rawValue:)) ?? .alafasy
+        autoplay = defaults.object(forKey: Self.autoplayPreferenceKey) as? Bool ?? true
         player.automaticallyWaitsToMinimizeStalling = true
+        configureRemoteCommands()
 
         interruptionNotification = NotificationCenter.default.addObserver(
             forName: AVAudioSession.interruptionNotification,
@@ -55,9 +69,17 @@ final class RecitationPlayer: ObservableObject {
             queue: .main
         ) { [weak self] notification in
             let rawReason = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt
-            guard rawReason == AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue else { return }
             MainActor.assumeIsolated {
-                self?.pause()
+                guard let self else { return }
+                if rawReason == AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue {
+                    self.pause()
+                } else if rawReason == AVAudioSession.RouteChangeReason.categoryChange.rawValue,
+                          self.audioSession.category != .playback {
+                    // The microphone may now own the shared session. A later
+                    // cleanup of an old recitation must not deactivate it.
+                    self.ownsAudioSession = false
+                    self.stop()
+                }
             }
         }
     }
@@ -76,6 +98,7 @@ final class RecitationPlayer: ObservableObject {
         }
         player.pause()
         player.replaceCurrentItem(with: nil)
+        for (command, target) in remoteCommandTargets { command.removeTarget(target) }
     }
 
     func play(reference: AyahReference, chapterVerseCount: Int) {
@@ -103,6 +126,8 @@ final class RecitationPlayer: ObservableObject {
         player.pause()
         isPlaying = false
         isBuffering = false
+        deactivateOwnedAudioSession()
+        updateNowPlaying()
     }
 
     func resume() {
@@ -118,6 +143,7 @@ final class RecitationPlayer: ObservableObject {
             wantsToPlay = true
             isBuffering = player.currentItem?.status != .readyToPlay
             player.play()
+            updateNowPlaying()
         } catch {
             reportFailure("Det gick inte att starta ljudet. Försök igen.")
         }
@@ -137,13 +163,15 @@ final class RecitationPlayer: ObservableObject {
         isBuffering = false
         errorMessage = nil
         chapterVerseCount = 0
-        try? audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+        deactivateOwnedAudioSession()
+        updateNowPlaying()
     }
 
     func selectReciter(_ reciter: Reciter) {
         guard selectedReciter != reciter else { return }
         let shouldPlay = wantsToPlay
         selectedReciter = reciter
+        defaults.set(reciter.rawValue, forKey: Self.reciterPreferenceKey)
         if let reference = requestedReference {
             // Each recording has its own duration. Start this verse from its beginning.
             load(reference: reference, shouldPlay: shouldPlay)
@@ -182,6 +210,7 @@ final class RecitationPlayer: ObservableObject {
         isPlaying = false
         isBuffering = shouldPlay
         errorMessage = nil
+        updateNowPlaying()
 
         let url = audioLibrary.localURL(for: reference, reciter: selectedReciter)
             ?? selectedReciter.audioURL(for: reference)
@@ -225,6 +254,9 @@ final class RecitationPlayer: ObservableObject {
                 self.isBuffering = false
                 if shouldAdvance && reference.ayahNumber < self.chapterVerseCount {
                     self.next()
+                } else {
+                    self.deactivateOwnedAudioSession()
+                    self.updateNowPlaying()
                 }
             }
         })
@@ -248,6 +280,8 @@ final class RecitationPlayer: ObservableObject {
             } catch {
                 reportFailure("Det gick inte att aktivera ljuduppspelningen. Försök igen.")
             }
+        } else {
+            deactivateOwnedAudioSession()
         }
     }
 
@@ -273,12 +307,14 @@ final class RecitationPlayer: ObservableObject {
             isPlaying = false
             isBuffering = false
         }
+        updateNowPlaying()
     }
 
     private func activateAudioSession() throws {
         // Recording practice can change the shared audio session's category.
         try audioSession.setCategory(.playback, mode: .default)
         try audioSession.setActive(true)
+        ownsAudioSession = true
     }
 
     private func reportFailure(_ message: String) {
@@ -287,6 +323,82 @@ final class RecitationPlayer: ObservableObject {
         isPlaying = false
         isBuffering = false
         errorMessage = message
+        deactivateOwnedAudioSession()
+        updateNowPlaying()
+    }
+
+    private func deactivateOwnedAudioSession() {
+        guard ownsAudioSession else { return }
+        ownsAudioSession = false
+        guard audioSession.category == .playback else { return }
+        try? audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    /// Native lock-screen and headphone controls follow this player's current
+    /// selection. No duration estimates, time observers or polling are needed.
+    private func configureRemoteCommands() {
+        let commands = MPRemoteCommandCenter.shared()
+        addRemoteTarget(commands.playCommand) { $0.resume() }
+        addRemoteTarget(commands.pauseCommand) { $0.pause() }
+        addRemoteTarget(commands.togglePlayPauseCommand) { player in
+            if player.isPlaying || player.isBuffering { player.pause() }
+            else { player.resume() }
+        }
+        addRemoteTarget(commands.stopCommand) { $0.stop() }
+        addRemoteTarget(commands.nextTrackCommand) { player in
+            guard player.allowsAutoplay else { return }
+            player.next()
+        }
+        addRemoteTarget(commands.previousTrackCommand) { player in
+            guard player.allowsAutoplay else { return }
+            player.previous()
+        }
+        updateNowPlaying()
+    }
+
+    private func addRemoteTarget(
+        _ command: MPRemoteCommand,
+        action: @escaping @MainActor (RecitationPlayer) -> Void
+    ) {
+        let target = command.addTarget { [weak self] _ in
+            // MediaPlayer may invoke a command off the main thread. Recheck
+            // selection on the actor so a queued action cannot revive a take
+            // after stop() or after recording has claimed the audio session.
+            Task { @MainActor [weak self] in
+                guard let self, self.requestedReference != nil else { return }
+                action(self)
+            }
+            return .success
+        }
+        remoteCommandTargets.append((command, target))
+    }
+
+    private func updateNowPlaying() {
+        let commands = MPRemoteCommandCenter.shared()
+        let hasSelection = requestedReference != nil
+        commands.playCommand.isEnabled = hasSelection && !wantsToPlay
+        commands.pauseCommand.isEnabled = hasSelection && wantsToPlay
+        commands.togglePlayPauseCommand.isEnabled = hasSelection
+        commands.stopCommand.isEnabled = hasSelection
+        // A practice recording remains attached to its one chosen verse, even
+        // when a headset has next/previous buttons.
+        commands.nextTrackCommand.isEnabled = allowsAutoplay && (requestedReference.map { $0.ayahNumber < chapterVerseCount } ?? false)
+        commands.previousTrackCommand.isEnabled = allowsAutoplay && (requestedReference.map { $0.ayahNumber > 1 } ?? false)
+
+        guard let reference = requestedReference else {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            return
+        }
+        // Metadata describes the selected recording. The reading view still
+        // highlights only activeReference, set when actual playback begins.
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = [
+            MPMediaItemPropertyTitle: "Sura \(reference.surahID) · Vers \(reference.ayahNumber)",
+            MPMediaItemPropertyArtist: selectedReciter.displayName,
+            MPMediaItemPropertyAlbumTitle: "Sakina · Koranen",
+            MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? 1.0 : 0.0,
+            MPNowPlayingInfoPropertyDefaultPlaybackRate: 1.0,
+            MPNowPlayingInfoPropertyMediaType: MPNowPlayingInfoMediaType.audio.rawValue
+        ]
     }
 
     private func removeItemObservers() {

@@ -144,6 +144,26 @@
 			isa = PBXBuildFile;
 			fileRef = 81BA611B60871F587A6EBBA5;
 		};
+		0E17ABB5153CB2488E36F3AF = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "AppTests/AppStoreTests.swift";
+			sourceTree = "<group>";
+		};
+		48C1C939BEDFDB404E6375C3 = {
+			isa = PBXBuildFile;
+			fileRef = 0E17ABB5153CB2488E36F3AF;
+		};
+		66AB85B868128BCD5EC66962 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "AppUITests/ReadingFlowTests.swift";
+			sourceTree = "<group>";
+		};
+		2B026A474F59FD1555F93E19 = {
+			isa = PBXBuildFile;
+			fileRef = 66AB85B868128BCD5EC66962;
+		};
 		205AD835A91E229C71A32F5D = {
 			isa = PBXFileReference;
 			lastKnownFileType = "folder";
@@ -191,6 +211,20 @@
 			path = "Sakina.app";
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		F219C0274590DA45E4BEF1EA = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.cfbundle;
+			includeInIndex = 0;
+			path = "SakinaTests.xctest";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		709F2E47840969CE27FCADEB = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.cfbundle;
+			includeInIndex = 0;
+			path = "SakinaUITests.xctest";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		59BD0A3FF43B32849B319E64 = {
 			isa = PBXFileReference;
 			lastKnownFileType = text.plist.xml;
@@ -209,15 +243,27 @@
 			name = "Resources";
 			sourceTree = "<group>";
 		};
+		04D13FD0AA6F0197CF2C9990 = {
+			isa = PBXGroup;
+			children = (0E17ABB5153CB2488E36F3AF);
+			name = "AppTests";
+			sourceTree = "<group>";
+		};
+		29153EA08244F2CE52326D7A = {
+			isa = PBXGroup;
+			children = (66AB85B868128BCD5EC66962);
+			name = "AppUITests";
+			sourceTree = "<group>";
+		};
 		FBDC4F23F93125BBEEAE800C = {
 			isa = PBXGroup;
-			children = (38A007151ABE87CC01A5B6E9);
+			children = (38A007151ABE87CC01A5B6E9, F219C0274590DA45E4BEF1EA, 709F2E47840969CE27FCADEB);
 			name = "Products";
 			sourceTree = "<group>";
 		};
 		B28B7AF69320201D1CF206EB = {
 			isa = PBXGroup;
-			children = (BCE16DD0260827ECF338C787, 0189424A5A60FED329FA868E, FBDC4F23F93125BBEEAE800C);
+			children = (BCE16DD0260827ECF338C787, 0189424A5A60FED329FA868E, 04D13FD0AA6F0197CF2C9990, 29153EA08244F2CE52326D7A, FBDC4F23F93125BBEEAE800C);
 			sourceTree = "<group>";
 		};
 		582681C2EAE02B3F3D399C0C = {
@@ -251,6 +297,24 @@
 			isa = PBXBuildFile;
 			productRef = B33A3090468491E68DA885E4;
 		};
+		36A63EC054A57DA055A017ED = {
+			isa = XCSwiftPackageProductDependency;
+			package = 582681C2EAE02B3F3D399C0C;
+			productName = "QuranCore";
+		};
+		9A1DB57AF9AC71E34B8F6D29 = {
+			isa = PBXBuildFile;
+			productRef = 36A63EC054A57DA055A017ED;
+		};
+		6EF4ADFCFFB137008E8A670B = {
+			isa = XCSwiftPackageProductDependency;
+			package = 582681C2EAE02B3F3D399C0C;
+			productName = "QuranData";
+		};
+		C440C0B68B7FB532C4F84811 = {
+			isa = PBXBuildFile;
+			productRef = 6EF4ADFCFFB137008E8A670B;
+		};
 		019DCF79831E783B1D7D6308 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -267,6 +331,30 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (976FC58651FD91F3EE7CCFB7, 9EF0DC40D8FF943E268E484E, 94CDD7BAA63DA2A6BD855319);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D6D3EFCD007A068187E3C9F7 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (48C1C939BEDFDB404E6375C3);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4A675AF9B1361023D153D34C = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (9A1DB57AF9AC71E34B8F6D29, C440C0B68B7FB532C4F84811);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0CF9EA2E973157D3843A5EC5 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (2B026A474F59FD1555F93E19);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0226D9EB5E4128BC18F844B0 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		89E1FD6268CC0F221A2BE178 = {
@@ -301,6 +389,38 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = "Release";
 		};
+		FCB48D8F88BCDB0ED9FADFD7 = {
+			isa = XCBuildConfiguration;
+			buildSettings = { PRODUCT_NAME = "$(TARGET_NAME)"; PRODUCT_BUNDLE_IDENTIFIER = "org.example.SakinaTests"; GENERATE_INFOPLIST_FILE = "YES"; CODE_SIGN_STYLE = "Automatic"; TARGETED_DEVICE_FAMILY = "1"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Sakina.app/Sakina"; BUNDLE_LOADER = "$(TEST_HOST)"; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks"; };
+			name = "Debug";
+		};
+		942EEBBACD6C88CAE7F29B29 = {
+			isa = XCBuildConfiguration;
+			buildSettings = { PRODUCT_NAME = "$(TARGET_NAME)"; PRODUCT_BUNDLE_IDENTIFIER = "org.example.SakinaTests"; GENERATE_INFOPLIST_FILE = "YES"; CODE_SIGN_STYLE = "Automatic"; TARGETED_DEVICE_FAMILY = "1"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Sakina.app/Sakina"; BUNDLE_LOADER = "$(TEST_HOST)"; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks"; };
+			name = "Release";
+		};
+		88C9B326DFE4A7AE7FA486FE = {
+			isa = XCConfigurationList;
+			buildConfigurations = (FCB48D8F88BCDB0ED9FADFD7, 942EEBBACD6C88CAE7F29B29);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release";
+		};
+		A58F5A2B74CD69562DD53278 = {
+			isa = XCBuildConfiguration;
+			buildSettings = { PRODUCT_NAME = "$(TARGET_NAME)"; PRODUCT_BUNDLE_IDENTIFIER = "org.example.SakinaUITests"; GENERATE_INFOPLIST_FILE = "YES"; CODE_SIGN_STYLE = "Automatic"; TARGETED_DEVICE_FAMILY = "1"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; TEST_TARGET_NAME = "Sakina"; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks"; };
+			name = "Debug";
+		};
+		3B4B3BD51C00FC15EDCFF68E = {
+			isa = XCBuildConfiguration;
+			buildSettings = { PRODUCT_NAME = "$(TARGET_NAME)"; PRODUCT_BUNDLE_IDENTIFIER = "org.example.SakinaUITests"; GENERATE_INFOPLIST_FILE = "YES"; CODE_SIGN_STYLE = "Automatic"; TARGETED_DEVICE_FAMILY = "1"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; TEST_TARGET_NAME = "Sakina"; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks"; };
+			name = "Release";
+		};
+		A372261027C6266FFDC78B99 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (A58F5A2B74CD69562DD53278, 3B4B3BD51C00FC15EDCFF68E);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release";
+		};
 		0E8A3AD980EC179856012B7E = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A35B84B959F54EFE1DB91090;
@@ -312,6 +432,54 @@
 			productName = "Sakina";
 			productReference = 38A007151ABE87CC01A5B6E9;
 			productType = "com.apple.product-type.application";
+		};
+		E9CA66683FF22D7B8CC65928 = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E5300ACC1EACA7602AC342D7;
+			proxyType = 1;
+			remoteGlobalIDString = 0E8A3AD980EC179856012B7E;
+			remoteInfo = "Sakina";
+		};
+		C58B1D22E6B06406536A4294 = {
+			isa = PBXTargetDependency;
+			target = 0E8A3AD980EC179856012B7E;
+			targetProxy = E9CA66683FF22D7B8CC65928;
+		};
+		64BCB755386F844C96A2A5B0 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 88C9B326DFE4A7AE7FA486FE;
+			buildPhases = (D6D3EFCD007A068187E3C9F7, 4A675AF9B1361023D153D34C);
+			buildRules = ();
+			dependencies = (C58B1D22E6B06406536A4294);
+			name = "SakinaTests";
+			packageProductDependencies = (36A63EC054A57DA055A017ED, 6EF4ADFCFFB137008E8A670B);
+			productName = "SakinaTests";
+			productReference = F219C0274590DA45E4BEF1EA;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F548A9596E0D034DE038A4B3 = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E5300ACC1EACA7602AC342D7;
+			proxyType = 1;
+			remoteGlobalIDString = 0E8A3AD980EC179856012B7E;
+			remoteInfo = "Sakina";
+		};
+		F7EDAAAE3482135F6E46CDD6 = {
+			isa = PBXTargetDependency;
+			target = 0E8A3AD980EC179856012B7E;
+			targetProxy = F548A9596E0D034DE038A4B3;
+		};
+		D75D01E5FD65F1CE576FC5B6 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A372261027C6266FFDC78B99;
+			buildPhases = (0CF9EA2E973157D3843A5EC5, 0226D9EB5E4128BC18F844B0);
+			buildRules = ();
+			dependencies = (F7EDAAAE3482135F6E46CDD6);
+			name = "SakinaUITests";
+			packageProductDependencies = ();
+			productName = "SakinaUITests";
+			productReference = 709F2E47840969CE27FCADEB;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		E5300ACC1EACA7602AC342D7 = {
 			isa = PBXProject;
@@ -326,7 +494,7 @@
 			productRefGroup = FBDC4F23F93125BBEEAE800C;
 			projectDirPath = "";
 			projectRoot = "";
-			targets = (0E8A3AD980EC179856012B7E);
+			targets = (0E8A3AD980EC179856012B7E, 64BCB755386F844C96A2A5B0, D75D01E5FD65F1CE576FC5B6);
 		};
 	};
 	rootObject = E5300ACC1EACA7602AC342D7;

@@ -93,8 +93,10 @@ final class AudioLibrary: ObservableObject {
         }
     }
 
-    /// Completed verses survive cancellation and are reused by the next download.
-    func downloadSurah(_ surah: Surah, reciter: Reciter) async {
+    /// Reserve the foreground job synchronously with the button action. A
+    /// subsequent cancellation or selection change cannot leave an old request
+    /// queued to start later. Completed verses survive cancellation and resume.
+    func beginDownload(_ surah: Surah, reciter: Reciter) {
         guard downloadTask == nil else { return }
         guard directory != nil else {
             errorMessage = "Ljudets sparplats är inte tillgänglig. Försök starta om appen."
@@ -114,15 +116,9 @@ final class AudioLibrary: ObservableObject {
         total = surah.numberOfAyahs
         errorMessage = nil
 
-        let task = Task<Void, Never> { @MainActor [weak self] in
+        downloadTask = Task<Void, Never> { @MainActor [weak self] in
             guard let self else { return }
             await self.performDownload(surah, reciter: reciter, id: id)
-        }
-        downloadTask = task
-        await withTaskCancellationHandler {
-            await task.value
-        } onCancel: {
-            task.cancel()
         }
     }
 

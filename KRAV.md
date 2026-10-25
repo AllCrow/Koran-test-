@@ -1,6 +1,6 @@
 # Sakina – produktkrav
 
-Uppdaterat: **2026-10-24**. Sakina är ett arbetsnamn. Dokumentet bevarar användarens krav och beslut; en kravpunkt är inte automatiskt en levererad eller verifierad funktion. Se [STATUS.md](STATUS.md) för genomförandet.
+Uppdaterat: **2026-10-25**. Sakina är ett arbetsnamn. Dokumentet bevarar användarens krav och beslut; en kravpunkt är inte automatiskt en levererad eller verifierad funktion. Se [STATUS.md](STATUS.md) för genomförandet.
 
 ## Syfte och plattform
 
@@ -11,6 +11,8 @@ Användaren valde först Android och iPhone men har därefter uttryckligen prior
 Användaren har en iPhone men ingen Mac. Utvecklings- och distributionsvägen behöver därför fungera utan en lokal Mac hos användaren. TestFlight via en molnbaserad Mac är den tänkta vägen, men kräver bland annat ett fungerande Xcode-bygge, signering och tillgång till ett lämpligt Apple Developer-konto och App Store Connect. Dessa förutsättningar är ännu inte klara. Eventuella Apple- och molnbyggkostnader är skilda från ett abonnemang för appens användare.
 
 Den senaste instruktionen är att **fortsätta självständigt så långt det går mot en app av hög kvalitet**, även medan användaren sover, och att bevara allt arbete. Implementation, tester och dokumentation ska fortsätta utan nya rutinfrågor. Det innebär inte att otestade funktioner får beskrivas som färdiga eller att kvalitets- och distributionskrav kan hoppas över.
+
+Den 25 oktober gav användaren en timmes arbetsutrymme för finjusteringar. Arbetet fokuserar därför på befintliga flöden, felrättning, tillgänglighet och verifiering, med bevarad källkod och aktuell status.
 
 ## Funktionella krav
 

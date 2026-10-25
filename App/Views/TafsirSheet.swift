@@ -2,12 +2,15 @@ import SwiftUI
 import QuranCore
 import QuranData
 
+@MainActor
 struct TafsirSheet: View {
     let reference: AyahReference
     @Environment(\.dismiss) private var dismiss
     @State private var entry: TafsirEntry?
     @State private var errorMessage: String?
     @State private var isLoading = false
+    @State private var loadID = UUID()
+    @State private var activeRequestID: UUID?
     private static let repository = TafsirRepository()
 
     var body: some View {
@@ -27,7 +30,8 @@ struct TafsirSheet: View {
                     }
                     if let errorMessage {
                         ErrorBanner(message: errorMessage)
-                        Button("Försök igen") { Task { await load() } }
+                        Button("Försök igen") { loadID = UUID() }
+                            .frame(minHeight: 44)
                     }
                     Text("Tafsir hämtas från internet. Korantexten kan du alltid läsa offline.")
                         .font(.caption).foregroundStyle(.secondary)
@@ -36,17 +40,35 @@ struct TafsirSheet: View {
             .background(Palette.background)
             .navigationTitle("Tafsir").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Stäng") { dismiss() } } }
-            .task { await load() }
+            .task(id: loadID) { await load() }
         }
     }
 
     private func load() async {
-        guard !isLoading else { return }
+        guard !Task.isCancelled else { return }
+        // Every execution gets its own identity, including a lifecycle restart
+        // with the same retry ID. An older cancelled task must not suppress the
+        // new load or clear its loading state when it eventually unwinds.
+        let requestID = UUID()
+        activeRequestID = requestID
         isLoading = true
         errorMessage = nil
-        defer { isLoading = false }
-        do { entry = try await Self.repository.tafsir(for: reference) }
+        defer {
+            if activeRequestID == requestID {
+                isLoading = false
+                activeRequestID = nil
+            }
+        }
+        do {
+            let loaded = try await Self.repository.tafsir(for: reference)
+            try Task.checkCancellation()
+            guard activeRequestID == requestID else { return }
+            entry = loaded
+        }
         catch is CancellationError { }
-        catch { errorMessage = error.localizedDescription }
+        catch {
+            guard activeRequestID == requestID, !Task.isCancelled else { return }
+            errorMessage = error.localizedDescription
+        }
     }
 }

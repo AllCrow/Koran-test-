@@ -1,0 +1,112 @@
+{
+  "recorded_at_utc": "2026-10-25T01:34:42.562513+00:00",
+  "kind": "observed verification summary; native tests are prepared only",
+  "portable_swift": {
+    "passed": 61,
+    "failures": 0,
+    "core": 22,
+    "data": 18,
+    "practice": 21,
+    "toolchain": "Swift 6.0.3, Swift 5 language mode, Linux"
+  },
+  "backend_unittest": {
+    "passed": 28,
+    "failures": 0,
+    "skipped": 0,
+    "resource_warnings_as_errors": true,
+    "real_m4a_aac_and_wav_decode": true,
+    "acoustic_quality_measurement": false
+  },
+  "resources": {
+    "verify_content": "passed",
+    "verify_practice_references": "passed",
+    "verify_assets": "passed",
+    "quran_text_changed": false
+  },
+  "native_source": {
+    "swift_frontend_parse": "passed",
+    "apple_sdk_typecheck": "not run",
+    "xcode_build": "not run",
+    "hosted_tests_prepared": 8,
+    "ui_tests_prepared": 3,
+    "native_tests_run": 0,
+    "device_run": "not run"
+  },
+  "project": {
+    "openstep_parsed": true,
+    "source_and_resource_paths_verified": 21,
+    "targets": [
+      "Sakina",
+      "SakinaTests",
+      "SakinaUITests"
+    ],
+    "generation_deterministic": true,
+    "scheme_references_verified": true
+  },
+  "container_current_source_smoke": {
+    "base_image": "sha256:7e1d0e70b0fed94cbc66598c7da2a8f9c3e6c1300ce029bfca130ac1527b2bba",
+    "source_readonly_mounted": true,
+    "reference_readonly_mounted": true,
+    "uid_override": 1000,
+    "network": "none",
+    "published_host_ports": [],
+    "real_loopback_http_health": {
+      "ready": false,
+      "model_loaded": false,
+      "reference_source": "quran-transcript-0.6.4"
+    },
+    "clean_server_shutdown": true,
+    "fresh_image_build": "not completed",
+    "container_inference": "not run"
+  },
+  "limitations": [
+    "No physical iPhone, thermal or energy measurement",
+    "No TestFlight/signing",
+    "No new acoustic evaluation or Tarteel comparison",
+    "Private AllCrow repository remains unverified and inaccessible"
+  ],
+  "source_sha256": {
+    "App/Models/AppStore.swift": "6eed079949a4310e97ee351f264e331c94e83ae8a833d443e61031e4af496094",
+    "App/Models/RecitationAssessmentStore.swift": "fde5af73b6a2b6a97222c84c265cc07af7cfbe635b8b692fe773ccabcc9f7871",
+    "App/SakinaApp.swift": "bbaeeaaf126e4f8d0ea9154845252a3d901456b9f7ab0f602147e65009583714",
+    "App/Services/AudioLibrary.swift": "b27034ba467122f923d44e9f3931148781019d3e7840bf0ebdc08cb5b3c66336",
+    "App/Services/PracticeRecorder.swift": "022a5d06729c4e5aba8c80bf76c95aeeeacc61f74f8cd48f8a4a109ef1039fa9",
+    "App/Services/RecitationPlayer.swift": "13a00c722585b6c267fc83ec912287b186acfd83695fd97c326d93960a40586d",
+    "App/Views/AssessmentFeedbackView.swift": "4710a4c04e283697ddd6536cf9925f0948ceb9984788844bdc4089c6c456187a",
+    "App/Views/AudioDownloadsView.swift": "2b1064449e38dfbfc0e29e8d51c91a8b230fbc665b4f45dd6277ad1b510b8bea",
+    "App/Views/DesignSystem.swift": "6a60565ec9c2de1b5981db4f9d78b25ed79cc25785ee13a733b9e8deb6062f76",
+    "App/Views/HomeView.swift": "13b3c97c7c0c299c4d215c7db7da519fce3abd3aaf9f1fded201dff27685de2f",
+    "App/Views/PracticeView.swift": "7a29edc3b02f3623be766bc211f75eafba86fdeb54313fb78671075101973a0a",
+    "App/Views/ReaderView.swift": "140907ced04b9e12d24a4ed51bb0c59deaf834587c640d425accd5f83d798785",
+    "App/Views/SettingsView.swift": "5aa030f7dedd0b6b547f1135d24fc8b5d03c4076c853dc6c1e535e2392432b5c",
+    "App/Views/TafsirSheet.swift": "5f64f0f537aa0960ef069426ccb475b8cbea4eff9d56efc8299ef320ed88e3a8",
+    "AppTests/AppStoreTests.swift": "a64652183b436c82d10d7a6099782ca39ed35eecf1446b866f64226a6e7a0e54",
+    "AppUITests/ReadingFlowTests.swift": "52d3dfdbba353fd21a050800f772b59f1f040cf0d0bb7399b2e6e2dc535605eb",
+    "Sources/QuranCore/Models.swift": "a627d0f8f46637fdef62da43459ba641da9b5b15a9178e0360c4692d10922b1f",
+    "Sources/QuranCore/Presentation.swift": "5736ca59d3a6d5bd11b3ddf17a708a7746c142acffc4433f9383f16720dd43ee",
+    "Sources/QuranCore/StreakTracker.swift": "ac5f2988416c1b3a60173e2f82898a4163fc22bcbae344c1039d0cd7eb859ea5",
+    "Sources/QuranCore/TajweedParser.swift": "b487410eaafaafd4490a420165e1789d578d1a6cd43e14a64050de9fba594081",
+    "Sources/QuranData/QuranRepository.swift": "4bfd3a78f93f779d827bee47b5c6884e4bfaa2fdfbe89f6b98808316b4a887b6",
+    "Sources/QuranData/TafsirRepository.swift": "26936a5a08860606cee34c6061e8e5d71c7b1d1bd3ed91d4ba9ffce14f1bdbb8",
+    "Sources/QuranPractice/AssessmentModels.swift": "b7711e146da8bd4296eba2bf50432837936b3b0c627f4e5adb5dfe0de406f7e2",
+    "Sources/QuranPractice/FeedbackHighlighter.swift": "95c785abb32d25aa3fc28c1ef554515558f4a88df72f75b8f6b7885db8c701ff",
+    "Sources/QuranPractice/PracticeReferenceRepository.swift": "88673a6d535da3102b4e6e4575122d1ba8c17ef19c779056c5d20589dc98603e",
+    "Sources/QuranPractice/RecitationAssessmentClient.swift": "e874e0788454930f229f2cb85e040b042be11178db6ef80dc155a4404185714c",
+    "Tests/QuranContentTests/QuranRepositoryTests.swift": "95f95276e95ef4a4304423efdd85667ebd31b93bd5d1ccbf940d205c378c63ba",
+    "Tests/QuranContentTests/TafsirRepositoryTests.swift": "778017ed930fc706389475e7016f9e3c1853c92b20cce9f952b6dc5e1da60401",
+    "Tests/QuranCoreTests/QuranCoreTests.swift": "362bb45f268287f4e9005727a821fb038458c76900231678ab738614bfde4459",
+    "Tests/QuranPracticeTests/FeedbackHighlighterTests.swift": "447600f25c8e354005e21fc9e24783f3918b917d4807fd20581cefce1d070b39",
+    "Tests/QuranPracticeTests/PracticeReferenceRepositoryTests.swift": "2423909a84681075db170aad37135b7e88d6be1835bda3a0a8e9eb0a855c30ed",
+    "Tests/QuranPracticeTests/RecitationAssessmentClientTests.swift": "040da881166c454e813eb3a4e84360890628377cb5b3c142e94315a33db81b4b",
+    "backend/__init__.py": "714a8842e472c2c62fc83e8dad459c71e7260d799178440891812e30f5aaf9ca",
+    "backend/audio.py": "f521f982965ebfefedb84edd21e121bd806447dd1772989bb4f0cb3d486166e0",
+    "backend/config.py": "de6d6d18b3516e01ffbb9370dc8b787b9099c4b4b493ae9acf441b029c4c8f8d",
+    "backend/download_model.py": "35fd2098590f11731dbf1d91ccade90a20a23e6c9db743db6d2e551de69ce963",
+    "backend/engine.py": "8b3e996a5d44b641d9ede4c5a45b77e9d51af15766b8a64ab6c2ca109185b032",
+    "backend/main.py": "c8aef09f313b6a03fa7d288c379fa41257b163c353f737d2321bcbc37acca62a",
+    "backend/reference.py": "58c06d907f6f9793374e8fe35ef9931829086804c59b4f42a4b8ef37b2cdc1ef",
+    "backend/schemas.py": "5ff9359418d38b82d86256860fef3ae377e4ea56279765c43583836451030b11",
+    "backend/tests/test_api.py": "7983057236c9e3d407305a3ac65daacda625ceaae4a232a4c05a1f70492d3bdb",
+    "backend/tests/test_madd_variants.py": "37a59e4ad9f32403219aaffdfd20231d25a6e0e272b388c638c72e22fb89d9c1"
+  }
+}

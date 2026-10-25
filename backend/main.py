@@ -155,8 +155,19 @@ def create_app(settings: Settings | None = None, engine: AssessmentEngine | None
             try:
                 return await asyncio.shield(job)
             except asyncio.CancelledError:
-                # Keep serialization and tempfile ownership until the worker ends.
-                await job
+                # A thread cannot be cancelled with its HTTP task. Keep the
+                # slot until it ends, including if shutdown cancels us again.
+                while not job.done():
+                    try:
+                        await asyncio.shield(job)
+                    except asyncio.CancelledError:
+                        continue
+                    except Exception:
+                        break
+                if not job.cancelled():
+                    # Retrieve a worker exception without replacing the
+                    # caller's cancellation or leaving an unhandled task.
+                    job.exception()
                 raise
 
     return app

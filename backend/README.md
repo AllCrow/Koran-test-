@@ -114,6 +114,10 @@ full täckning av giltiga Hafs-varianter är inte verifierad.
 Ljudfilen behandlas tillfälligt och raderas efter avkodning. Inga uppladdningar,
 filnamn eller ljudinnehåll skrivs till logg av serverkoden. En analys körs åt
 gången i en arbetstråd; eventloopen kan fortsätta svara på hälsokontroller.
+Upprepad avbrytning av samma HTTP-anrop släpper inte analysplatsen medan
+arbetstråden fortfarande kör. Avkodaren väljer uttryckligen WAV, ISO BMFF M4A
+eller ADTS AAC; spellistor, externa MOV-referenser och trunkerad native PCM
+godtas inte som en vanlig tagning.
 
 ## Verifiering
 
@@ -125,8 +129,9 @@ backend/.venv/bin/python -W error::ResourceWarning -m unittest discover -s backe
 HTTP-kontrakttester använder en uttrycklig fake-motor och verifierar endast
 validering, resursgränser, avkodning och transport. De är ingen mätning av
 modellens kvalitet. Testet för M4A kör verklig ffmpeg-avkodning.
-**24 backendtester har passerat** i utvecklingsmiljön, inklusive de avgränsade
-madd arid-fallen. Dessutom har riktig CPU-inferens körts genom HTTP-API:t i
+**28 backendtester har passerat** i utvecklingsmiljön, inklusive de avgränsade
+madd arid-fallen, upprepad avbrytning och riktig avkodning av M4A/AAC/WAV.
+Dessutom har riktig CPU-inferens körts genom HTTP-API:t i
 samma process på fem insignalstester. Al-Afasy, al-Husary och al-Minshawi 1:1
 gav inga presenterade indikationer; 112:1 mot referens 1:1 gav 15 och tystnad
 gav `insufficient_audio`. Se [det faktiska provet](../docs/MODEL_SMOKE_RESULTS.md)
@@ -153,16 +158,22 @@ mått är ingen nätverks-, iPhone-, kallcache- eller energimätning. En enda ve
 publicerade recitatörer och okänt träningsöverlapp räcker inte för en
 noggrannhetsstudie eller ett Tarteel-anspråk.
 
-Dockerbilden `sakina-analysis:dev` har byggts lokalt och startats som UID 10001
+Dockerbilden `sakina-analysis:dev` byggdes den 24 oktober och startades som UID 10001
 med nätverk avstängt, utan publicerade värdportar eller modellcache. `/health`
 rapporterade säkert att modellen inte var redo; containern stoppades rent.
-Den patchade bilden har därefter byggts om och samma isolerade, icke-root
-hälsokontroll körts igen. Aktuell lokal image-ID är
+Den då patchade bilden byggdes om och samma isolerade, icke-root
+hälsokontroll kördes igen. Dess lokala image-ID är
 `sha256:7e1d0e70b0fed94cbc66598c7da2a8f9c3e6c1300ce029bfca130ac1527b2bba`.
 Modellvikter är inte inbakade. Det verifierar bygg-/startvägen och läget utan
 modell, inte modellinferens i containern eller en publik driftsättning. Dockerbilden sätter
 `SAKINA_ENABLE_MODEL=1`; utan i förväg hämtade modellfiler blir tjänsten ändå
 `unavailable`, eftersom nätbaserad modellhämtning vid start är avstängd.
+
+Den 25 oktober provades aktuell backendkod och referenser via read-only-mount
+i denna runtime, med UID 1000, avstängt nätverk och utan värdportar. En verklig
+HTTP-hälsokontroll på containerns loopback rapporterade `ready=false`,
+`model_loaded=false` och rätt referensutgåva; servern stängdes rent. Detta
+verifierar dagens källstart, **inte en ny imagebyggning** eller containerinferens.
 
 REA har också [inspekterat den faktiska viktfilen](../docs/REA_MODEL_INSPECTION.md)
 och verifierat tensorinventering och full SHA256. Den kontrollen är separat

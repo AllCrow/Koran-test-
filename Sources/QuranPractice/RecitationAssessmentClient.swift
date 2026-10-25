@@ -46,6 +46,7 @@ public actor RecitationAssessmentClient {
         guard audioData.count <= Self.maximumRecordingBytes else { throw AssessmentError.recordingTooLarge }
         guard format.matches(audioData) else { throw AssessmentError.invalidRecording }
         let expectedText = try await references.text(for: reference, includeBasmala: includeBasmala)
+        try Task.checkCancellation()
 
         let boundary = "Sakina-\(UUID().uuidString)"
         var body = Data()
@@ -66,6 +67,7 @@ public actor RecitationAssessmentClient {
         let data: Data
         let response: URLResponse
         do {
+            try Task.checkCancellation()
             (data, response) = try await session.data(for: request, delegate: redirectBlocker)
         } catch is CancellationError { throw CancellationError() }
         catch let error as URLError where error.code == .cancelled { throw CancellationError() }

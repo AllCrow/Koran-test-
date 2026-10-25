@@ -35,6 +35,29 @@ jobs:
           xcodebuild -project Sakina.xcodeproj -scheme Sakina
           -configuration Debug -destination 'generic/platform=iOS Simulator'
           -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build
+      - name: Test native reading state on an iPhone simulator
+        shell: bash
+        run: |
+          simulator_id=$(xcrun simctl list devices available --json | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          iphones = [device["udid"] for runtime, entries in devices.items()
+                     if ".iOS-" in runtime for device in entries
+                     if device.get("isAvailable") and device["name"].startswith("iPhone")]
+          if not iphones:
+              sys.exit("No available iPhone simulator was found")
+          print(iphones[0])')
+          xcodebuild -project Sakina.xcodeproj -scheme Sakina \
+            -configuration Debug -destination "platform=iOS Simulator,id=$simulator_id" \
+            -derivedDataPath DerivedData -resultBundlePath TestResults.xcresult \
+            -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Sakina-native-test-results
+          path: TestResults.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: Sakina-simulator

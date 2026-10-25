@@ -36,7 +36,7 @@ public actor QuranRepository {
 
     public func loadIndex() throws -> ContentIndex {
         if let cachedIndex { return cachedIndex }
-        let index = try decode(ContentIndex.self, named: "index")
+        let index = try decode(ContentIndex.self, named: "index", invalid: .invalidIndex)
         guard index.version == 1, !index.source.isEmpty,
               index.surahs.count == AyahReference.ayahCounts.count,
               index.surahs.enumerated().allSatisfy({ position, surah in
@@ -59,7 +59,7 @@ public actor QuranRepository {
             return chapter
         }
         let index = try loadIndex()
-        let chapter = try decode(QuranChapter.self, named: String(format: "%03d", id))
+        let chapter = try decode(QuranChapter.self, named: String(format: "%03d", id), invalid: .invalidChapter(id))
         let expectedCount = AyahReference.ayahCounts[id - 1]
         let firstGlobalID = AyahReference.ayahCounts.prefix(id - 1).reduce(0, +) + 1
         guard chapter.surah == index.surahs[id - 1], chapter.ayahs.count == expectedCount,
@@ -82,11 +82,17 @@ public actor QuranRepository {
         recentChapterIDs.append(id)
     }
 
-    private func decode<T: Decodable>(_ type: T.Type, named name: String) throws -> T {
+    private func decode<T: Decodable>(_ type: T.Type, named name: String, invalid: RepositoryError) throws -> T {
         let url = resourceDirectory.appendingPathComponent(name).appendingPathExtension("json")
         guard FileManager.default.fileExists(atPath: url.path) else {
             throw RepositoryError.missingResource(name)
         }
-        return try JSONDecoder().decode(type, from: Data(contentsOf: url))
+        do {
+            return try JSONDecoder().decode(type, from: Data(contentsOf: url))
+        } catch {
+            // Keep implementation diagnostics out of the reading flow and use
+            // the same actionable Swedish error as other validation failures.
+            throw invalid
+        }
     }
 }

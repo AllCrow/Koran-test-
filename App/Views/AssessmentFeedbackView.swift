@@ -8,7 +8,9 @@ struct AssessmentFeedbackView: View {
     var body: some View {
         Card {
             Label("Återkoppling · testversion", systemImage: "waveform")
-                .font(.headline).foregroundStyle(Palette.green)
+                .font(.headline).foregroundStyle(Palette.green).accessibilityAddTraits(.isHeader)
+            Text("Sura \(response.reference.surahID) · vers \(response.reference.ayahNumber)")
+                .font(.caption).foregroundStyle(.secondary).padding(.top, 6)
             Text(response.message).font(.callout).padding(.top, 10)
             if response.status == .assessed {
                 highlightedText.padding(.vertical, 18)
@@ -27,6 +29,19 @@ struct AssessmentFeedbackView: View {
                         VStack(alignment: .leading, spacing: 5) {
                             Text(label(issue.kind)).font(.subheadline.weight(.semibold))
                             Text(issue.message).font(.callout).foregroundStyle(.secondary)
+                            if let excerpt = referenceExcerpt(for: issue) {
+                                Text("I referenstexten:").font(.caption).foregroundStyle(.secondary)
+                                Text(excerpt)
+                                    .font(.custom("AmiriQuran-Regular", size: 24, relativeTo: .title3))
+                                    .lineSpacing(10).multilineTextAlignment(.leading)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .environment(\.layoutDirection, .rightToLeft)
+                                    .accessibilityRepresentation { ArabicAccessibilityLabel(text: excerpt) }
+                                    .textSelection(.enabled)
+                            } else if issue.category == .insert {
+                                Text("Modellen indikerar ett möjligt extra ljud. Det ljudet har ingen egen plats i referenstexten.")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }
@@ -47,12 +62,20 @@ struct AssessmentFeedbackView: View {
         }
         return text
             .font(.custom("AmiriQuran-Regular", size: 30, relativeTo: .title))
-            .lineSpacing(15).multilineTextAlignment(.trailing)
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            .lineSpacing(15).multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .environment(\.layoutDirection, .rightToLeft)
             .accessibilityLabel(response.referenceText)
             .accessibilityRepresentation { ArabicAccessibilityLabel(text: response.referenceText) }
             .textSelection(.enabled)
+    }
+
+    private func referenceExcerpt(for issue: AssessmentIssue) -> String? {
+        // Use the same whole-grapheme expansion as the highlighted reference;
+        // never split an Arabic letter from its combining marks for this label.
+        let spans = FeedbackHighlighter.spans(text: response.referenceText, issues: [issue])
+        let excerpt = spans.filter(\.isHighlighted).map(\.text).joined()
+        return excerpt.isEmpty ? nil : excerpt
     }
 
     private func label(_ kind: AssessmentIssue.Kind) -> String {

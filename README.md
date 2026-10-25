@@ -9,11 +9,11 @@ Utvecklingen fortsätter självständigt enligt användarens senaste instruktion
 - Alla **114 suror och 6 236 ayat** lokalt, uppdelade per sura, med valbar tajweedvisning.
 - Bundlad **Amiri Quran**-font med ursprunglig OFL-licens och verifierade filhashar.
 - Tre recitatörer: Mishary Rashid al-Afasy, Mahmoud Khalil al-Husary och Muhammad Siddiq al-Minshawi.
-- En ljudfil per vers. Versmarkering och versbyte följer AVPlayer-händelser.
+- En ljudfil per vers. Versmarkering och versbyte följer AVPlayer-händelser; låsskärmskontroller och sparade ljudval är implementerade.
 - Uttryckliga ljudnedladdningar per sura och recitatör; spelaren föredrar sparat lokalt ljud. Inget recitationsljud är förpaketerat.
 - Tafsir al-Muyassar på arabiska, hämtad online med källangivelse.
 - Lokala bokmärken, läsposition, dagligt läsmål och en uppmuntrande streak.
-- Lokal inspelning och återlyssning för övning.
+- Lokal inspelning och återlyssning för övning, med bevarad tagning och tydliga val före ersättning/radering.
 - En integrerad **experimentell analysväg** med separat Muaalem-backend, typad iOS-klient och återkopplingsvy. Den är **avstängd som standard** och har ingen konfigurerad serveradress.
 
 Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline; tafsir kräver nät. Den native ljudnedladdningen och uppspelningen har ännu inte provats på iPhone.
@@ -43,7 +43,7 @@ xcodebuild -project Sakina.xcodeproj -scheme Sakina \
 
 Efter tillägg av Swift-filer eller resurser: kör `python3 scripts/generate_project.py` och checka in det uppdaterade projektet. Generatorn kräver bara Python 3.
 
-**Verifierat hittills:** 56 portabla Swift-tester passerar: 21 för kärnlogik, 16 för data och 19 för analyskontrakt/referenser. Backendens 24 tester passerar, inklusive kontrakt, riktig M4A-avkodning och avgränsad hantering av madd arid-varianter. Ett verkligt CPU-prov och en lokal Docker-bygg-/startkontroll har också genomförts. Inget av detta ersätter ett Xcode-bygge eller en fysisk iPhone-körning. Fullständiga gränser finns i [STATUS.md](STATUS.md).
+**Verifierat hittills:** 61 portabla Swift-tester passerar: 22 för kärnlogik, 18 för data och 21 för analyskontrakt/referenser. Backendens 28 tester passerar, inklusive riktig M4A/AAC-/WAV-avkodning, upprepad avbrytning och avgränsade madd arid-varianter. Ett verkligt CPU-prov och lokala Docker-startkontroller har också genomförts. Åtta hostade iOS-tester och tre UI-flöden är förberedda men **inte körda**. Inget av detta ersätter ett Xcode-bygge eller en fysisk iPhone-körning. Se [STATUS.md](STATUS.md) och [native-proven](docs/IOS_VERIFICATION.md).
 
 ## Struktur
 
@@ -54,6 +54,7 @@ Efter tillägg av Swift-filer eller resurser: kör `python3 scripts/generate_pro
 | `Sources/QuranData/` | Koran- och tafsirrepositoryer |
 | `Sources/QuranPractice/` | Analyskontrakt, klient, Unicode-markering och separat referensutgåva |
 | `Tests/` | Portabla tester för de tre biblioteken |
+| `AppTests/`, `AppUITests/` | Förberedda native-tester av sparad läsprogression och läsflöden |
 | `App/Resources/Quran/` | Källtext, originalögonblicksbilder och notiser |
 | `App/Resources/Fonts/` | Amiri Quran och ursprunglig licens/proveniens |
 | `backend/` | Valbar experimentell Muaalem-tjänst, beroendepinnar och kontrakttester |

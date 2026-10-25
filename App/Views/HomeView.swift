@@ -4,6 +4,7 @@ import QuranCore
 @MainActor
 struct HomeView: View {
     @EnvironmentObject private var store: AppStore
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let read: () -> Void
 
     var body: some View {
@@ -21,23 +22,34 @@ struct HomeView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Label("Din läsvana", systemImage: "leaf")
                                 .font(.subheadline).foregroundStyle(Palette.green)
-                            Text("\(store.streakSummary.current) dagar")
+                            Text(store.streakSummary.current == 1 ? "1 dag" : "\(store.streakSummary.current) dagar")
                                 .font(.system(.largeTitle, design: .rounded, weight: .semibold))
                             Text(streakMessage).font(.callout).foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Image(systemName: "sun.max.fill").font(.largeTitle)
-                            .foregroundStyle(Palette.gold).accessibilityHidden(true)
+                        if !dynamicTypeSize.isAccessibilitySize {
+                            Image(systemName: "sun.max.fill").font(.largeTitle)
+                                .foregroundStyle(Palette.gold).accessibilityHidden(true)
+                        }
                     }
                     Divider().padding(.vertical, 12)
-                    HStack {
-                        Text("Dagens mål").font(.subheadline)
-                        Spacer()
-                        Text("\(store.todayReadCount) / \(store.dailyGoal) verser").font(.subheadline.monospacedDigit())
+                    ViewThatFits(in: .horizontal) {
+                        HStack {
+                            Text("Dagens mål").fixedSize()
+                            Spacer(minLength: 12)
+                            Text("\(store.todayReadCount) / \(store.dailyGoal) verser").monospacedDigit().fixedSize()
+                        }
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Dagens mål")
+                            Text("\(store.todayReadCount) / \(store.dailyGoal) verser").monospacedDigit()
+                        }
                     }
+                    .font(.subheadline)
                     ProgressView(value: Double(min(store.todayReadCount, store.dailyGoal)),
                                  total: Double(store.dailyGoal)).padding(.top, 8)
                         .accessibilityLabel("Dagens läsmål")
+                        .accessibilityValue("\(store.todayReadCount) av \(store.dailyGoal) verser lästa")
+                        .accessibilityIdentifier("home.dailyProgress")
                     Text(store.dailyGoalMet ? "Dagens mål är klart. Fint att du tog dig tid." : "Markera verser som lästa i läsvyn. Varje liten stund räknas.")
                         .font(.caption).foregroundStyle(.secondary).padding(.top, 8)
                 }

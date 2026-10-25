@@ -1,14 +1,28 @@
+import Foundation
 import SwiftUI
 
 @main
 @MainActor
 struct SakinaApp: App {
-    @StateObject private var store = AppStore()
-    @StateObject private var player = RecitationPlayer()
+    @StateObject private var store = AppStore(defaults: SakinaApp.readingDefaults)
+    @StateObject private var player = RecitationPlayer(defaults: SakinaApp.readingDefaults)
     @StateObject private var recorder = PracticeRecorder()
     @StateObject private var audioLibrary = AudioLibrary.shared
     @StateObject private var assessment = RecitationAssessmentStore()
     @Environment(\.scenePhase) private var scenePhase
+
+    private static var readingDefaults: UserDefaults {
+        #if DEBUG
+        // Native UI tests use their own persistent suite. They can test a real
+        // relaunch without clearing or changing anyone's normal reading data.
+        let arguments = ProcessInfo.processInfo.arguments
+        if let index = arguments.firstIndex(of: "--ui-test-suite"),
+           arguments.indices.contains(index + 1),
+           arguments[index + 1].hasPrefix("sakina.uitests."),
+           let defaults = UserDefaults(suiteName: arguments[index + 1]) { return defaults }
+        #endif
+        return .standard
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -23,8 +37,9 @@ struct SakinaApp: App {
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { store.refreshDay() }
                     if phase == .background {
-                        recorder.finishRecordingIfNeeded()
+                        recorder.stopAll()
                         assessment.cancel()
+                        audioLibrary.cancelDownload()
                     }
                 }
         }

@@ -173,6 +173,26 @@ class APIContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await self.post(payload=b"RIFFbad data")).status_code, 415)
         self.assertEqual(self.engine.calls, [])
 
+    async def test_truncated_pcm_wav_is_rejected_before_engine(self):
+        # The header still declares the original frame count. Quietly decoding
+        # only the available prefix would let a damaged upload reach the model.
+        response = await self.post(payload=wav_bytes()[:-1600])
+        self.assertEqual(response.status_code, 415)
+        self.assertEqual(self.engine.calls, [])
+
+    async def test_playlists_cannot_reference_another_local_recording(self):
+        local_recording = self.resources / "unrelated.wav"
+        local_recording.write_bytes(wav_bytes())
+        playlists = [
+            f"ffconcat version 1.0\nfile '{local_recording}'\n",
+            f"#EXTM3U\n{local_recording}\n",
+        ]
+        for playlist in playlists:
+            response = await self.post(payload=playlist.encode(), media_type="audio/mp4")
+            self.assertEqual(response.status_code, 415)
+            self.assertNotIn(str(local_recording), response.text)
+        self.assertEqual(self.engine.calls, [])
+
     async def test_upload_size_bound_checks_actual_file_bytes(self):
         client = self.make_client(settings=replace(self.settings, max_upload_bytes=128))
         self.assertEqual((await self.post(client=client, payload=b"x" * 129)).status_code, 413)
@@ -215,6 +235,42 @@ class APIContractTests(unittest.IsolatedAsyncioTestCase):
             self.engine.release.set()
             response = await first
         self.assertEqual(response.status_code, 200)
+
+    async def test_repeated_cancellation_keeps_worker_serialized_until_finished(self):
+        self.engine.entered = Event()
+        self.engine.release = Event()
+        first = asyncio.create_task(self.post())
+        try:
+            self.assertTrue(await asyncio.to_thread(self.engine.entered.wait, 2))
+            first.cancel()
+            await asyncio.sleep(0)
+            first.cancel()
+            await asyncio.sleep(0.01)
+            # A cancelled HTTP task still owns its inference thread and temp
+            # files. A second cancellation must not release the slot early.
+            response = await asyncio.wait_for(self.post(), timeout=0.5)
+            self.assertEqual(response.status_code, 429)
+            self.assertEqual(len(self.engine.calls), 1)
+        finally:
+            self.engine.release.set()
+            with self.assertRaises(asyncio.CancelledError):
+                await first
+
+    @unittest.skipUnless(shutil.which("ffmpeg"), "ffmpeg is needed for supported-container decoder verification")
+    async def test_aac_and_resampled_wav_remain_supported(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            source = path / "source.wav"
+            source.write_bytes(wav_bytes())
+            for filename, options, media_type in [
+                ("take.aac", ["-c:a", "aac", "-f", "adts"], "audio/aac"),
+                ("take.wav", ["-ar", "24000"], "audio/wav"),
+            ]:
+                target = path / filename
+                subprocess.run([shutil.which("ffmpeg"), "-nostdin", "-loglevel", "error", "-i", str(source), *options, str(target)], check=True, capture_output=True)
+                response = await self.post(payload=target.read_bytes(), media_type=media_type)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json()["status"], "assessed")
 
     @unittest.skipUnless(shutil.which("ffmpeg"), "ffmpeg is needed for native M4A decoder verification")
     async def test_actual_m4a_decoder_removes_its_temporary_files(self):

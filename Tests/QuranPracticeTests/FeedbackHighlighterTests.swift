@@ -45,6 +45,17 @@ final class FeedbackHighlighterTests: XCTestCase {
         XCTAssertTrue(FeedbackHighlighter.spans(text: "", issues: []).isEmpty)
     }
 
+    func testAnchoredInsertionDoesNotColorAnExistingLetter() {
+        // A model can anchor an inserted sound to a surrounding source span.
+        // That sound has no expected source letter, so the indication belongs
+        // in the feedback list without marking a letter as pronounced wrongly.
+        let text = "بِسْمِ"
+        let spans = FeedbackHighlighter.spans(text: text, issues: [issue(0, 2, category: .insert)])
+        XCTAssertEqual(spans.count, 1)
+        XCTAssertEqual(spans.first?.isHighlighted, false)
+        XCTAssertTrue(spans.map(\.text).joined().utf8.elementsEqual(text.utf8))
+    }
+
     private func issue(_ start: Int, _ end: Int, category: AssessmentIssue.Category = .replace) -> AssessmentIssue {
         AssessmentIssue(kind: .tajweed, category: category, startScalar: start, endScalar: end, expected: "", observed: "", message: "")
     }

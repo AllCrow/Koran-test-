@@ -102,7 +102,7 @@ struct AudioDownloadsView: View {
                     .accessibilityValue("\(audioLibrary.completed) av \(audioLibrary.total) verser")
                     Button("Avbryt nedladdning", role: .cancel) { audioLibrary.cancelDownload() }
                         .frame(minHeight: 44)
-                    Text("Du kan fortsätta läsa i appen och återvända hit för att avbryta. Håll appen öppen tills nedladdningen är klar. Färdiga verser finns kvar om du avbryter.")
+                    Text("Du kan fortsätta läsa i appen medan ljudet hämtas. Nedladdningen avbryts om appen går till bakgrunden. Färdiga verser finns kvar, och du kan fortsätta hämta resten här.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }
@@ -190,9 +190,8 @@ struct AudioDownloadsView: View {
     }
 
     private func startDownload(_ surah: Surah) {
-        let reciter = selectedReciter
-        let library = audioLibrary
-        // A button starts an owned foreground job; navigating away does not cancel it.
-        Task { await library.downloadSurah(surah, reciter: reciter) }
+        // Reserve the job before this action returns, so quick taps cannot queue
+        // a request using a selection that has already changed.
+        audioLibrary.beginDownload(surah, reciter: selectedReciter)
     }
 }

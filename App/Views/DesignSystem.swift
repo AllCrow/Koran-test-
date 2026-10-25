@@ -50,6 +50,7 @@ struct SectionLabel: View {
     var body: some View {
         Text(title).font(.headline).padding(.top, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityAddTraits(.isHeader)
     }
 }
 
@@ -93,8 +94,9 @@ struct ArabicText: View {
             rendered(safeSpans)
             .font(.custom("AmiriQuran-Regular", size: 30, relativeTo: .title))
             .lineSpacing(15)
-            .multilineTextAlignment(.trailing)
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            // In an explicit RTL environment, semantic leading is the right edge.
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .environment(\.layoutDirection, .rightToLeft)
             .accessibilityLabel(safeSpans?.map(\.text).joined() ?? text)
             .accessibilityRepresentation {
@@ -150,7 +152,7 @@ struct TajweedLegend: View {
             Text("Tajweedfärger").font(.headline)
             ForEach(TajweedRule.allCases) { rule in
                 HStack(spacing: 10) {
-                    Image(systemName: "circle.fill").foregroundStyle(Palette.tajweed(rule))
+                    Image(systemName: "circle.fill").foregroundStyle(Palette.tajweed(rule)).accessibilityHidden(true)
                     Text(rule.displayName)
                 }
             }

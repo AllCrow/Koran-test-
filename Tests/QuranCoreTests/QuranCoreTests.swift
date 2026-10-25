@@ -113,6 +113,31 @@ final class StreakTrackerTests: XCTestCase {
         XCTAssertEqual(tracker.completionDays.first?.id, "2026-10-24")
     }
 
+    func testSavedCivilDayAdjacencyIsStableInTimezoneWithSkippedDate() throws {
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = try XCTUnwrap(TimeZone(secondsFromGMT: 0))
+        var apia = Calendar(identifier: .gregorian)
+        apia.timeZone = try XCTUnwrap(TimeZone(identifier: "Pacific/Apia"))
+        // Apia skipped December 30 when it moved across the date line. These
+        // saved labels may have been completed elsewhere before travelling.
+        let december29 = try XCTUnwrap(ReadingDay(year: 2011, month: 12, day: 29))
+        let december30 = try XCTUnwrap(ReadingDay(year: 2011, month: 12, day: 30))
+        let december31 = try XCTUnwrap(ReadingDay(year: 2011, month: 12, day: 31))
+        let consecutive = StreakTracker(completionDays: [december29, december30])
+        let gap = StreakTracker(completionDays: [december29, december31])
+        for zone in [utc, apia] {
+            let today = try XCTUnwrap(zone.date(from: DateComponents(year: 2011, month: 12, day: 31, hour: 12)))
+            let preserved = consecutive.summary(asOf: today, calendar: zone)
+            XCTAssertEqual(preserved.current, 2, "Saved December 30 must not normalize to December 31")
+            XCTAssertEqual(preserved.best, 2)
+            XCTAssertFalse(preserved.completedToday)
+            let separated = gap.summary(asOf: today, calendar: zone)
+            XCTAssertEqual(separated.current, 1, "A timezone must not make non-adjacent civil labels adjacent")
+            XCTAssertEqual(separated.best, 1)
+            XCTAssertTrue(separated.completedToday)
+        }
+    }
+
     func testSavedDataDeduplicatesAndRejectsInvalidDays() throws {
         let duplicate = Data(#"{"completionDays":[{"year":2026,"month":10,"day":24},{"year":2026,"month":10,"day":24}]}"#.utf8)
         let tracker = try JSONDecoder().decode(StreakTracker.self, from: duplicate)

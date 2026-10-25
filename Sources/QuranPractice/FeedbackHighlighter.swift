@@ -11,7 +11,8 @@ public enum FeedbackHighlighter {
     public static func spans(text: String, issues: [AssessmentIssue]) -> [FeedbackSpan] {
         let scalarCount = text.unicodeScalars.count
         let sorted = issues.compactMap { issue -> Range<Int>? in
-            guard issue.startScalar >= 0, issue.endScalar <= scalarCount,
+            guard issue.category != .insert,
+                  issue.startScalar >= 0, issue.endScalar <= scalarCount,
                   issue.startScalar < issue.endScalar else { return nil }
             return issue.startScalar..<issue.endScalar
         }.sorted { lhs, rhs in

@@ -47,6 +47,16 @@ On a Mac run `xcodebuild -project Sakina.xcodeproj -scheme Sakina -destination
 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build`. Regenerate the
 project whenever App Swift files or resource groups change. Local package products
 are wired by `scripts/generate_project.py`; no external Swift dependencies.
+The scheme also contains hosted `AppTests` and `AppUITests`; use an actual
+available iPhone simulator destination with `xcodebuild test`. They were prepared
+but not run on 2026-10-25. See `docs/IOS_VERIFICATION.md`. Keep native and portable
+results separate. UI tests use an isolated, Debug-only defaults suite.
+
+Practice and reading share chapter selection, so hidden practice callbacks must
+never delete a valid take or stop the reader's audio. Preserve the take's exact
+reference and Basmala choice on tab changes. Only explicit practice selection or
+recording/deletion actions can replace it. Foreground downloads and own-voice
+playback/recording stop on background; recitation can continue with native controls.
 
 Intended remote: private `AllCrow/koran-ios`. Creation was denied by the GitHub
 integration (403) on 2026-10-24; do not claim upload success without checking the

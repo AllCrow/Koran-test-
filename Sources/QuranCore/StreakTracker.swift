@@ -96,6 +96,12 @@ public struct StreakTracker: Codable, Hashable, Sendable {
     public func summary(asOf date: Date = Date(), calendar: Calendar = .current) -> StreakSummary {
         let civil = ReadingDay.civilCalendar(calendar)
         let today = ReadingDay(date: date, calendar: civil)
+        // A saved ReadingDay is a Gregorian date label, not an instant in the
+        // current timezone. Some timezone changes skip an entire local date
+        // (for example Apia on 2011-12-30). Do adjacency arithmetic in UTC so
+        // travelling cannot reinterpret or normalize the stored date labels.
+        var dayArithmetic = Calendar(identifier: .gregorian)
+        dayArithmetic.timeZone = TimeZone(secondsFromGMT: 0)!
         // Future dates caused by clock changes or travel do not extend a streak.
         let days = completionDays.filter { $0 <= today }
         let completed = Set(days)
@@ -105,9 +111,9 @@ public struct StreakTracker: Codable, Hashable, Sendable {
         var previous: ReadingDay?
         for day in days {
             if let previous,
-               let previousDate = previous.date(in: civil),
-               let expected = civil.date(byAdding: .day, value: 1, to: previousDate),
-               ReadingDay(date: expected, calendar: civil) == day {
+               let previousDate = previous.date(in: dayArithmetic),
+               let expected = dayArithmetic.date(byAdding: .day, value: 1, to: previousDate),
+               ReadingDay(date: expected, calendar: dayArithmetic) == day {
                 run += 1
             } else {
                 run = 1
@@ -116,13 +122,13 @@ public struct StreakTracker: Codable, Hashable, Sendable {
             previous = day
         }
         var current = 0
-        if var cursor = today.date(in: civil) {
-            if !completedToday, let yesterday = civil.date(byAdding: .day, value: -1, to: cursor) {
+        if var cursor = today.date(in: dayArithmetic) {
+            if !completedToday, let yesterday = dayArithmetic.date(byAdding: .day, value: -1, to: cursor) {
                 cursor = yesterday
             }
-            while completed.contains(ReadingDay(date: cursor, calendar: civil)) {
+            while completed.contains(ReadingDay(date: cursor, calendar: dayArithmetic)) {
                 current += 1
-                guard let prior = civil.date(byAdding: .day, value: -1, to: cursor) else { break }
+                guard let prior = dayArithmetic.date(byAdding: .day, value: -1, to: cursor) else { break }
                 cursor = prior
             }
         }

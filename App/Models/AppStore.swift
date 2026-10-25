@@ -2,6 +2,7 @@ import Combine
 import Foundation
 import QuranCore
 import QuranData
+import UIKit
 
 @MainActor
 final class AppStore: ObservableObject {
@@ -31,21 +32,27 @@ final class AppStore: ObservableObject {
 
     private let repository: QuranRepository
     private let defaults: UserDefaults
+    private let now: () -> Date
+    private let calendar: () -> Calendar
     private let storageKey = "sakina.reading-state.v1"
     private var readAyahsByDay: [String: Set<AyahReference>] = [:]
     private var currentDay: ReadingDay
-    private var summaryDate = Date()
+    private var summaryDate: Date
     private var chapterRequestID = UUID()
     private var dayChangeSubscription: AnyCancellable?
 
     var streakSummary: StreakSummary {
-        streak.summary(asOf: summaryDate, calendar: .current)
+        streak.summary(asOf: summaryDate, calendar: calendar())
     }
 
-    init(repository: QuranRepository = QuranRepository(), defaults: UserDefaults = .standard) {
+    init(repository: QuranRepository = QuranRepository(), defaults: UserDefaults = .standard,
+         now: @escaping () -> Date = Date.init, calendar: @escaping () -> Calendar = { .current }) {
         self.repository = repository
         self.defaults = defaults
-        currentDay = ReadingDay(date: Date())
+        self.now = now
+        self.calendar = calendar
+        summaryDate = now()
+        currentDay = ReadingDay(date: summaryDate, calendar: calendar())
         if let data = defaults.data(forKey: storageKey),
            let saved = try? JSONDecoder().decode(SavedState.self, from: data), saved.version == 1 {
             selectedSurahID = (1...114).contains(saved.selectedSurahID) ? saved.selectedSurahID : 1
@@ -58,6 +65,8 @@ final class AppStore: ObservableObject {
         }
         refreshDay()
         dayChangeSubscription = NotificationCenter.default.publisher(for: .NSCalendarDayChanged)
+            .merge(with: NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange),
+                   NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification))
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 Task { @MainActor [weak self] in self?.refreshDay() }
@@ -147,12 +156,13 @@ final class AppStore: ObservableObject {
 
     /// Call when the app becomes active as well as at local midnight.
     func refreshDay() {
-        summaryDate = Date()
-        currentDay = ReadingDay(date: summaryDate, calendar: .current)
+        summaryDate = now()
+        let currentCalendar = calendar()
+        currentDay = ReadingDay(date: summaryDate, calendar: currentCalendar)
         // Detailed verse marks are needed only for the current week. Completed
         // civil days remain in StreakTracker, so pruning never erases a streak.
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .current
+        calendar.timeZone = currentCalendar.timeZone
         let retainedDays = Set((0..<7).compactMap { offset in
             calendar.date(byAdding: .day, value: -offset, to: summaryDate)
                 .map { ReadingDay(date: $0, calendar: calendar).id }
@@ -161,16 +171,16 @@ final class AppStore: ObservableObject {
         readAyahsByDay = readAyahsByDay.filter { retainedDays.contains($0.key) }
         if readAyahsByDay.count != previousCount { persist() }
         todayReadCount = readAyahsByDay[currentDay.id]?.count ?? 0
-        dailyGoalMet = streak.isCompleted(on: summaryDate, calendar: .current)
+        dailyGoalMet = streak.isCompleted(on: summaryDate, calendar: currentCalendar)
     }
 
     private func updateDailyProgress() {
         todayReadCount = readAyahsByDay[currentDay.id]?.count ?? 0
         if todayReadCount >= dailyGoal {
-            streak.complete(on: summaryDate, calendar: .current)
+            streak.complete(on: summaryDate, calendar: calendar())
         }
         // Changing a goal never removes a reading day already completed.
-        dailyGoalMet = streak.isCompleted(on: summaryDate, calendar: .current)
+        dailyGoalMet = streak.isCompleted(on: summaryDate, calendar: calendar())
     }
 
     private func persist() {

@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Generate a dependency-free Xcode app project around the local QuranCore package."""
+"""Generate the iPhone app and hosted native tests around the local packages."""
 from pathlib import Path
 import hashlib
 import json
-import plistlib
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT / "Sakina.xcodeproj"
@@ -43,6 +42,24 @@ def generate():
         source_refs.append(ref)
         sources.append(add("build:" + path, "PBXBuildFile", fileRef=ref))
 
+    test_files = sorted((ROOT / "AppTests").rglob("*.swift"))
+    test_sources = []
+    test_refs = []
+    for file in test_files:
+        path = file.relative_to(ROOT).as_posix()
+        ref = add("ref:" + path, "PBXFileReference", lastKnownFileType="sourcecode.swift", path=quoted(path), sourceTree=quoted("<group>"))
+        test_refs.append(ref)
+        test_sources.append(add("build:" + path, "PBXBuildFile", fileRef=ref))
+
+    ui_test_files = sorted((ROOT / "AppUITests").rglob("*.swift"))
+    ui_test_sources = []
+    ui_test_refs = []
+    for file in ui_test_files:
+        path = file.relative_to(ROOT).as_posix()
+        ref = add("ref:" + path, "PBXFileReference", lastKnownFileType="sourcecode.swift", path=quoted(path), sourceTree=quoted("<group>"))
+        ui_test_refs.append(ref)
+        ui_test_sources.append(add("build:" + path, "PBXBuildFile", fileRef=ref))
+
     resources = []
     resource_refs = []
     for path, file_type in [("App/Resources/Quran", "folder"), ("App/Resources/Fonts", "folder"), ("App/PrivacyInfo.xcprivacy", "text.xml"), ("App/Assets.xcassets", "folder.assetcatalog")]:
@@ -51,11 +68,15 @@ def generate():
         resources.append(add("build:" + path, "PBXBuildFile", fileRef=ref))
 
     product_ref = add("product", "PBXFileReference", explicitFileType="wrapper.application", includeInIndex="0", path=quoted("Sakina.app"), sourceTree="BUILT_PRODUCTS_DIR")
+    test_product_ref = add("testProduct", "PBXFileReference", explicitFileType="wrapper.cfbundle", includeInIndex="0", path=quoted("SakinaTests.xctest"), sourceTree="BUILT_PRODUCTS_DIR")
+    ui_test_product_ref = add("uiTestProduct", "PBXFileReference", explicitFileType="wrapper.cfbundle", includeInIndex="0", path=quoted("SakinaUITests.xctest"), sourceTree="BUILT_PRODUCTS_DIR")
     info_ref = add("info", "PBXFileReference", lastKnownFileType="text.plist.xml", path=quoted("App/Info.plist"), sourceTree=quoted("<group>"))
     source_group = add("sources", "PBXGroup", children=items(source_refs), name=quoted("App"), sourceTree=quoted("<group>"))
     resource_group = add("resources", "PBXGroup", children=items(resource_refs + [info_ref]), name=quoted("Resources"), sourceTree=quoted("<group>"))
-    product_group = add("products", "PBXGroup", children=items([product_ref]), name=quoted("Products"), sourceTree=quoted("<group>"))
-    main_group = add("main", "PBXGroup", children=items([source_group, resource_group, product_group]), sourceTree=quoted("<group>"))
+    test_group = add("tests", "PBXGroup", children=items(test_refs), name=quoted("AppTests"), sourceTree=quoted("<group>"))
+    ui_test_group = add("uiTests", "PBXGroup", children=items(ui_test_refs), name=quoted("AppUITests"), sourceTree=quoted("<group>"))
+    product_group = add("products", "PBXGroup", children=items([product_ref, test_product_ref, ui_test_product_ref]), name=quoted("Products"), sourceTree=quoted("<group>"))
+    main_group = add("main", "PBXGroup", children=items([source_group, resource_group, test_group, ui_test_group, product_group]), sourceTree=quoted("<group>"))
 
     local_package = add("package", "XCLocalSwiftPackageReference", relativePath=quoted("."))
     package_products = []
@@ -64,9 +85,19 @@ def generate():
         dependency = add("packageProduct:" + product, "XCSwiftPackageProductDependency", package=local_package, productName=quoted(product))
         package_products.append(dependency)
         package_builds.append(add("packageBuild:" + product, "PBXBuildFile", productRef=dependency))
+    test_package_products = []
+    test_package_builds = []
+    for product in ["QuranCore", "QuranData"]:
+        dependency = add("testPackageProduct:" + product, "XCSwiftPackageProductDependency", package=local_package, productName=quoted(product))
+        test_package_products.append(dependency)
+        test_package_builds.append(add("testPackageBuild:" + product, "PBXBuildFile", productRef=dependency))
     source_phase = add("sourcePhase", "PBXSourcesBuildPhase", buildActionMask="2147483647", files=items(sources), runOnlyForDeploymentPostprocessing="0")
     resources_phase = add("resourcesPhase", "PBXResourcesBuildPhase", buildActionMask="2147483647", files=items(resources), runOnlyForDeploymentPostprocessing="0")
     frameworks_phase = add("frameworksPhase", "PBXFrameworksBuildPhase", buildActionMask="2147483647", files=items(package_builds), runOnlyForDeploymentPostprocessing="0")
+    test_source_phase = add("testSourcePhase", "PBXSourcesBuildPhase", buildActionMask="2147483647", files=items(test_sources), runOnlyForDeploymentPostprocessing="0")
+    test_frameworks_phase = add("testFrameworksPhase", "PBXFrameworksBuildPhase", buildActionMask="2147483647", files=items(test_package_builds), runOnlyForDeploymentPostprocessing="0")
+    ui_test_source_phase = add("uiTestSourcePhase", "PBXSourcesBuildPhase", buildActionMask="2147483647", files=items(ui_test_sources), runOnlyForDeploymentPostprocessing="0")
+    ui_test_frameworks_phase = add("uiTestFrameworksPhase", "PBXFrameworksBuildPhase", buildActionMask="2147483647", files="()", runOnlyForDeploymentPostprocessing="0")
 
     project_settings = {
         "CLANG_ENABLE_MODULES": "YES", "CLANG_ENABLE_OBJC_ARC": "YES",
@@ -83,8 +114,22 @@ def generate():
         "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
         "LD_RUNPATH_SEARCH_PATHS": "$(inherited) @executable_path/Frameworks"
     }
+    test_settings = {
+        "PRODUCT_NAME": "$(TARGET_NAME)", "PRODUCT_BUNDLE_IDENTIFIER": "org.example.SakinaTests",
+        "GENERATE_INFOPLIST_FILE": "YES", "CODE_SIGN_STYLE": "Automatic",
+        "TARGETED_DEVICE_FAMILY": "1", "SUPPORTED_PLATFORMS": "iphoneos iphonesimulator",
+        "TEST_HOST": "$(BUILT_PRODUCTS_DIR)/Sakina.app/Sakina", "BUNDLE_LOADER": "$(TEST_HOST)",
+        "LD_RUNPATH_SEARCH_PATHS": "$(inherited) @executable_path/Frameworks @loader_path/Frameworks"
+    }
+    ui_test_settings = {
+        "PRODUCT_NAME": "$(TARGET_NAME)", "PRODUCT_BUNDLE_IDENTIFIER": "org.example.SakinaUITests",
+        "GENERATE_INFOPLIST_FILE": "YES", "CODE_SIGN_STYLE": "Automatic",
+        "TARGETED_DEVICE_FAMILY": "1", "SUPPORTED_PLATFORMS": "iphoneos iphonesimulator",
+        "TEST_TARGET_NAME": "Sakina",
+        "LD_RUNPATH_SEARCH_PATHS": "$(inherited) @executable_path/Frameworks @loader_path/Frameworks"
+    }
     configs = {}
-    for owner, base in [("project", project_settings), ("app", app_settings)]:
+    for owner, base in [("project", project_settings), ("app", app_settings), ("test", test_settings), ("uiTest", ui_test_settings)]:
         entries = []
         for mode in ["Debug", "Release"]:
             values = dict(base)
@@ -98,7 +143,13 @@ def generate():
         configs[owner] = add(owner + "Config", "XCConfigurationList", buildConfigurations=items(entries), defaultConfigurationIsVisible="0", defaultConfigurationName=quoted("Release"))
 
     target = add("target", "PBXNativeTarget", buildConfigurationList=configs["app"], buildPhases=items([source_phase, frameworks_phase, resources_phase]), buildRules="()", dependencies="()", name=quoted("Sakina"), packageProductDependencies=items(package_products), productName=quoted("Sakina"), productReference=product_ref, productType=quoted("com.apple.product-type.application"))
-    project = add("projectRoot", "PBXProject", attributes="{ BuildIndependentTargetsInParallel = YES; LastUpgradeCheck = 1600; }", buildConfigurationList=configs["project"], compatibilityVersion=quoted("Xcode 14.0"), developmentRegion=quoted("sv"), hasScannedForEncodings="0", knownRegions=items([quoted("sv"), quoted("en"), quoted("ar"), quoted("Base")]), mainGroup=main_group, packageReferences=items([local_package]), productRefGroup=product_group, projectDirPath=quoted(""), projectRoot=quoted(""), targets=items([target]))
+    test_proxy = add("testProxy", "PBXContainerItemProxy", containerPortal=identifier("projectRoot"), proxyType="1", remoteGlobalIDString=target, remoteInfo=quoted("Sakina"))
+    test_dependency = add("testDependency", "PBXTargetDependency", target=target, targetProxy=test_proxy)
+    test_target = add("testTarget", "PBXNativeTarget", buildConfigurationList=configs["test"], buildPhases=items([test_source_phase, test_frameworks_phase]), buildRules="()", dependencies=items([test_dependency]), name=quoted("SakinaTests"), packageProductDependencies=items(test_package_products), productName=quoted("SakinaTests"), productReference=test_product_ref, productType=quoted("com.apple.product-type.bundle.unit-test"))
+    ui_test_proxy = add("uiTestProxy", "PBXContainerItemProxy", containerPortal=identifier("projectRoot"), proxyType="1", remoteGlobalIDString=target, remoteInfo=quoted("Sakina"))
+    ui_test_dependency = add("uiTestDependency", "PBXTargetDependency", target=target, targetProxy=ui_test_proxy)
+    ui_test_target = add("uiTestTarget", "PBXNativeTarget", buildConfigurationList=configs["uiTest"], buildPhases=items([ui_test_source_phase, ui_test_frameworks_phase]), buildRules="()", dependencies=items([ui_test_dependency]), name=quoted("SakinaUITests"), packageProductDependencies="()", productName=quoted("SakinaUITests"), productReference=ui_test_product_ref, productType=quoted("com.apple.product-type.bundle.ui-testing"))
+    project = add("projectRoot", "PBXProject", attributes="{ BuildIndependentTargetsInParallel = YES; LastUpgradeCheck = 1600; }", buildConfigurationList=configs["project"], compatibilityVersion=quoted("Xcode 14.0"), developmentRegion=quoted("sv"), hasScannedForEncodings="0", knownRegions=items([quoted("sv"), quoted("en"), quoted("ar"), quoted("Base")]), mainGroup=main_group, packageReferences=items([local_package]), productRefGroup=product_group, projectDirPath=quoted(""), projectRoot=quoted(""), targets=items([target, test_target, ui_test_target]))
 
     PROJECT.mkdir(exist_ok=True)
     (PROJECT / "project.pbxproj").write_text("// !$*UTF8*$!\n{\n\tarchiveVersion = 1;\n\tclasses = {};\n\tobjectVersion = 56;\n\tobjects = {\n" + "\n".join(objects) + "\n\t};\n\trootObject = " + project + ";\n}\n")
@@ -111,6 +162,13 @@ def generate():
       <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{target}" BuildableName="Sakina.app" BlueprintName="Sakina" ReferencedContainer="container:Sakina.xcodeproj"/>
     </BuildActionEntry></BuildActionEntries>
   </BuildAction>
+  <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="YES">
+    <Testables><TestableReference skipped="NO">
+      <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{test_target}" BuildableName="SakinaTests.xctest" BlueprintName="SakinaTests" ReferencedContainer="container:Sakina.xcodeproj"/>
+    </TestableReference><TestableReference skipped="NO">
+      <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{ui_test_target}" BuildableName="SakinaUITests.xctest" BlueprintName="SakinaUITests" ReferencedContainer="container:Sakina.xcodeproj"/>
+    </TestableReference></Testables>
+  </TestAction>
   <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" debugServiceExtension="internal" allowLocationSimulation="YES">
     <BuildableProductRunnable runnableDebuggingMode="0"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{target}" BuildableName="Sakina.app" BlueprintName="Sakina" ReferencedContainer="container:Sakina.xcodeproj"/></BuildableProductRunnable>
   </LaunchAction>
@@ -125,7 +183,7 @@ def generate():
     workspace = PROJECT / "project.xcworkspace"
     workspace.mkdir(exist_ok=True)
     (workspace / "contents.xcworkspacedata").write_text('<?xml version="1.0" encoding="UTF-8"?><Workspace version="1.0"><FileRef location="self:"/></Workspace>\n')
-    print(f"Generated {PROJECT.name}: {len(swift_files)} Swift files + {len(package_products)} local libraries")
+    print(f"Generated {PROJECT.name}: {len(swift_files)} app Swift files, {len(test_files)} unit + {len(ui_test_files)} UI test files, {len(package_products)} local libraries")
 
 
 if __name__ == "__main__":

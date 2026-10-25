@@ -11,6 +11,7 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     @Published private(set) var isRequestingPermission = false
     @Published private(set) var hasRecording = false
     @Published private(set) var recordedReference: AyahReference?
+    @Published private(set) var recordedIncludesBasmala = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var permissionDenied = false
 
@@ -35,6 +36,7 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     private var permissionTask: Task<Void, Never>?
     private let directory: URL
     private var interruptionToken: NSObjectProtocol?
+    private var routeToken: NSObjectProtocol?
 
     override init() {
         directory = FileManager.default.temporaryDirectory.appendingPathComponent("SakinaPractice", isDirectory: true)
@@ -52,11 +54,22 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
                 MainActor.assumeIsolated { self?.stopAll() }
             }
         }
+        routeToken = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.routeChangeNotification, object: AVAudioSession.sharedInstance(), queue: .main
+        ) { [weak self] notification in
+            let reason = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt
+            if reason == AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue {
+                // Do not continue a private take through the speaker or switch
+                // microphones silently when headphones are disconnected.
+                MainActor.assumeIsolated { self?.stopAll() }
+            }
+        }
     }
 
     deinit {
         permissionTask?.cancel()
         if let interruptionToken { NotificationCenter.default.removeObserver(interruptionToken) }
+        if let routeToken { NotificationCenter.default.removeObserver(routeToken) }
         recorder?.stop()
         player?.stop()
         if let recordingURL { try? FileManager.default.removeItem(at: recordingURL) }
@@ -64,7 +77,7 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
 
     /// Reserve the request synchronously with the button action. A subsequent
     /// screen exit can cancel it even before the permission task gets CPU time.
-    func beginRecording(reference: AyahReference) {
+    func beginRecording(reference: AyahReference, includeBasmala: Bool = false) {
         guard !isRecording, !isRequestingPermission else { return }
         stopPlayback()
         errorMessage = nil
@@ -74,11 +87,11 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
         isRequestingPermission = true
         permissionTask = Task { [weak self] in
             guard let self else { return }
-            await self.requestPermissionAndStart(reference: reference, requestID: requestID)
+            await self.requestPermissionAndStart(reference: reference, includeBasmala: includeBasmala, requestID: requestID)
         }
     }
 
-    private func requestPermissionAndStart(reference: AyahReference, requestID: UUID) async {
+    private func requestPermissionAndStart(reference: AyahReference, includeBasmala: Bool, requestID: UUID) async {
         defer {
             if permissionRequestID == requestID {
                 permissionTask = nil
@@ -112,10 +125,18 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
             guard nextRecorder.prepareToRecord(), nextRecorder.record(forDuration: 60) else {
                 throw CocoaError(.fileWriteUnknown)
             }
-            if let recordingURL { try? FileManager.default.removeItem(at: recordingURL) }
+            if let recordingURL, FileManager.default.fileExists(atPath: recordingURL.path) {
+                do { try FileManager.default.removeItem(at: recordingURL) }
+                catch {
+                    // Keep the existing take reachable if its deletion fails.
+                    nextRecorder.stop()
+                    throw error
+                }
+            }
             recorder = nextRecorder
             recordingURL = url
             recordedReference = reference
+            recordedIncludesBasmala = includeBasmala && reference.ayahNumber == 1 && ![1, 9].contains(reference.surahID)
             hasRecording = false
             isRecording = true
             try? FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: url.path)
@@ -142,7 +163,7 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     }
 
     func playRecording() {
-        guard !isRecording, hasRecording, let recordingURL else { return }
+        guard !isRecording, !isRequestingPermission, hasRecording, let recordingURL else { return }
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playback, mode: .default)
@@ -173,19 +194,28 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
         stopPlayback()
     }
 
-    func deleteRecording() {
+    @discardableResult
+    func deleteRecording() -> Bool {
         stopAll()
-        if let recordingURL { try? FileManager.default.removeItem(at: recordingURL) }
+        if let recordingURL, FileManager.default.fileExists(atPath: recordingURL.path) {
+            do { try FileManager.default.removeItem(at: recordingURL) }
+            catch {
+                errorMessage = "Inspelningen kunde inte raderas. Försök igen."
+                return false
+            }
+        }
         recordingURL = nil
         recordedReference = nil
+        recordedIncludesBasmala = false
         hasRecording = false
         errorMessage = nil
+        return true
     }
 
     /// Copy the finished local take for an explicit user-requested assessment.
     /// No network request is made here and no mapped file can change underneath a caller.
     func recordingData() throws -> Data {
-        guard !isRecording, hasRecording, recordedReference != nil, let recordingURL else {
+        guard !isRecording, !isRequestingPermission, hasRecording, recordedReference != nil, let recordingURL else {
             throw RecordingDataError.missingRecording
         }
         let maximumBytes = 8 * 1_024 * 1_024

@@ -9,10 +9,17 @@ struct PracticeView: View {
     @EnvironmentObject private var recorder: PracticeRecorder
     @EnvironmentObject private var assessment: RecitationAssessmentStore
     @EnvironmentObject private var audioLibrary: AudioLibrary
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var verseNumber = 1
     @State private var showSurahs = false
     @State private var includeBasmala = false
     @State private var uploadError: String?
+    @State private var confirmNewTake = false
+    @State private var confirmDelete = false
+    @State private var confirmChooseSurah = false
+    @State private var pendingVerseNumber: Int?
+    @State private var isVisible = false
+    @State private var restoreTask: Task<Void, Never>?
 
     var body: some View {
         ScrollView {
@@ -21,76 +28,13 @@ struct PracticeView: View {
                     .font(.system(.largeTitle, design: .serif)).foregroundStyle(Palette.green)
                 Text("Öva en vers i taget med en recitatör som förebild.")
                     .foregroundStyle(.secondary)
-                if let chapter = store.chapter {
-                    HStack {
-                        Button { showSurahs = true } label: {
-                            Label(chapter.surah.englishName, systemImage: "book")
-                        }
-                        Spacer()
-                        Picker("Vers", selection: $verseNumber) {
-                            ForEach(1...chapter.surah.numberOfAyahs, id: \.self) { number in
-                                Text("Vers \(number)").tag(number)
-                            }
-                        }.pickerStyle(.menu)
-                    }
+                if let chapter = store.chapter, !isRestoringTake {
+                    selectionControls(chapter: chapter)
                     if let ayah = chapter.ayahs.first(where: { $0.numberInSurah == verseNumber }),
                        let reference = ayah.reference {
-                        Card {
-                            Text("\(reference.surahID):\(reference.ayahNumber)").font(.caption).foregroundStyle(.secondary)
-                            if let basmala = QuranPresentation.basmala(for: ayah) {
-                                Toggle("Läs även Basmala", isOn: $includeBasmala)
-                                    .font(.subheadline).padding(.top, 12)
-                                    .disabled(phraseChoiceLocked)
-                                Text(phraseChoiceHint)
-                                    .font(.caption).foregroundStyle(.secondary).padding(.top, 6)
-                                if includeBasmala {
-                                    ArabicText(text: basmala, tajweed: nil, colored: false).padding(.top, 14)
-                                }
-                            }
-                            ArabicText(text: QuranPresentation.verseText(ayah), tajweed: ayah.tajweed, colored: store.tajweedEnabled)
-                                .padding(.vertical, 14)
-                        }
+                        verseCard(ayah: ayah, reference: reference)
                         referenceControls(reference: reference, chapter: chapter)
-                        Card {
-                            Label("Din recitation", systemImage: "mic").font(.headline)
-                            Text(recorder.isRecording ? "Inspelning pågår. Läs lugnt i din egen takt." : "Spela in upp till en minut och lyssna tillbaka.")
-                                .font(.callout).foregroundStyle(.secondary).padding(.top, 6)
-                            PrimaryButton(
-                                title: recorder.isRecording ? "Avsluta inspelning" : (recorder.isRequestingPermission ? "Väntar på mikrofon …" : "Spela in min recitation"),
-                                icon: recorder.isRecording ? "stop.fill" : "mic.fill"
-                            ) {
-                                if recorder.isRecording { recorder.finishRecordingIfNeeded() }
-                                else {
-                                    assessment.reset()
-                                    uploadError = nil
-                                    player.stop()
-                                    recorder.beginRecording(reference: reference)
-                                }
-                            }.padding(.top, 16).disabled(recorder.isRequestingPermission)
-                            if recorder.hasRecording && recorder.recordedReference == reference {
-                                HStack {
-                                    Button {
-                                        player.stop()
-                                        if recorder.isPlaying { recorder.stopPlayback() } else { recorder.playRecording() }
-                                    } label: {
-                                        Label(recorder.isPlaying ? "Stoppa" : "Lyssna på mig", systemImage: recorder.isPlaying ? "stop.fill" : "play.fill")
-                                    }.buttonStyle(.bordered).frame(minHeight: 44)
-                                    Spacer()
-                                    Button(role: .destructive) { assessment.reset(); recorder.deleteRecording() } label: {
-                                        Image(systemName: "trash").frame(width: 44, height: 44)
-                                    }.accessibilityLabel("Radera inspelningen")
-                                }.padding(.top, 10)
-                                if assessment.isAvailable {
-                                    assessmentControls(ayah: ayah)
-                                }
-                            }
-                            if let error = recorder.errorMessage {
-                                ErrorBanner(message: error).padding(.top, 10)
-                            }
-                            if recorder.permissionDenied, let url = URL(string: UIApplication.openSettingsURLString) {
-                                Link("Öppna Inställningar", destination: url).padding(.top, 10)
-                            }
-                        }
+                        recordingControls(ayah: ayah, reference: reference)
                         if let feedback = assessment.response { AssessmentFeedbackView(response: feedback) }
                         if let error = assessment.errorMessage ?? uploadError { ErrorBanner(message: error) }
                     }
@@ -98,66 +42,201 @@ struct PracticeView: View {
                     ProgressView("Öppnar suran …")
                 } else if let error = store.errorMessage {
                     ErrorBanner(message: error)
-                    Button("Försök igen") { Task { await store.load() } }
+                    Button("Försök igen") { restorePracticeChapter() }
+                } else if isRestoringTake {
+                    ProgressView("Återgår till din inspelning …")
                 }
-                Card {
-                    Label("Om övningen", systemImage: "info.circle").font(.headline)
-                    Text(assessment.isAvailable
-                         ? "Den automatiska återkopplingen är en testfunktion. Modellen kan missa fel och ge felaktiga markeringar. Den är inte verifierad som ersättning för en kunnig lärare."
-                         : "Automatisk tajweedbedömning är inte tillgänglig i den här versionen. Övningen hjälper dig att lyssna och jämföra; den ger inga uttalsbetyg eller rättningar.")
-                        .font(.callout).foregroundStyle(.secondary).padding(.top, 8)
-                    Text(assessment.isAvailable
-                         ? "Ingen röst laddas upp automatiskt. När du väljer Analysera skickas din valda inspelning till analystjänsten."
-                         : "Din röst stannar på din iPhone. Inspelningen sparas tillfälligt och ersätts när du spelar in på nytt.")
-                        .font(.caption).foregroundStyle(.secondary).padding(.top, 8)
-                }
+                aboutPractice
             }.padding(24)
         }
         .background(Palette.background)
         .navigationTitle("Öva").navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showSurahs) {
             SurahPicker { surah in
-                recorder.deleteRecording()
+                guard surah.id != store.chapter?.surah.id, recorder.deleteRecording() else { return }
+                assessment.reset()
+                uploadError = nil
                 player.stop()
                 Task { await store.openSurah(surah.id) }
             }
         }
         .onChange(of: store.chapter?.surah.id) { _, _ in
-            assessment.reset()
-            recorder.deleteRecording()
-            includeBasmala = false
-            verseNumber = store.lastRead?.surahID == store.chapter?.surah.id ? (store.lastRead?.ayahNumber ?? 1) : 1
-        }
-        .onChange(of: verseNumber) { _, _ in
+            // The reader and practice currently share chapter selection. Browsing
+            // elsewhere, including a nil loading transition, must not erase a take.
+            if recorder.hasRecording || recorder.isRecording {
+                if let reference = recorder.recordedReference,
+                   reference.surahID == store.chapter?.surah.id {
+                    verseNumber = reference.ayahNumber
+                    includeBasmala = recorder.recordedIncludesBasmala
+                }
+                return
+            }
             assessment.reset()
             uploadError = nil
-            recorder.deleteRecording()
-            player.stop()
             includeBasmala = false
+            verseNumber = lastReadVerseNumber
+        }
+        .onChange(of: verseNumber) { _, _ in
+            let selectedReference = store.chapter.flatMap {
+                AyahReference(surahID: $0.surah.id, ayahNumber: verseNumber)
+            }
+            if recorder.hasRecording {
+                if recorder.recordedReference == selectedReference {
+                    includeBasmala = recorder.recordedIncludesBasmala
+                }
+            } else {
+                assessment.reset()
+                uploadError = nil
+                includeBasmala = false
+            }
+            if isVisible { player.stop() }
         }
         .onChange(of: includeBasmala) { _, _ in
             assessment.reset()
             uploadError = nil
-            player.stop()
+            if isVisible { player.stop() }
         }
         .onAppear {
-            // A practice reference must play once, even if normal reading was
-            // already playing this same verse with autoplay enabled.
+            isVisible = true
+            // Practice plays once, independently of the reading autoplay setting.
             player.stop()
-            verseNumber = store.lastRead?.surahID == store.chapter?.surah.id ? (store.lastRead?.ayahNumber ?? 1) : 1
+            if recorder.hasRecording, let reference = recorder.recordedReference {
+                verseNumber = reference.ayahNumber
+                includeBasmala = recorder.recordedIncludesBasmala
+                if reference.surahID != store.chapter?.surah.id { restorePracticeChapter() }
+            } else {
+                verseNumber = lastReadVerseNumber
+            }
         }
         .onDisappear {
+            isVisible = false
+            restoreTask?.cancel()
+            restoreTask = nil
             assessment.cancel()
             recorder.stopAll()
             player.stop()
         }
     }
 
+    private func selectionControls(chapter: QuranChapter) -> some View {
+        selectionLayout {
+            Button {
+                if recorder.hasRecording { confirmChooseSurah = true }
+                else { showSurahs = true }
+            } label: {
+                Label(chapter.surah.englishName, systemImage: "book")
+            }
+            .frame(minHeight: 44).disabled(selectionLocked)
+            .confirmationDialog("Välja en annan sura?", isPresented: $confirmChooseSurah, titleVisibility: .visible) {
+                Button("Välj sura") { showSurahs = true }
+                Button("Behåll tagningen", role: .cancel) { }
+            } message: {
+                Text("Väljer du en annan sura tas din tillfälliga inspelning bort.")
+            }
+            if !usesVerticalControls { Spacer() }
+            Picker("Vers", selection: Binding(get: { verseNumber }, set: selectVerse)) {
+                ForEach(1...chapter.surah.numberOfAyahs, id: \.self) { number in
+                    Text("Vers \(number)").tag(number)
+                }
+            }.pickerStyle(.menu).disabled(selectionLocked)
+                .confirmationDialog("Byta vers och radera tagningen?", isPresented: Binding(
+                    get: { pendingVerseNumber != nil },
+                    set: { if !$0 { pendingVerseNumber = nil } }
+                ), titleVisibility: .visible) {
+                    if let number = pendingVerseNumber {
+                        Button("Byt till vers \(number)", role: .destructive) {
+                            if recorder.deleteRecording() { verseNumber = number }
+                            pendingVerseNumber = nil
+                        }
+                    }
+                    Button("Behåll tagningen", role: .cancel) { pendingVerseNumber = nil }
+                } message: {
+                    Text("Du har en tillfällig inspelning för den valda versen. Den tas bort om du byter vers.")
+                }
+        }
+    }
+
+    private func verseCard(ayah: Ayah, reference: AyahReference) -> some View {
+        Card {
+            Text("\(reference.surahID):\(reference.ayahNumber)").font(.caption).foregroundStyle(.secondary)
+            if let basmala = QuranPresentation.basmala(for: ayah) {
+                Toggle("Läs även Basmala", isOn: $includeBasmala)
+                    .font(.subheadline).padding(.top, 12).disabled(phraseChoiceLocked)
+                Text(phraseChoiceHint)
+                    .font(.caption).foregroundStyle(.secondary).padding(.top, 6)
+                if includeBasmala {
+                    ArabicText(text: basmala, tajweed: nil, colored: false).padding(.top, 14)
+                }
+            }
+            ArabicText(text: QuranPresentation.verseText(ayah), tajweed: ayah.tajweed, colored: store.tajweedEnabled)
+                .padding(.vertical, 14)
+        }
+    }
+
+    private func recordingControls(ayah: Ayah, reference: AyahReference) -> some View {
+        Card {
+            Label("Din recitation", systemImage: "mic").font(.headline).accessibilityAddTraits(.isHeader)
+            Text(recorder.isRecording ? "Inspelning pågår. Läs lugnt i din egen takt." : "Spela in upp till en minut och lyssna tillbaka.")
+                .font(.callout).foregroundStyle(.secondary).padding(.top, 6)
+            PrimaryButton(
+                title: recorder.isRecording ? "Avsluta inspelning" : (recorder.isRequestingPermission ? "Väntar på mikrofon …" : "Spela in min recitation"),
+                icon: recorder.isRecording ? "stop.fill" : "mic.fill"
+            ) {
+                if recorder.isRecording { recorder.finishRecordingIfNeeded() }
+                else if recorder.hasRecording { confirmNewTake = true }
+                else { beginRecording(reference: reference) }
+            }.padding(.top, 16).disabled(recorder.isRequestingPermission)
+                .confirmationDialog("Spela in en ny tagning?", isPresented: $confirmNewTake, titleVisibility: .visible) {
+                    Button("Spela in en ny tagning", role: .destructive) { beginRecording(reference: reference) }
+                    Button("Behåll tagningen", role: .cancel) { }
+                } message: {
+                    Text("Din nuvarande tagning ersätts när den nya inspelningen startar.")
+                }
+            if recorder.hasRecording && !recorder.isRequestingPermission && !recorder.isRecording && recorder.recordedReference == reference {
+                savedTakeControls
+                if assessment.isAvailable { assessmentControls(ayah: ayah) }
+            }
+            if let error = recorder.errorMessage { ErrorBanner(message: error).padding(.top, 10) }
+            if recorder.permissionDenied, let url = URL(string: UIApplication.openSettingsURLString) {
+                Link("Öppna Inställningar", destination: url).padding(.top, 10)
+            }
+        }
+    }
+
+    private var savedTakeControls: some View {
+        selectionLayout {
+            Button {
+                player.stop()
+                if recorder.isPlaying { recorder.stopPlayback() } else { recorder.playRecording() }
+            } label: {
+                Label(recorder.isPlaying ? "Stoppa" : "Lyssna på mig", systemImage: recorder.isPlaying ? "stop.fill" : "play.fill")
+            }.buttonStyle(.bordered).frame(minHeight: 44)
+            if !usesVerticalControls { Spacer() }
+            Button(role: .destructive) { confirmDelete = true } label: {
+                Image(systemName: "trash").frame(width: 44, height: 44)
+            }.accessibilityLabel("Radera inspelningen")
+                .confirmationDialog("Radera inspelningen?", isPresented: $confirmDelete, titleVisibility: .visible) {
+                    Button("Radera inspelningen", role: .destructive) {
+                        assessment.reset()
+                        uploadError = nil
+                        recorder.deleteRecording()
+                    }
+                    Button("Behåll tagningen", role: .cancel) { }
+                } message: {
+                    Text("Den här tagningen tas bort från din iPhone.")
+                }
+        }.padding(.top, 10)
+    }
+
     private func referenceControls(reference: AyahReference, chapter: QuranChapter) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Picker("Recitatör", selection: Binding(get: { player.selectedReciter }, set: { player.selectReciter($0) })) {
+            Picker("Recitatör", selection: Binding(get: { player.selectedReciter }, set: { reciter in
+                guard reciter != player.selectedReciter else { return }
+                recorder.stopAll()
+                player.selectReciter(reciter)
+            })) {
                 ForEach(Reciter.allCases) { Text($0.displayName).tag($0) }
-            }.pickerStyle(.menu)
+            }.pickerStyle(.menu).disabled(recorder.isRecording || recorder.isRequestingPermission)
             PrimaryButton(title: canPause(reference) ? "Pausa förebilden" : "Lyssna på förebilden", icon: "headphones") {
                 recorder.stopAll()
                 if player.requestedReference == reference {
@@ -185,15 +264,78 @@ struct PracticeView: View {
             } else {
                 Button {
                     do {
+                        guard recorder.recordedReference == ayah.reference else {
+                            throw PracticeRecorder.RecordingDataError.missingRecording
+                        }
                         let audio = try recorder.recordingData()
-                        let withBasmala = QuranPresentation.basmala(for: ayah) != nil && includeBasmala
                         uploadError = nil
-                        assessment.beginAssessment(audioData: audio, ayah: ayah, includeBasmala: withBasmala)
+                        assessment.beginAssessment(audioData: audio, ayah: ayah, includeBasmala: recorder.recordedIncludesBasmala)
                     } catch { uploadError = error.localizedDescription }
                 } label: { Label("Analysera min recitation", systemImage: "waveform") }
                     .buttonStyle(.bordered).frame(minHeight: 44)
             }
         }.padding(.top, 16)
+    }
+
+    private var aboutPractice: some View {
+        Card {
+            Label("Om övningen", systemImage: "info.circle").font(.headline)
+            Text(assessment.isAvailable
+                 ? "Den automatiska återkopplingen är en testfunktion. Modellen kan missa fel och ge felaktiga markeringar. Den är inte verifierad som ersättning för en kunnig lärare."
+                 : "Automatisk tajweedbedömning är inte tillgänglig i den här versionen. Övningen hjälper dig att lyssna och jämföra; den ger inga uttalsbetyg eller rättningar.")
+                .font(.callout).foregroundStyle(.secondary).padding(.top, 8)
+            Text(assessment.isAvailable
+                 ? "Ingen röst laddas upp automatiskt. När du väljer Analysera skickas din valda inspelning till analystjänsten."
+                 : "Din röst stannar på din iPhone. Inspelningen sparas tillfälligt och ersätts när du spelar in på nytt.")
+                .font(.caption).foregroundStyle(.secondary).padding(.top, 8)
+        }
+    }
+
+    private var isRestoringTake: Bool {
+        recorder.hasRecording && recorder.recordedReference?.surahID != store.chapter?.surah.id
+    }
+
+    private func restorePracticeChapter() {
+        restoreTask?.cancel()
+        let reference = recorder.hasRecording ? recorder.recordedReference : nil
+        restoreTask = Task { @MainActor in
+            guard !Task.isCancelled, isVisible else { return }
+            if let reference {
+                guard recorder.hasRecording, recorder.recordedReference == reference else { return }
+                await store.openSurah(reference.surahID)
+            } else {
+                await store.load()
+            }
+        }
+    }
+
+    private var selectionLayout: AnyLayout {
+        usesVerticalControls
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: 12))
+    }
+
+    private var usesVerticalControls: Bool { dynamicTypeSize >= .xxLarge }
+
+    private var selectionLocked: Bool {
+        recorder.isRecording || recorder.isRequestingPermission || assessment.isAssessing
+    }
+
+    private var lastReadVerseNumber: Int {
+        store.lastRead?.surahID == store.chapter?.surah.id ? (store.lastRead?.ayahNumber ?? 1) : 1
+    }
+
+    private func selectVerse(_ number: Int) {
+        guard number != verseNumber else { return }
+        if recorder.hasRecording { pendingVerseNumber = number }
+        else { verseNumber = number }
+    }
+
+    private func beginRecording(reference: AyahReference) {
+        assessment.reset()
+        uploadError = nil
+        player.stop()
+        recorder.beginRecording(reference: reference, includeBasmala: includeBasmala)
     }
 
     private var phraseChoiceLocked: Bool {

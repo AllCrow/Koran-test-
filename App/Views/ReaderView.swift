@@ -16,7 +16,7 @@ struct ReaderView: View {
             ScrollView {
                 LazyVStack(spacing: 16) {
                     if let chapter = store.chapter {
-                        chapterHeading(chapter)
+                        chapterHeading(chapter).id("chapter-heading")
                         if let basmala = QuranPresentation.basmala(for: chapter) {
                             ArabicText(text: basmala, tajweed: nil, colored: false)
                                 .padding(.vertical, 12).padding(.horizontal, 8)
@@ -24,6 +24,7 @@ struct ReaderView: View {
                         if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
                         ForEach(chapter.ayahs) { ayah in
                             verseCard(ayah, chapter: chapter).id(ayah.numberInSurah)
+                                .accessibilityIdentifier("reader.verse.\(chapter.surah.id).\(ayah.numberInSurah)")
                         }
                         Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
                             .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)
@@ -33,17 +34,23 @@ struct ReaderView: View {
                     if let error = store.errorMessage {
                         ErrorBanner(message: error)
                         Button("Försök igen") { Task { await store.load() } }
+                            .frame(minHeight: 44)
+                            .accessibilityIdentifier("reader.retry")
                     }
                 }.padding(20)
             }
             .task(id: store.chapter?.surah.id) {
-                guard let reference = initialReference ?? store.lastRead,
-                      reference.surahID == store.chapter?.surah.id else { return }
+                guard store.chapter != nil else { return }
                 await Task.yield()
-                proxy.scrollTo(reference.ayahNumber, anchor: .top)
+                guard !Task.isCancelled else { return }
+                if let reference = preferredReference {
+                    proxy.scrollTo(reference.ayahNumber, anchor: .top)
+                } else {
+                    proxy.scrollTo("chapter-heading", anchor: .top)
+                }
             }
             .onAppear {
-                if let reference = initialReference ?? store.lastRead, reference.surahID == store.chapter?.surah.id {
+                if let reference = preferredReference {
                     proxy.scrollTo(reference.ayahNumber, anchor: .top)
                 }
             }
@@ -82,17 +89,42 @@ struct ReaderView: View {
 
     private func chapterHeading(_ chapter: QuranChapter) -> some View {
         Card {
-            HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("SURA \(chapter.surah.id)").font(.caption.weight(.semibold)).tracking(2).foregroundStyle(Palette.gold)
-                    Text(chapter.surah.englishName).font(.system(.title, design: .serif)).foregroundStyle(Palette.green)
-                    Text("\(chapter.surah.numberOfAyahs) verser").font(.subheadline).foregroundStyle(.secondary)
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: 12) {
+                    chapterDetails(chapter).fixedSize(horizontal: true, vertical: false)
+                    Spacer(minLength: 0)
+                    chapterArabicName(chapter).fixedSize(horizontal: true, vertical: false)
                 }
-                Spacer(minLength: 12)
-                Text(chapter.surah.name).font(.custom("AmiriQuran-Regular", size: 26, relativeTo: .title2))
-                    .environment(\.layoutDirection, .rightToLeft)
+                VStack(alignment: .leading, spacing: 14) {
+                    chapterDetails(chapter)
+                    chapterArabicName(chapter).frame(maxWidth: .infinity, alignment: .trailing)
+                }
             }
         }
+    }
+
+    private func chapterDetails(_ chapter: QuranChapter) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("SURA \(chapter.surah.id)").font(.caption.weight(.semibold)).tracking(2).foregroundStyle(Palette.gold)
+            Text(chapter.surah.englishName).font(.system(.title, design: .serif)).foregroundStyle(Palette.green)
+                .accessibilityIdentifier("reader.chapter.\(chapter.surah.id)")
+                .accessibilityAddTraits(.isHeader)
+            Text("\(chapter.surah.numberOfAyahs) verser").font(.subheadline).foregroundStyle(.secondary)
+        }
+    }
+
+    private func chapterArabicName(_ chapter: QuranChapter) -> some View {
+        Text(chapter.surah.name).font(.custom("AmiriQuran-Regular", size: 26, relativeTo: .title2))
+            .environment(\.layoutDirection, .rightToLeft)
+            .accessibilityRepresentation { ArabicAccessibilityLabel(text: chapter.surah.name) }
+    }
+
+    /// A bookmark is a preferred position only while its own chapter is open.
+    private var preferredReference: AyahReference? {
+        let chapterID = store.chapter?.surah.id
+        if let initialReference, initialReference.surahID == chapterID { return initialReference }
+        if let lastRead = store.lastRead, lastRead.surahID == chapterID { return lastRead }
+        return nil
     }
 
     private func verseCard(_ ayah: Ayah, chapter: QuranChapter) -> some View {
@@ -138,6 +170,7 @@ struct ReaderView: View {
                         Image(systemName: store.bookmarks.contains(reference) ? "bookmark.fill" : "bookmark")
                             .frame(width: 44, height: 44)
                     }.accessibilityLabel(store.bookmarks.contains(reference) ? "Ta bort bokmärke" : "Spara bokmärke")
+                        .accessibilityIdentifier("reader.bookmark.\(reference.surahID).\(reference.ayahNumber)")
                     Button { tafsirReference = reference } label: { Text("Tafsir").font(.subheadline).frame(minHeight: 44) }
                     Spacer(minLength: 0)
                     Button { store.markRead(reference) } label: {
@@ -145,6 +178,7 @@ struct ReaderView: View {
                             .frame(width: 44, height: 44)
                     }.accessibilityLabel(store.isReadToday(reference) ? "Redan läst idag" : "Markera vers \(ayah.numberInSurah) som läst")
                         .disabled(store.isReadToday(reference))
+                        .accessibilityIdentifier("reader.markRead.\(reference.surahID).\(reference.ayahNumber)")
                 }.buttonStyle(.plain).foregroundStyle(Palette.green)
             }
         }
@@ -159,6 +193,7 @@ struct SurahPicker: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
     @State private var search = ""
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let select: (Surah) -> Void
 
     var body: some View {
@@ -169,21 +204,36 @@ struct SurahPicker: View {
                     dismiss()
                 } label: {
                     HStack(spacing: 14) {
-                        Text("\(surah.id)").font(.subheadline.monospacedDigit()).foregroundStyle(Palette.green).frame(width: 34)
+                        Text("\(surah.id)").font(.subheadline.monospacedDigit()).foregroundStyle(Palette.green)
+                            .frame(minWidth: 34).fixedSize(horizontal: true, vertical: false)
                         VStack(alignment: .leading, spacing: 4) {
                             Text(surah.englishName).foregroundStyle(.primary)
                             Text("\(surah.numberOfAyahs) verser").font(.caption).foregroundStyle(.secondary)
+                            if dynamicTypeSize.isAccessibilitySize { arabicName(surah) }
                         }
                         Spacer()
-                        Text(surah.name).font(.custom("AmiriQuran-Regular", size: 21, relativeTo: .title3))
-                            .foregroundStyle(Palette.green)
+                        if !dynamicTypeSize.isAccessibilitySize { arabicName(surah) }
                     }.padding(.vertical, 6)
+                }
+                .accessibilityIdentifier("surah.select.\(surah.id)")
+            }
+            .overlay {
+                if filtered.isEmpty && store.index != nil {
+                    ContentUnavailableView("Ingen sura hittades", systemImage: "magnifyingglass",
+                                           description: Text("Prova ett annat namn eller surans nummer."))
                 }
             }
             .searchable(text: $search, prompt: "Namn eller surans nummer")
             .navigationTitle("Välj sura")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Stäng") { dismiss() } } }
         }
+    }
+
+    private func arabicName(_ surah: Surah) -> some View {
+        Text(surah.name).font(.custom("AmiriQuran-Regular", size: 21, relativeTo: .title3))
+            .foregroundStyle(Palette.green)
+            .environment(\.layoutDirection, .rightToLeft)
+            .accessibilityRepresentation { ArabicAccessibilityLabel(text: surah.name) }
     }
     private var filtered: [Surah] {
         let surahs = store.index?.surahs ?? []
@@ -218,14 +268,18 @@ struct PlaybackBar: View {
     @EnvironmentObject private var recorder: PracticeRecorder
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 4) {
             if let error = player.errorMessage {
                 Text(error).font(.caption).foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            HStack(spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
                 Menu {
                     ForEach(Reciter.allCases) { reciter in
-                        Button { player.selectReciter(reciter) } label: {
+                        Button {
+                            recorder.stopAll()
+                            player.selectReciter(reciter)
+                        } label: {
                             if reciter == player.selectedReciter { Label(reciter.displayName, systemImage: "checkmark") }
                             else { Text(reciter.displayName) }
                         }
@@ -238,9 +292,20 @@ struct PlaybackBar: View {
                                 .font(.caption2).foregroundStyle(.secondary)
                         }
                     }.frame(maxWidth: .infinity, alignment: .leading).frame(minHeight: 44)
+                        .contentShape(Rectangle())
                 }
+                .accessibilityLabel("Byt recitatör")
+                .accessibilityValue(player.selectedReciter.displayName)
+                Button { player.stop() } label: {
+                    Image(systemName: "xmark").frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }.accessibilityLabel("Stäng spelaren")
+            }
+            HStack(spacing: 28) {
+                Spacer(minLength: 0)
                 Button { recorder.stopAll(); player.previous() } label: {
-                    Image(systemName: "backward.end.fill").frame(width: 40, height: 44)
+                    Image(systemName: "backward.end.fill").frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }.accessibilityLabel("Föregående vers")
                     .disabled((player.requestedReference?.ayahNumber ?? 1) <= 1)
                 Button {
@@ -250,18 +315,20 @@ struct PlaybackBar: View {
                     Group {
                         if player.isBuffering { ProgressView() }
                         else { Image(systemName: player.isPlaying ? "pause.fill" : "play.fill") }
-                    }.frame(width: 44, height: 44)
+                    }.frame(width: 56, height: 44).contentShape(Rectangle())
                 }.accessibilityLabel(player.isPlaying || player.isBuffering ? "Pausa" : "Spela")
+                    .accessibilityIdentifier("reader.playback.toggle")
                 Button { recorder.stopAll(); player.next() } label: {
-                    Image(systemName: "forward.end.fill").frame(width: 40, height: 44)
+                    Image(systemName: "forward.end.fill").frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }.accessibilityLabel("Nästa vers")
                     .disabled(isLastVerse)
-                Button { player.stop() } label: {
-                    Image(systemName: "xmark").frame(width: 32, height: 44)
-                }.accessibilityLabel("Stäng spelaren")
+                Spacer(minLength: 0)
             }
+            .font(.title3)
         }
-        .padding(.horizontal, 16).padding(.vertical, 10)
+        .buttonStyle(.plain)
+        .padding(.horizontal, 16).padding(.vertical, 8)
         .background(.regularMaterial)
     }
     private var isLastVerse: Bool {

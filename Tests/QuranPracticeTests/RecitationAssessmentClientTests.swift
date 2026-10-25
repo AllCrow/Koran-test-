@@ -184,6 +184,26 @@ final class RecitationAssessmentClientTests: XCTestCase {
         catch { XCTAssertTrue(error is CancellationError) }
     }
 
+    func testAlreadyCancelledAnalysisNeverUploadsRecording() async throws {
+        AssessmentURLProtocol.setHandler { _ in
+            XCTFail("A cancelled analysis must not send voice data")
+            return (200, Data(), [:])
+        }
+        let client = try client()
+        let audio = self.audio
+        let ayah = self.ayah
+        let task = Task {
+            withUnsafeCurrentTask { $0?.cancel() }
+            return try await client.assess(audioData: audio, ayah: ayah)
+        }
+        do {
+            _ = try await task.value
+            XCTFail("Expected cancellation")
+        } catch {
+            XCTAssertTrue(error is CancellationError)
+        }
+    }
+
     func testRecordedPythonModelResponsesPassSwiftContractAndPreserveFeedbackText() async throws {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let evidenceURL = root.appendingPathComponent("docs/evidence/model-smoke-2026-10-24.json")

@@ -1,6 +1,20 @@
 # Sakina – utvecklingsstatus
 
-Uppdaterat: **2026-10-24**. Utvecklingen fortsätter enligt användarens instruktion att arbeta självständigt mot hög kvalitet och bevara arbetet. Detta är en utvecklingsversion i källkod; ingen signerad eller färdigtestad iPhone-release är publicerad. Produktkraven finns i [KRAV.md](KRAV.md).
+Uppdaterat: **2026-10-25**. Den senaste omgången fokuserar på användarens begärda finjusteringar, granskning och bevarande. Detta är en utvecklingsversion i källkod; ingen signerad eller färdigtestad iPhone-release är publicerad. Produktkraven finns i [KRAV.md](KRAV.md).
+
+## Senaste finjusteringar
+
+- Ljudfältet har större tryckytor och bättre plats för stor text. Arabisk högerjustering och VoiceOver-rubriker är rättade; startsida och suraval har adaptiv layout.
+- Låsskärms-/headsetkontroller och metadata för vald vers/recitatör är implementerade utan tidspollning. Recitatör och autospelning sparas mellan appstarter. Inspelningens ljudsession skyddas från gammal spelarstädning.
+- En övningstagning och dess Basmala-val bevaras vid läsning av andra suror och återställs när övningen öppnas. Ersättning, radering och byte av övningsvers kräver uttryckligt val. Pågående mikrofonbehörighet kan inte samtidigt starta återlyssning eller analys.
+- Hörlursurkoppling stoppar privat inspelning/återlyssning. När appen går till bakgrunden stoppas egen röst och förgrundsnedladdning; färdiga ljudfiler bevaras. Referensrecitation kan fortfarande fortsätta i bakgrunden.
+- Tafsirens återförsök följer vyns livstid, och äldre avbrutna anrop kan inte skriva över ett nyare laddningstillstånd. Nedladdningar reserverar sitt jobb direkt för att undvika fördröjda starter efter avbrytning.
+- Streakhistorik räknas konsekvent även i tidszoner med historiskt överhoppade datum. Systemets tids-/tidszonsändring uppdaterar dagens läsprogression utan polling. Modellens indikation om ett extra ljud färgar inte en befintlig bokstav.
+- Backend avvisar spellistor och ofullständig PCM; dubbelt avbrutna HTTP-anrop behåller analysplatsen tills arbetstråden har avslutats.
+
+De native-ändringarna är källgranskade och syntaxkontrollerade, inte Apple SDK- eller enhetsgodkända. Åtta hostade iOS-tester och tre UI-flöden är förberedda i projekt/scheme/CI men **inte körda**. Se [native-proven](docs/IOS_VERIFICATION.md).
+
+[Verifieringssammanställningen](docs/evidence/polish-verification-2026-10-25.json) sparar resultat, avgränsningar och SHA256 för den granskade källkoden.
 
 ## Implementation
 
@@ -25,15 +39,15 @@ Korantext, tajweeddata och övningsreferenser är lokala. Recitationsljud kräve
 
 | Kontroll | Resultat | Omfattning |
 | --- | --- | --- |
-| Portabla Swift-tester | **56 passerade, 0 fel** | 21 kärntester, 16 datatester och 19 övnings-/analyskontraktstester. Det nya tvärspråkstestet validerar fem verkliga Python-svar genom Swift-klienten. Körda på Linux med Swift, inte via iOS-runtime. |
-| Backendtester | **24 passerade** | Kontrakt, validering, resursgränser, riktig M4A-avkodning och avgränsade madd arid-varianter. Kontraktstester med motorersättning mäter inte modellkvalitet. |
+| Portabla Swift-tester | **61 passerade, 0 fel** | 22 kärntester, 18 datatester och 21 övnings-/analyskontraktstester. Tvärspråkstestet validerar fem verkliga Python-svar genom Swift-klienten. Körda på Linux med Swift, inte via iOS-runtime. |
+| Backendtester | **28 passerade** | Kontrakt, validering, resursgränser, riktig M4A/AAC-/WAV-avkodning, upprepad avbrytning och avgränsade madd arid-varianter. Kontraktstester med motorersättning mäter inte modellkvalitet. |
 | Koranresurser | **Godkända** | 114 suror, 6 236 konsekutiva referenser, metadatakoppling, UTF-8-bevarande och samtliga käll-/resurshashar. |
 | Övningsreferenser | **Godkända** | Fixerad källversion, originaldata/API-hashar, filinventering, licensnotiser samt fonemkompatibilitet för samtliga referenser. |
 | Font och resurser | **Godkända** | Amiri Quran-/OFL-hashar, resursdeklarationer och synlig teckentäckning för kanonisk lästext. |
-| Native Xcode-/enhetsprov | **Inte utförda** | SwiftUI, AVFoundation, fysisk telefon och signering är inte godkända genom portabla tester. |
+| Native Xcode-/enhetsprov | **Inte utförda** | Åtta hostade tester och tre UI-flöden är förberedda. SwiftUI, AVFoundation, fysisk telefon och signering är inte godkända genom portabla tester. |
 | Verklig Muaalem-inferens | **Utförd; utökat prov med 35 indata** | 33 referensklipp från al-Fatiha/al-Ikhlas med tre recitatörer samt annan vers och tystnad. Ett referensfall behöver sakkunnig granskning. Inga expertetiketter eller generell kvalitetsmätning. |
 | REA-inspektion | **Utförd på verklig viktfil** | 816 F32-tensorer, 605 754 251 deklarerade element och full SHA256 verifierade. Tensorvärden eller kvalitet tolkas inte av denna kontroll. |
-| Dockerbygg/-start | **Godkända lokalt** | `sakina-analysis:dev` byggdes och kördes som UID 10001 utan nätverk eller värdportar. Hälsokontroll utan modell gav säkert inte-redo-läge; ren avstängning. Ingen containerinferens eller publik tjänst verifierad. Aktuell patched image har byggts och isolerat hälsotestats igen. |
+| Dockerbygg/-start | **Tidigare image och aktuell källstart kontrollerade** | Image från 2026-10-24 kördes som UID 10001 utan nätverk eller värdportar. Den 25 oktober startades aktuell backendkod och referenser via read-only-mount i samma runtime, som UID 1000, utan nätverk/värdportar. Verklig lokal HTTP-hälsa gav inte-redo-läge och ren avstängning. Det är ingen ny imagebyggning, containerinferens eller publik tjänst. |
 
 Koranverifieringen körs med `python3 scripts/verify_content.py`. Offlineåterskapande från källögonblicksbilder har kontrollerats som deterministiskt. Negativa kontroller avvisar ändrad arabisk text, en extra kapitelresurs och ändrad text även när dess resurshash har skrivits om. Det är inte en oberoende lärd certifiering av källan.
 

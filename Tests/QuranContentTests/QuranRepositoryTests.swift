@@ -85,6 +85,33 @@ final class QuranRepositoryTests: XCTestCase {
         }
     }
 
+    func testMalformedIndexUsesLocalizedValidationErrorAndCanBeRetried() async throws {
+        try await withFixture { directory in
+            let path = directory.appendingPathComponent("index.json")
+            let original = try Data(contentsOf: path)
+            try Data("{\"version\":".utf8).write(to: path)
+            let repository = QuranRepository(resourceDirectory: directory)
+            await assertError(.invalidIndex) { _ = try await repository.loadIndex() }
+            // Failed decoding must not poison the cache with a partial index.
+            try original.write(to: path)
+            let recovered = try await repository.loadIndex()
+            XCTAssertEqual(recovered.surahs.count, 114)
+        }
+    }
+
+    func testMalformedChapterUsesLocalizedValidationErrorAndCanBeRetried() async throws {
+        try await withFixture(chapters: [1]) { directory in
+            let path = directory.appendingPathComponent("001.json")
+            let original = try Data(contentsOf: path)
+            try Data("[]".utf8).write(to: path)
+            let repository = QuranRepository(resourceDirectory: directory)
+            await assertError(.invalidChapter(1)) { _ = try await repository.loadChapter(id: 1) }
+            try original.write(to: path)
+            let recovered = try await repository.loadChapter(id: 1)
+            XCTAssertEqual(recovered.ayahs.count, 7)
+        }
+    }
+
     func testInvalidChapterIDFailsBeforeReadingResources() async {
         let repository = QuranRepository(resourceDirectory: URL(fileURLWithPath: "/nonexistent-quran-test"))
         await assertError(.invalidChapter(0)) { _ = try await repository.loadChapter(id: 0) }
