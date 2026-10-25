@@ -53,7 +53,7 @@ molnsynk. Exporten omfattar läsposition, bokmärken och läshistorik, inte rös
 nedladdad recitation eller appinställningar. Avinstallation utan separat kopia
 raderar de lokala uppgifterna.
 
-Ljud kan nu uttryckligen laddas ned per sura och recitatör; spelaren föredrar den lokala filen när den finns. Ingen recitation är förpaketerad. Denna implementation behöver fortfarande native-testas på iPhone. Amiri Quran är bundlad med originallicens och verifierad täckning av lästextens synliga tecken; faktisk återgivning på iPhone återstår.
+Ljud kan nu uttryckligen laddas ned per sura och recitatör; spelaren föredrar den lokala filen när den finns. Ingen recitation är förpaketerad. Kontrollerad transport, lokal filhantering och riktig uppspelning av test-WAV har native-prov i simulatorn. Verklig nedladdning, imaminspelningar och ljudrutter återstår på fysisk iPhone. Amiri Quran är bundlad med originallicens och verifierad täckning av lästextens synliga tecken; faktisk återgivning på den fysiska telefonen återstår.
 
 ## Prestanda och kostnad
 

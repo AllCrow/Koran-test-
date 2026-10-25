@@ -57,17 +57,38 @@ On a Mac run `xcodebuild -project Sakina.xcodeproj -scheme Sakina -destination
 project whenever App Swift files or resource groups change. Local package products
 are wired by `scripts/generate_project.py`; no external Swift dependencies.
 The scheme also contains hosted `AppTests` and `AppUITests`; use an actual
-available iPhone simulator destination with `xcodebuild test`. Actual macOS CI
-has passed the Apple SDK build, eight AppStore tests, seven AudioLibrary tests
-and all three UI flows on 2026-10-25 (run 40154414555, source a0b2e624,
-Xcode16.4/iOS18.5 simulator). The audio file tests use synthetic MPEG frames;
-they do not verify real playback, network downloads or device energy use.
+available iPhone simulator destination with `xcodebuild test`. See `STATUS.md`
+for the exact latest tested source, run and counts. Mac CI uses Xcode16.4 and
+an iOS18.5 simulator. Native suites cover AppStore, AudioLibrary, PracticeRecorder,
+RecitationPlayer and text/search/navigation. Audio validation uses synthetic MPEG
+frames; player tests perform real muted playback of generated local PCM WAVs.
+Controlled download responses and permission callbacks do not establish real
+network transfer, physical microphone behavior, audio routes or device energy.
 The parent accessibility identifier had masked child buttons; do not put an
 identifier on the entire verse Card again. Verse scroll IDs must include sura
 and ayah, and the verse group must refresh when its sura changes. See
 `docs/IOS_VERIFICATION.md` and current `STATUS.md`. Keep native and portable
 results separate. UI tests use an isolated, Debug-only defaults suite. Debug
 must keep `ONLY_ACTIVE_ARCH=YES` to match packages for a concrete simulator.
+
+At accessibility XXXL, a SwiftUI labelled Toggle can expose the full row as its
+switch frame. UI tests must reveal the full row and tap the actual trailing
+control, retaining the value-change and relaunch assertions. Do not replace a
+failing interaction with a defaults injection. Direct verse jumps use global
+references, change reading position only, and must never award reading credit.
+After a jump, later explicit reading/listening must win over the old bookmark.
+Long variable-height suras need semantic `scrollPosition`/`scrollTargetLayout`,
+with the actual ForEach data IDs matching the global String row IDs. A single
+imperative `scrollTo` landed at 2:203 for a requested 2:255 in the real simulator.
+Keep the long-jump, relaunch, repeated-jump and later-position UI assertions.
+Manual jumps execute after sheet dismissal; keep the reader lazy.
+
+Reading backup import is additive and validated before mutation. Keep its
+bounded file read, security-scoped/coordinated access and stale-request guard.
+Never include voice, downloaded audio or credentials in the export. The owner
+can retrieve successfully tested device packages from a GitHub release DRAFT;
+the workflow must preserve `--draft` and require all verification jobs first.
+An unsigned IPA still requires personal signing and device provisioning.
 
 Practice and reading share chapter selection, so hidden practice callbacks must
 never delete a valid take or stop the reader's audio. Preserve the take's exact

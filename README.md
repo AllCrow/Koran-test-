@@ -18,7 +18,7 @@ Utvecklingen fortsätter självständigt enligt användarens senaste instruktion
 - Lokal inspelning och återlyssning för övning, med bevarad tagning och tydliga val före ersättning/radering.
 - En integrerad **experimentell analysväg** med separat Muaalem-backend, typad iOS-klient och återkopplingsvy. Den är **avstängd som standard** och har ingen konfigurerad serveradress.
 
-Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline; tafsir kräver nät. Den native ljudnedladdningen och uppspelningen har ännu inte provats på iPhone.
+Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline; tafsir kräver nät. Kontrollerad nedladdning och uppspelning provas i simulatorn; verkligt nät, mikrofon och ljudrutter behöver fortfarande provas på fysisk iPhone.
 
 **Tarteel-kvalitetsmålet är inte uppnått eller verifierat.** Analysvägen ger inga övergripande uttalsbetyg och laddar inte automatiskt upp inspelningar. Ingen publik analystjänst är driftsatt. Verklig CPU-inferens har körts genom API:t, senast med 35 indata: 33 referensklipp från al-Fatiha och al-Ikhlas med tre recitatörer samt annan-vers- och tystnadskontroller. 32 referensklipp gav inga indikationer; en indikation i al-Afasys 112:2 behöver sakkunnig källklippsgranskning och är inte klassificerad som rätt eller fel. Detta är funktionsprov utan uppmätt generell träffsäkerhet. Se [resultaten](docs/MODEL_SMOKE_RESULTS.md).
 
@@ -47,7 +47,7 @@ xcodebuild -project Sakina.xcodeproj -scheme Sakina \
 
 Efter tillägg av Swift-filer eller resurser: kör `python3 scripts/generate_project.py` och checka in det uppdaterade projektet. Generatorn kräver bara Python 3.
 
-**Verifierat hittills:** 61 portabla Swift-tester, 28 backendtester, riktigt Xcode-bygge och samtliga 18 native-tester (15 hostade och tre UI-flöden) passerar. UI-proven täcker läsmarkering, återstart, bokmärken, surasökning och korrekt vers efter surabyte. Ett verkligt CPU-prov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, signering och TestFlight återstår. Se [STATUS.md](STATUS.md) och [native-proven](docs/IOS_VERIFICATION.md).
+Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, personlig signering och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
 
 ## Struktur
 
@@ -58,13 +58,13 @@ Efter tillägg av Swift-filer eller resurser: kör `python3 scripts/generate_pro
 | `Sources/QuranData/` | Koran- och tafsirrepositoryer |
 | `Sources/QuranPractice/` | Analyskontrakt, klient, Unicode-markering och separat referensutgåva |
 | `Tests/` | Portabla tester för de tre biblioteken |
-| `AppTests/`, `AppUITests/` | Förberedda native-tester av sparad läsprogression och läsflöden |
+| `AppTests/`, `AppUITests/` | Native-prov av läsdata, ljud, inspelningslivstid, textberedning och UI-flöden |
 | `App/Resources/Quran/` | Källtext, originalögonblicksbilder och notiser |
 | `App/Resources/Fonts/` | Amiri Quran och ursprunglig licens/proveniens |
 | `backend/` | Valbar experimentell Muaalem-tjänst, beroendepinnar och kontrakttester |
 | `docs/RECITATION_RESEARCH.md` | Modellkandidater, publicerad utvärdering och genomförda referenskontroller |
 | `scripts/` | Import, export, innehålls-/resurskontroller och projektgenerering |
-| `.github/workflows/ios.yml` | Förberett macOS-test- och simulatorbygge |
+| `.github/workflows/ios.yml` | Mac-tester, simulatorbygge, fysisk iPhone-IPA och bevarande som releaseutkast |
 
 ## Experimentell analys och integritet
 
