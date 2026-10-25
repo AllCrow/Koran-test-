@@ -12,6 +12,9 @@ struct ReaderView: View {
     @State private var showLegend = false
     @State private var tafsirReference: AyahReference?
     @State private var showVerseJump = false
+    @State private var showRepeatPlayback = false
+    @State private var showPracticeQueueError = false
+    @State private var practiceQueueErrorMessage = ""
     @State private var prefersLatestReadingPosition = false
     @State private var pendingJumpReference: AyahReference?
     @State private var scrollRequest: ScrollRequest?
@@ -50,6 +53,7 @@ struct ReaderView: View {
             }
             .onChange(of: player.activeReference) { _, reference in
                 guard let reference, reference.surahID == store.chapter?.surah.id else { return }
+                prefersLatestReadingPosition = true
                 store.setLastRead(reference)
                 // Each new recitation begins at the start of its verse. A long
                 // Arabic card can exceed the viewport, so centering it would
@@ -89,6 +93,11 @@ struct ReaderView: View {
                     }
                     .disabled(store.chapter == nil)
                     .accessibilityIdentifier("reader.jump.present")
+                    Button { showRepeatPlayback = true } label: {
+                        Label("Repetera verser", systemImage: "repeat")
+                    }
+                    .disabled(store.chapter == nil)
+                    .accessibilityIdentifier("reader.repeat.present")
                     Picker("Arabisk textstorlek", selection: Binding(get: { store.arabicTextSize }, set: { store.setArabicTextSize($0) })) {
                         ForEach(AppStore.ArabicTextSize.allCases) { size in
                             Text(size.displayName).tag(size)
@@ -111,6 +120,16 @@ struct ReaderView: View {
             }
         }
         .sheet(item: $tafsirReference) { TafsirSheet(reference: $0) }
+        .sheet(isPresented: $showRepeatPlayback) {
+            if let chapter = store.chapter {
+                RepeatPlaybackSheet(surah: chapter.surah, initialVerse: preferredReference?.ayahNumber ?? 1)
+            }
+        }
+        .alert("Övningskön kunde inte ändras", isPresented: $showPracticeQueueError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(practiceQueueErrorMessage)
+        }
     }
 
     @ViewBuilder
@@ -194,7 +213,7 @@ struct ReaderView: View {
             .accessibilityRepresentation { ArabicAccessibilityLabel(text: chapter.surah.name) }
     }
 
-    /// A bookmark sets the first position. After an explicit jump, later
+    /// A bookmark sets the first position. After playback or an explicit jump, later
     /// reading/listening actions keep their newer saved position on return.
     private var preferredReference: AyahReference? {
         let chapterID = store.chapter?.surah.id
@@ -245,7 +264,7 @@ struct ReaderView: View {
                     // and masks the action buttons' individual identifiers.
                     .accessibilityIdentifier("reader.verse.\(chapter.surah.id).\(ayah.numberInSurah)")
                 if active {
-                    Label(player.isPlaying ? "Spelas nu" : "Pausad", systemImage: "speaker.wave.2")
+                    Label(player.isWaitingBetweenVerses ? "Paus mellan verser" : (player.isPlaying ? "Spelas nu" : "Pausad"), systemImage: "speaker.wave.2")
                         .font(.caption).foregroundStyle(Palette.green)
                 }
                 Spacer()
@@ -263,6 +282,22 @@ struct ReaderView: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: 24).strokeBorder(active ? Palette.green : .clear, lineWidth: 2)
+        }
+        .contextMenu {
+            if let reference {
+                Button {
+                    let adding = !store.isQueuedForPractice(reference)
+                    if !store.togglePracticeQueue(reference) {
+                        practiceQueueErrorMessage = adding && store.practiceQueue.count >= AppStore.maximumPracticeQueueCount
+                            ? "Kön rymmer högst \(AppStore.maximumPracticeQueueCount) verser. Ta bort någon vers ur kön och försök igen."
+                            : "Ändringen kunde inte sparas. Din tidigare övningskö finns kvar. Försök igen."
+                        showPracticeQueueError = true
+                    }
+                } label: {
+                    Label(store.isQueuedForPractice(reference) ? "Ta bort från övningskön" : "Öva igen", systemImage: "text.badge.plus")
+                }
+                .accessibilityIdentifier("reader.practiceQueue.\(reference.surahID).\(reference.ayahNumber)")
+            }
         }
     }
 
@@ -287,12 +322,12 @@ struct ReaderView: View {
     @ViewBuilder
     private func verseActionButtons(_ reference: AyahReference, verseCount: Int, expanded: Bool) -> some View {
         let requested = player.requestedReference == reference
-        let canPause = requested && (player.isPlaying || player.isBuffering)
+        let canPause = requested && (player.isPlaying || player.isBuffering || player.isWaitingBetweenVerses)
         let bookmarked = store.bookmarks.contains(reference)
         let readToday = store.isReadToday(reference)
         Button {
             recorder.stopAll()
-            if requested {
+            if requested && !player.repetitionComplete {
                 if canPause { player.pause() } else { player.resume() }
             } else {
                 player.play(reference: reference, chapterVerseCount: verseCount)
@@ -552,6 +587,13 @@ struct PlaybackBar: View {
 
     var body: some View {
         VStack(spacing: 4) {
+            if let loop = player.repetition {
+                Text(repetitionSummary(loop))
+                    .font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityIdentifier("reader.repeat.status")
+            }
             if let error = player.errorMessage {
                 Text(error).font(.caption).foregroundStyle(.red)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -583,6 +625,7 @@ struct PlaybackBar: View {
                     Image(systemName: "xmark").frame(minWidth: 44, minHeight: 44)
                         .contentShape(Rectangle())
                 }.accessibilityLabel("Stäng spelaren")
+                    .accessibilityIdentifier("reader.playback.stop")
             }
             HStack(spacing: 28) {
                 Spacer(minLength: 0)
@@ -590,16 +633,16 @@ struct PlaybackBar: View {
                     Image(systemName: "backward.end.fill").frame(minWidth: 44, minHeight: 44)
                         .contentShape(Rectangle())
                 }.accessibilityLabel("Föregående vers")
-                    .disabled((player.requestedReference?.ayahNumber ?? 1) <= 1)
+                    .disabled((player.requestedReference?.ayahNumber ?? 1) <= (player.repetition?.startVerse ?? 1))
                 Button {
                     recorder.stopAll()
-                    if player.isPlaying || player.isBuffering { player.pause() } else { player.resume() }
+                    if player.isPlaying || player.isBuffering || player.isWaitingBetweenVerses { player.pause() } else { player.resume() }
                 } label: {
                     Group {
                         if player.isBuffering { ProgressView() }
-                        else { Image(systemName: player.isPlaying ? "pause.fill" : "play.fill") }
+                        else { Image(systemName: player.isPlaying || player.isWaitingBetweenVerses ? "pause.fill" : "play.fill") }
                     }.frame(minWidth: 56, minHeight: 44).contentShape(Rectangle())
-                }.accessibilityLabel(player.isPlaying || player.isBuffering ? "Pausa" : "Spela")
+                }.accessibilityLabel(player.isPlaying || player.isBuffering || player.isWaitingBetweenVerses ? "Pausa" : (player.repetitionComplete ? "Spela igen" : "Spela"))
                     .accessibilityIdentifier("reader.playback.toggle")
                 Button { recorder.stopAll(); player.next() } label: {
                     Image(systemName: "forward.end.fill").frame(minWidth: 44, minHeight: 44)
@@ -616,6 +659,13 @@ struct PlaybackBar: View {
     }
     private var isLastVerse: Bool {
         guard let reference = player.requestedReference else { return true }
-        return reference.ayahNumber >= AyahReference.ayahCounts[reference.surahID - 1]
+        return reference.ayahNumber >= (player.repetition?.endVerse ?? AyahReference.ayahCounts[reference.surahID - 1])
+    }
+
+    private func repetitionSummary(_ loop: RecitationLoop) -> String {
+        let range = "Vers \(loop.surahID):\(loop.startVerse)–\(loop.endVerse)"
+        if player.repetitionComplete { return "\(range) · Repetitionspasset är klart" }
+        let cycle = "\(player.repetitionCycle) av \(loop.cycles)"
+        return "\(range) · Omgång \(cycle)" + (player.isWaitingBetweenVerses ? " · Paus mellan verser" : "")
     }
 }

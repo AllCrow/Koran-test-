@@ -7,6 +7,7 @@ import UIKit
 @MainActor
 final class AppStore: ObservableObject {
     nonisolated static let maximumReadingBackupBytes = 4 * 1_024 * 1_024
+    nonisolated static let maximumPracticeQueueCount = 200
     typealias ChapterLoader = @MainActor @Sendable (Int) async throws -> QuranChapter
     typealias IndexLoader = @MainActor @Sendable () async throws -> ContentIndex
 
@@ -60,7 +61,7 @@ final class AppStore: ObservableObject {
     }
 
     enum ReadingBackupError: LocalizedError {
-        case tooLarge, combinedDataTooLarge, invalidFile, unsupportedVersion, cannotExport
+        case tooLarge, combinedDataTooLarge, practiceQueueFull, invalidFile, unsupportedVersion, cannotExport
 
         var errorDescription: String? {
             switch self {
@@ -68,6 +69,8 @@ final class AppStore: ObservableObject {
                 return "Filen är för stor för en läskopia. Välj en kopia som har skapats av Sakina."
             case .combinedDataTooLarge:
                 return "Den sammanlagda läsdatan blir för stor. Dina befintliga läsdata har inte ändrats."
+            case .practiceQueueFull:
+                return "Övningskön skulle innehålla fler än 200 verser. Ta bort några verser ur kön och försök igen. Dina befintliga data har inte ändrats."
             case .invalidFile:
                 return "Filen är ingen giltig läskopia från Sakina. Dina befintliga läsdata har inte ändrats."
             case .unsupportedVersion:
@@ -82,6 +85,7 @@ final class AppStore: ObservableObject {
     @Published private(set) var selectedSurahID: Int = 1
     @Published private(set) var lastRead: AyahReference?
     @Published private(set) var bookmarks: Set<AyahReference> = []
+    @Published private(set) var practiceQueue: [AyahReference] = []
     @Published private(set) var tajweedEnabled = true
     @Published private(set) var arabicTextSize: ArabicTextSize = .standard
     @Published private(set) var appearance: Appearance = .system
@@ -107,6 +111,25 @@ final class AppStore: ObservableObject {
         let dailyGoal: Int
         let streak: StreakTracker
         let readAyahsByDay: [String: Set<AyahReference>]
+        let practiceQueue: SavedPracticeQueue?
+    }
+
+    /// A damaged optional queue must not make an older, otherwise valid reading
+    /// state disappear. Backup imports use a strict array instead, before mutation.
+    private struct SavedPracticeQueue: Codable {
+        let references: [AyahReference]
+
+        init(_ references: [AyahReference]) { self.references = references }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            references = (try? container.decode([AyahReference].self)) ?? []
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(references)
+        }
     }
 
     /// Independent of the signing bundle ID so personal reinstalls can recover
@@ -119,6 +142,7 @@ final class AppStore: ObservableObject {
         let lastRead: AyahReference?
         let completedDays: [ReadingDay]
         let readAyahsByDay: [String: Set<AyahReference>]
+        let practiceQueue: [AyahReference]?
     }
 
     private let repository: QuranRepository
@@ -162,6 +186,7 @@ final class AppStore: ObservableObject {
             dailyGoal = min(50, max(1, saved.dailyGoal))
             streak = saved.streak
             readAyahsByDay = saved.readAyahsByDay
+            practiceQueue = Self.uniqueQueue(saved.practiceQueue?.references ?? [])
         }
         refreshDay()
         dayChangeSubscription = NotificationCenter.default.publisher(for: .NSCalendarDayChanged)
@@ -292,6 +317,53 @@ final class AppStore: ObservableObject {
         persist()
     }
 
+    func isQueuedForPractice(_ reference: AyahReference) -> Bool {
+        practiceQueue.contains(reference)
+    }
+
+    /// Queue edits are an intention to practise, never completed reading.
+    /// Admission is transactional so a full queue or byte budget changes nothing.
+    @discardableResult
+    func togglePracticeQueue(_ reference: AyahReference) -> Bool {
+        if practiceQueue.contains(reference) { return removeFromPracticeQueue(reference) }
+        guard practiceQueue.count < Self.maximumPracticeQueueCount else { return false }
+        return replacePracticeQueue(practiceQueue + [reference])
+    }
+
+    @discardableResult
+    func removeFromPracticeQueue(_ reference: AyahReference) -> Bool {
+        replacePracticeQueue(practiceQueue.filter { $0 != reference })
+    }
+
+    private func replacePracticeQueue(_ proposed: [AyahReference]) -> Bool {
+        guard proposed != practiceQueue else { return true }
+        guard proposed.count <= Self.maximumPracticeQueueCount,
+              let saved = encodedReadingState(bookmarks: bookmarks, lastRead: lastRead,
+                                              streak: streak, marks: readAyahsByDay, queue: proposed),
+              let exported = try? encodedReadingBackup(bookmarks: bookmarks, lastRead: lastRead,
+                                                       streak: streak, marks: readAyahsByDay,
+                                                       queue: proposed, exportedAt: now()),
+              saved.count <= readingDataByteLimit, exported.count <= readingDataByteLimit else { return false }
+        practiceQueue = proposed
+        defaults.set(saved, forKey: storageKey)
+        return true
+    }
+
+    private static func uniqueQueue(_ references: [AyahReference]) -> [AyahReference] {
+        var seen: Set<AyahReference> = []
+        var unique: [AyahReference] = []
+        unique.reserveCapacity(min(references.count, maximumPracticeQueueCount))
+        // Collection adapters may traverse more than once to find bounds or
+        // reserve Array storage. Deduplication therefore needs one eager pass;
+        // mutating seen inside a lazy filter can consume entries before copying.
+        for reference in references {
+            guard seen.insert(reference).inserted else { continue }
+            unique.append(reference)
+            if unique.count == maximumPracticeQueueCount { break }
+        }
+        return unique
+    }
+
     /// Only an explicit reading action counts; opening a screen does not.
     func markRead(_ reference: AyahReference) {
         refreshDay()
@@ -343,7 +415,8 @@ final class AppStore: ObservableObject {
     func readingBackupData() throws -> Data {
         refreshDay()
         let data = try encodedReadingBackup(bookmarks: bookmarks, lastRead: lastRead,
-                                           streak: streak, marks: readAyahsByDay, exportedAt: now())
+                                           streak: streak, marks: readAyahsByDay,
+                                           queue: practiceQueue, exportedAt: now())
         guard data.count <= readingDataByteLimit else { throw ReadingBackupError.tooLarge }
         return data
     }
@@ -365,6 +438,16 @@ final class AppStore: ObservableObject {
             throw ReadingBackupError.invalidFile
         }
 
+        let incomingQueue = backup.practiceQueue ?? []
+        guard incomingQueue.count <= Self.maximumPracticeQueueCount,
+              Set(incomingQueue).count == incomingQueue.count else { throw ReadingBackupError.invalidFile }
+        var mergedQueue = practiceQueue
+        var queued = Set(mergedQueue)
+        for reference in incomingQueue where queued.insert(reference).inserted {
+            mergedQueue.append(reference)
+        }
+        guard mergedQueue.count <= Self.maximumPracticeQueueCount else { throw ReadingBackupError.practiceQueueFull }
+
         var mergedMarks = readAyahsByDay
         for (day, references) in backup.readAyahsByDay {
             mergedMarks[day, default: []].formUnion(references)
@@ -382,11 +465,12 @@ final class AppStore: ObservableObject {
         let mergedBookmarks = bookmarks.union(backup.bookmarks)
         let mergedLastRead = lastRead ?? backup.lastRead
         guard let savedData = encodedReadingState(bookmarks: mergedBookmarks, lastRead: mergedLastRead,
-                                                 streak: mergedStreak, marks: mergedMarks) else {
+                                                 streak: mergedStreak, marks: mergedMarks, queue: mergedQueue) else {
             throw ReadingBackupError.invalidFile
         }
         let exportData = try encodedReadingBackup(bookmarks: mergedBookmarks, lastRead: mergedLastRead,
-                                                 streak: mergedStreak, marks: mergedMarks, exportedAt: mergeDate)
+                                                 streak: mergedStreak, marks: mergedMarks,
+                                                 queue: mergedQueue, exportedAt: mergeDate)
         // Individually valid files can have a union larger than the launch
         // reader accepts. Reject before publishing or replacing any saved data.
         guard savedData.count <= readingDataByteLimit, exportData.count <= readingDataByteLimit else {
@@ -395,6 +479,7 @@ final class AppStore: ObservableObject {
 
         if bookmarks != mergedBookmarks { bookmarks = mergedBookmarks }
         if lastRead != mergedLastRead { lastRead = mergedLastRead }
+        if practiceQueue != mergedQueue { practiceQueue = mergedQueue }
         readAyahsByDay = mergedMarks
         if streak != mergedStreak { streak = mergedStreak }
         summaryDate = mergeDate
@@ -501,13 +586,14 @@ final class AppStore: ObservableObject {
 
     private func persist() {
         guard let data = encodedReadingState(bookmarks: bookmarks, lastRead: lastRead,
-                                            streak: streak, marks: readAyahsByDay),
+                                            streak: streak, marks: readAyahsByDay, queue: practiceQueue),
               data.count <= readingDataByteLimit else { return }
         defaults.set(data, forKey: storageKey)
     }
 
     private func encodedReadingState(bookmarks: Set<AyahReference>, lastRead: AyahReference?,
-                                     streak: StreakTracker, marks: [String: Set<AyahReference>]) -> Data? {
+                                     streak: StreakTracker, marks: [String: Set<AyahReference>],
+                                     queue: [AyahReference]) -> Data? {
         let state = SavedState(
             version: 1,
             selectedSurahID: selectedSurahID,
@@ -518,17 +604,19 @@ final class AppStore: ObservableObject {
             appearance: appearance.rawValue,
             dailyGoal: dailyGoal,
             streak: streak,
-            readAyahsByDay: marks
+            readAyahsByDay: marks,
+            practiceQueue: SavedPracticeQueue(queue)
         )
         return try? JSONEncoder().encode(state)
     }
 
     private func encodedReadingBackup(bookmarks: Set<AyahReference>, lastRead: AyahReference?,
                                       streak: StreakTracker, marks: [String: Set<AyahReference>],
-                                      exportedAt: Date) throws -> Data {
+                                      queue: [AyahReference], exportedAt: Date) throws -> Data {
         let backup = ReadingBackup(format: "sakina-reading-backup", version: 1, exportedAt: exportedAt,
                                    bookmarks: bookmarks, lastRead: lastRead,
-                                   completedDays: streak.completionDays, readAyahsByDay: marks)
+                                   completedDays: streak.completionDays, readAyahsByDay: marks,
+                                   practiceQueue: queue)
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.sortedKeys]

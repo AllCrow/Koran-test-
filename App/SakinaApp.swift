@@ -5,10 +5,11 @@ import SwiftUI
 @MainActor
 struct SakinaApp: App {
     @StateObject private var store = AppStore(defaults: SakinaApp.readingDefaults)
-    @StateObject private var player = RecitationPlayer(defaults: SakinaApp.readingDefaults)
+    @StateObject private var player = SakinaApp.makePlayer()
     @StateObject private var recorder = PracticeRecorder()
-    @StateObject private var audioLibrary = AudioLibrary.shared
+    @StateObject private var audioLibrary = SakinaApp.recitationLibrary
     @StateObject private var assessment = RecitationAssessmentStore()
+    @StateObject private var audioNetwork = AudioNetworkPreferences(defaults: SakinaApp.readingDefaults)
     @Environment(\.scenePhase) private var scenePhase
 
     private static var readingDefaults: UserDefaults {
@@ -24,6 +25,32 @@ struct SakinaApp: App {
         return .standard
     }
 
+    private static let recitationLibrary: AudioLibrary = {
+        #if DEBUG
+        if let suite = uiTestSuite { return UITestAudioFixture.makeLibrary(suite: suite) }
+        #endif
+        return .shared
+    }()
+
+    private static func makePlayer() -> RecitationPlayer {
+        #if DEBUG
+        if let suite = uiTestSuite {
+            return UITestAudioFixture.makePlayer(library: recitationLibrary, defaults: readingDefaults, suite: suite)
+        }
+        #endif
+        return RecitationPlayer(audioLibrary: recitationLibrary, defaults: readingDefaults)
+    }
+
+    #if DEBUG
+    private static var uiTestSuite: String? {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "--ui-test-suite"),
+              arguments.indices.contains(index + 1),
+              arguments[index + 1].hasPrefix("sakina.uitests.") else { return nil }
+        return arguments[index + 1]
+    }
+    #endif
+
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -32,19 +59,30 @@ struct SakinaApp: App {
                 .environmentObject(recorder)
                 .environmentObject(audioLibrary)
                 .environmentObject(assessment)
+                .environmentObject(audioNetwork)
                 .environment(\.quranTextSize, CGFloat(store.arabicTextSize.pointSize))
                 .preferredColorScheme(store.appearance == .system ? nil : (store.appearance == .dark ? .dark : .light))
                 .tint(Palette.green)
-                .task { await store.load() }
+                .task {
+                    applyAudioNetworkChoice()
+                    await store.load()
+                }
+                .onChange(of: audioNetwork.allowsCellularAudio) { _, _ in applyAudioNetworkChoice() }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { store.refreshDay() }
                     if phase == .background {
                         recorder.stopAll()
                         assessment.cancel()
                         audioLibrary.cancelDownload()
+                        audioLibrary.cancelInventoryScan()
                     }
                 }
         }
+    }
+
+    private func applyAudioNetworkChoice() {
+        audioLibrary.setAllowsCellularAccess(audioNetwork.allowsCellularAudio)
+        player.setAllowsCellularAccess(audioNetwork.allowsCellularAudio)
     }
 }
 

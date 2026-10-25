@@ -4,10 +4,13 @@ import Foundation
 import MediaPlayer
 import QuranCore
 
-/// One player for all recitations. Verse changes follow player events, never a timer.
+/// One player for all recitations. Native end events drive verse advancement;
+/// optional gaps suspend one task without estimating duration or polling.
 @MainActor
 final class RecitationPlayer: ObservableObject {
     typealias AudioURLProvider = @MainActor (AyahReference, Reciter) -> URL
+    typealias PlayerItemFactory = @MainActor (URL, Bool) -> AVPlayerItem
+    typealias RepetitionDelay = @MainActor @Sendable (Int) async throws -> Void
 
     /// The verse whose audio has actually started, retained while it is paused.
     @Published private(set) var activeReference: AyahReference?
@@ -17,6 +20,10 @@ final class RecitationPlayer: ObservableObject {
     @Published private(set) var isPlaying = false
     @Published private(set) var isBuffering = false
     @Published private(set) var errorMessage: String?
+    @Published private(set) var repetition: RecitationLoop?
+    @Published private(set) var repetitionCycle = 0
+    @Published private(set) var isWaitingBetweenVerses = false
+    @Published private(set) var repetitionComplete = false
     @Published var autoplay = true {
         didSet {
             if autoplay != oldValue { defaults.set(autoplay, forKey: Self.autoplayPreferenceKey) }
@@ -33,6 +40,20 @@ final class RecitationPlayer: ObservableObject {
     private var player: AVPlayer
     private let makeReplacementPlayer: @MainActor () -> AVPlayer
     private let audioURL: AudioURLProvider
+    private let makePlayerItem: PlayerItemFactory
+    private let waitBetweenVerses: RepetitionDelay
+    private var allowsCellularAccess = true
+    private var currentSourceURL: URL?
+    private struct PinnedLocalSource {
+        let id: UUID
+        let reference: AyahReference
+        let reciter: Reciter
+        let url: URL
+    }
+    private var pinnedLocalSource: PinnedLocalSource?
+    private var pendingRepetition: RecitationLoopPosition?
+    private var repetitionDelayTask: Task<Void, Never>?
+    private var repetitionDelayGeneration = UUID()
     private let integratesWithSystemAudio: Bool
     private let audioSession = AVAudioSession.sharedInstance()
     private var chapterVerseCount = 0
@@ -62,11 +83,19 @@ final class RecitationPlayer: ObservableObject {
     /// without network access or changing the app's global audio controls.
     init(player: AVPlayer, audioURL: @escaping AudioURLProvider,
          defaults: UserDefaults, integratesWithSystemAudio: Bool,
-         makeReplacementPlayer: @escaping @MainActor () -> AVPlayer = { AVPlayer() }) {
+         makeReplacementPlayer: @escaping @MainActor () -> AVPlayer = { AVPlayer() },
+         makePlayerItem: @escaping PlayerItemFactory = { url, allowsCellular in
+             AVPlayerItem(asset: AVURLAsset(url: url, options: [AVURLAssetAllowsCellularAccessKey: allowsCellular]))
+         },
+         waitBetweenVerses: @escaping RepetitionDelay = { seconds in
+             try await Task.sleep(for: .seconds(seconds))
+         }) {
         self.defaults = defaults
         self.player = player
         self.makeReplacementPlayer = makeReplacementPlayer
         self.audioURL = audioURL
+        self.makePlayerItem = makePlayerItem
+        self.waitBetweenVerses = waitBetweenVerses
         self.integratesWithSystemAudio = integratesWithSystemAudio
         selectedReciter = defaults.string(forKey: Self.reciterPreferenceKey).flatMap(Reciter.init(rawValue:)) ?? .alafasy
         autoplay = defaults.object(forKey: Self.autoplayPreferenceKey) as? Bool ?? true
@@ -127,6 +156,7 @@ final class RecitationPlayer: ObservableObject {
     }
 
     deinit {
+        repetitionDelayTask?.cancel()
         itemStatusObservation?.invalidate()
         playbackObservation?.invalidate()
         rateObservation?.invalidate()
@@ -156,18 +186,62 @@ final class RecitationPlayer: ObservableObject {
         startSession(reference: reference, chapterVerseCount: chapterVerseCount, allowsAutoplay: false)
     }
 
-    private func startSession(reference: AyahReference, chapterVerseCount: Int, allowsAutoplay: Bool) {
+    /// An explicit saved-audio selection remains attached to this exact file,
+    /// including a later retry if the file disappears. It never silently turns
+    /// into a streamed verse from the ordinary URL provider.
+    @discardableResult
+    func playSavedOnce(reference: AyahReference, chapterVerseCount: Int, reciter: Reciter, localURL: URL) -> UUID? {
+        guard localURL.isFileURL else {
+            stop()
+            errorMessage = "Det sparade ljudets fil kunde inte öppnas. Välj en sparad vers igen."
+            return nil
+        }
+        guard startSession(reference: reference, chapterVerseCount: chapterVerseCount, allowsAutoplay: false,
+                           pinnedLocalURL: localURL, reciter: reciter) else { return nil }
+        return pinnedLocalSource?.id
+    }
+
+    /// Closing an older saved-reader route cannot stop a newer session, even
+    /// when both sessions selected the same verse and reciter.
+    func stopSavedSession(_ token: UUID) {
+        guard pinnedLocalSource?.id == token else { return }
+        stop()
+    }
+
+    func playRepeatedly(_ loop: RecitationLoop) {
+        clearRepetition()
+        repetition = loop
+        repetitionCycle = 1
+        startSession(reference: loop.firstReference,
+                     chapterVerseCount: AyahReference.ayahCounts[loop.surahID - 1],
+                     allowsAutoplay: false, preservingRepetition: true)
+    }
+
+    @discardableResult
+    private func startSession(reference: AyahReference, chapterVerseCount: Int, allowsAutoplay: Bool,
+                              preservingRepetition: Bool = false, pinnedLocalURL: URL? = nil,
+                              reciter: Reciter? = nil) -> Bool {
         guard chapterVerseCount >= reference.ayahNumber,
               AyahReference(surahID: reference.surahID, ayahNumber: chapterVerseCount) != nil else {
             errorMessage = "Den valda versen kunde inte spelas. Öppna suran igen och försök på nytt."
-            return
+            return false
+        }
+        if !preservingRepetition { clearRepetition() }
+        if let reciter, reciter != selectedReciter {
+            selectedReciter = reciter
+            defaults.set(reciter.rawValue, forKey: Self.reciterPreferenceKey)
+        }
+        pinnedLocalSource = pinnedLocalURL.map {
+            PinnedLocalSource(id: UUID(), reference: reference, reciter: selectedReciter, url: $0)
         }
         self.chapterVerseCount = chapterVerseCount
         self.allowsAutoplay = allowsAutoplay
         load(reference: reference, shouldPlay: true)
+        return true
     }
 
     func pause() {
+        cancelRepetitionDelay(keepingTransition: true)
         wantsToPlay = false
         player.pause()
         isPlaying = false
@@ -180,6 +254,15 @@ final class RecitationPlayer: ObservableObject {
         guard let reference = requestedReference else { return }
         guard mediaServicesAvailable else {
             errorMessage = Self.mediaServicesUnavailableMessage
+            return
+        }
+        if let loop = repetition, repetitionComplete {
+            playRepeatedly(loop)
+            return
+        }
+        if pendingRepetition != nil {
+            cancelRepetitionDelay(keepingTransition: true)
+            advancePendingRepetition()
             return
         }
         if hasReachedEnd || errorMessage != nil || player.currentItem?.status == .failed || player.currentItem == nil {
@@ -200,6 +283,8 @@ final class RecitationPlayer: ObservableObject {
     }
 
     func stop() {
+        clearRepetition()
+        pinnedLocalSource = nil
         generation = UUID()
         removeItemObservers()
         wantsToPlay = false
@@ -207,6 +292,7 @@ final class RecitationPlayer: ObservableObject {
         hasReachedEnd = false
         player.pause()
         player.replaceCurrentItem(with: nil)
+        currentSourceURL = nil
         requestedReference = nil
         activeReference = nil
         isPlaying = false
@@ -219,10 +305,18 @@ final class RecitationPlayer: ObservableObject {
 
     func selectReciter(_ reciter: Reciter) {
         guard selectedReciter != reciter else { return }
+        pinnedLocalSource = nil
         let shouldPlay = wantsToPlay
+        let pending = pendingRepetition
+        cancelRepetitionDelay(keepingTransition: false)
         selectedReciter = reciter
         defaults.set(reciter.rawValue, forKey: Self.reciterPreferenceKey)
-        if let reference = requestedReference {
+        if let pending {
+            // A new recording must not inherit the old reciter's waiting task.
+            // Keep the exact pending verse, but fetch it only after explicit play.
+            repetitionCycle = pending.cycle
+            load(reference: pending.reference, shouldPlay: false)
+        } else if let reference = requestedReference {
             // Each recording has its own duration. Start this verse from its beginning.
             load(reference: reference, shouldPlay: shouldPlay)
         }
@@ -230,29 +324,55 @@ final class RecitationPlayer: ObservableObject {
 
     func next() {
         guard let reference = requestedReference,
-              reference.ayahNumber < chapterVerseCount,
+              reference.ayahNumber < (repetition?.endVerse ?? chapterVerseCount),
               let nextReference = AyahReference(
                 surahID: reference.surahID,
                 ayahNumber: reference.ayahNumber + 1
               ) else { return }
+        pinnedLocalSource = nil
+        cancelRepetitionDelay(keepingTransition: false)
+        repetitionComplete = false
         load(reference: nextReference, shouldPlay: true)
     }
 
     func previous() {
         guard let reference = requestedReference,
-              reference.ayahNumber > 1,
+              reference.ayahNumber > (repetition?.startVerse ?? 1),
               let previousReference = AyahReference(
                 surahID: reference.surahID,
                 ayahNumber: reference.ayahNumber - 1
               ) else { return }
+        pinnedLocalSource = nil
+        cancelRepetitionDelay(keepingTransition: false)
+        repetitionComplete = false
         load(reference: previousReference, shouldPlay: true)
     }
 
+    /// A changed policy applies to future assets. An existing remote asset is
+    /// detached immediately so it cannot keep transferring under the old rule.
+    /// Already-playing local audio needs no interruption or replacement.
+    func setAllowsCellularAccess(_ allowed: Bool) {
+        guard allowsCellularAccess != allowed else { return }
+        allowsCellularAccess = allowed
+        if pendingRepetition != nil { pause() }
+        guard let url = currentSourceURL, !url.isFileURL else { return }
+        pause()
+        generation = UUID()
+        removeItemObservers()
+        player.replaceCurrentItem(with: nil)
+        currentSourceURL = nil
+        activeReference = nil
+        errorMessage = "Ljudets nätval ändrades. Tryck på spela för att fortsätta med det nya valet."
+        updateNowPlaying()
+    }
+
     private func load(reference: AyahReference, shouldPlay: Bool) {
+        cancelRepetitionDelay(keepingTransition: false)
         generation = UUID()
         let itemGeneration = generation
         removeItemObservers()
         player.pause()
+        currentSourceURL = nil
         activeReference = nil
         requestedReference = reference
         wantsToPlay = shouldPlay
@@ -278,8 +398,15 @@ final class RecitationPlayer: ObservableObject {
             return
         }
 
-        let url = audioURL(reference, selectedReciter)
-        let item = AVPlayerItem(url: url)
+        let url: URL
+        if let pinned = pinnedLocalSource, pinned.reference == reference, pinned.reciter == selectedReciter {
+            url = pinned.url
+        } else {
+            pinnedLocalSource = nil
+            url = audioURL(reference, selectedReciter)
+        }
+        currentSourceURL = url
+        let item = makePlayerItem(url, allowsCellularAccess)
         player.replaceCurrentItem(with: item)
 
         itemStatusObservation = item.observe(\.status, options: [.initial, .new]) { [weak self, weak item] _, _ in
@@ -287,6 +414,7 @@ final class RecitationPlayer: ObservableObject {
                 guard let self, let item,
                       self.isCurrent(item, generation: itemGeneration) else { return }
                 if item.status == .failed {
+                    guard !self.hasReachedEnd else { return }
                     self.reportFailure(url.isFileURL
                         ? "Det sparade ljudet kunde inte spelas. Radera och ladda ned suran igen under Ljud offline."
                         : "Recitationen kunde inte hämtas. Kontrollera anslutningen och försök igen.")
@@ -324,13 +452,27 @@ final class RecitationPlayer: ObservableObject {
         ) { [weak self, weak item] _ in
             Task { @MainActor [weak self, weak item] in
                 guard let self, let item,
-                      self.isCurrent(item, generation: itemGeneration) else { return }
+                      self.isCurrent(item, generation: itemGeneration), !self.hasReachedEnd else { return }
                 let shouldAdvance = self.autoplay && self.allowsAutoplay && self.wantsToPlay
+                let shouldRepeat = self.repetition != nil && self.wantsToPlay
                 self.wantsToPlay = false
                 self.hasReachedEnd = true
                 self.isPlaying = false
                 self.isBuffering = false
-                if shouldAdvance && reference.ayahNumber < self.chapterVerseCount {
+                if shouldRepeat, let loop = self.repetition {
+                    if let next = loop.next(after: reference, cycle: self.repetitionCycle) {
+                        self.pendingRepetition = next
+                        if loop.pauseSeconds == 0 {
+                            self.advancePendingRepetition()
+                        } else {
+                            self.scheduleRepetitionTransition(after: loop.pauseSeconds)
+                        }
+                    } else {
+                        self.repetitionComplete = true
+                        self.deactivateOwnedAudioSession()
+                        self.updateNowPlaying()
+                    }
+                } else if shouldAdvance && reference.ayahNumber < self.chapterVerseCount {
                     self.next()
                 } else {
                     self.deactivateOwnedAudioSession()
@@ -346,7 +488,7 @@ final class RecitationPlayer: ObservableObject {
         ) { [weak self, weak item] _ in
             Task { @MainActor [weak self, weak item] in
                 guard let self, let item,
-                      self.isCurrent(item, generation: itemGeneration) else { return }
+                      self.isCurrent(item, generation: itemGeneration), !self.hasReachedEnd else { return }
                 self.reportFailure(url.isFileURL
                     ? "Det sparade ljudet avbröts. Radera och ladda ned suran igen under Ljud offline."
                     : "Ljudet avbröts. Kontrollera anslutningen och tryck på spela för att försöka igen.")
@@ -364,9 +506,60 @@ final class RecitationPlayer: ObservableObject {
     private static let mediaServicesUnavailableMessage =
         "Telefonens ljudtjänst är tillfälligt otillgänglig. Vänta tills den har startats om och tryck sedan på spela."
 
+    private func clearRepetition() {
+        cancelRepetitionDelay(keepingTransition: false)
+        repetition = nil
+        repetitionCycle = 0
+        repetitionComplete = false
+    }
+
+    private func cancelRepetitionDelay(keepingTransition: Bool) {
+        repetitionDelayGeneration = UUID()
+        repetitionDelayTask?.cancel()
+        repetitionDelayTask = nil
+        isWaitingBetweenVerses = false
+        if !keepingTransition { pendingRepetition = nil }
+    }
+
+    private func advancePendingRepetition() {
+        guard repetition != nil, let next = pendingRepetition else { return }
+        pendingRepetition = nil
+        repetitionCycle = next.cycle
+        load(reference: next.reference, shouldPlay: true)
+    }
+
+    /// One suspendable delay exists only between actual native end events.
+    /// It neither polls the player nor estimates a recitation's duration.
+    private func scheduleRepetitionTransition(after seconds: Int) {
+        cancelRepetitionDelay(keepingTransition: true)
+        let taskID = repetitionDelayGeneration
+        let wait = waitBetweenVerses
+        wantsToPlay = true
+        isWaitingBetweenVerses = true
+        updateNowPlaying()
+        repetitionDelayTask = Task { @MainActor [weak self] in
+            do {
+                try Task.checkCancellation()
+                try await wait(seconds)
+                try Task.checkCancellation()
+                guard let self, self.repetitionDelayGeneration == taskID,
+                      self.wantsToPlay, self.mediaServicesAvailable else { return }
+                self.repetitionDelayTask = nil
+                self.isWaitingBetweenVerses = false
+                self.advancePendingRepetition()
+            } catch {
+                guard let self, self.repetitionDelayGeneration == taskID else { return }
+                self.repetitionDelayTask = nil
+                self.isWaitingBetweenVerses = false
+                self.reportFailure("Repetitionen pausades. Tryck på spela för att fortsätta med nästa vers.")
+            }
+        }
+    }
+
     private func handleMediaServicesLoss() {
         guard mediaServicesAvailable else { return }
         mediaServicesAvailable = false
+        cancelRepetitionDelay(keepingTransition: true)
         // The lost service can leave old media state and callbacks behind.
         // Quiesce immediately, keep the user's selection, and wait for reset
         // before constructing or activating replacement audio objects.
@@ -376,6 +569,7 @@ final class RecitationPlayer: ObservableObject {
         ownsAudioSession = false
         player.pause()
         player.replaceCurrentItem(with: nil)
+        currentSourceURL = nil
         hasReachedEnd = false
         activeReference = nil
         isPlaying = false
@@ -389,12 +583,14 @@ final class RecitationPlayer: ObservableObject {
         // queued item callbacks before discarding either, retain the user's
         // exact selection, and require an explicit play action to resume.
         mediaServicesAvailable = true
+        cancelRepetitionDelay(keepingTransition: true)
         generation = UUID()
         removeItemObservers()
         wantsToPlay = false
         ownsAudioSession = false
         player.pause()
         player.replaceCurrentItem(with: nil)
+        currentSourceURL = nil
         player = makeReplacementPlayer()
         player.automaticallyWaitsToMinimizeStalling = true
         hasReachedEnd = false
@@ -451,6 +647,7 @@ final class RecitationPlayer: ObservableObject {
     }
 
     private func reportFailure(_ message: String) {
+        cancelRepetitionDelay(keepingTransition: true)
         wantsToPlay = false
         player.pause()
         isPlaying = false
@@ -474,16 +671,16 @@ final class RecitationPlayer: ObservableObject {
         addRemoteTarget(commands.playCommand) { $0.resume() }
         addRemoteTarget(commands.pauseCommand) { $0.pause() }
         addRemoteTarget(commands.togglePlayPauseCommand) { player in
-            if player.isPlaying || player.isBuffering { player.pause() }
+            if player.isPlaying || player.isBuffering || player.isWaitingBetweenVerses { player.pause() }
             else { player.resume() }
         }
         addRemoteTarget(commands.stopCommand) { $0.stop() }
         addRemoteTarget(commands.nextTrackCommand) { player in
-            guard player.allowsAutoplay else { return }
+            guard player.allowsAutoplay || player.repetition != nil else { return }
             player.next()
         }
         addRemoteTarget(commands.previousTrackCommand) { player in
-            guard player.allowsAutoplay else { return }
+            guard player.allowsAutoplay || player.repetition != nil else { return }
             player.previous()
         }
         updateNowPlaying()
@@ -516,8 +713,10 @@ final class RecitationPlayer: ObservableObject {
         commands.stopCommand.isEnabled = hasSelection
         // A practice recording remains attached to its one chosen verse, even
         // when a headset has next/previous buttons.
-        commands.nextTrackCommand.isEnabled = allowsAutoplay && (requestedReference.map { $0.ayahNumber < chapterVerseCount } ?? false)
-        commands.previousTrackCommand.isEnabled = allowsAutoplay && (requestedReference.map { $0.ayahNumber > 1 } ?? false)
+        commands.nextTrackCommand.isEnabled = (allowsAutoplay || repetition != nil)
+            && (requestedReference.map { $0.ayahNumber < (repetition?.endVerse ?? chapterVerseCount) } ?? false)
+        commands.previousTrackCommand.isEnabled = (allowsAutoplay || repetition != nil)
+            && (requestedReference.map { $0.ayahNumber > (repetition?.startVerse ?? 1) } ?? false)
 
         guard let reference = requestedReference else {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nil

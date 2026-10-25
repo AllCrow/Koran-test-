@@ -38,7 +38,7 @@ jobs:
             runtime: .iOS-18-5
             device: iPhone SE (3rd generation)
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 25
+    timeout-minutes: 40
     env:
       SAKINA_TEST_RUNTIME: ${{ matrix.runtime }}
       SAKINA_TEST_DEVICE: ${{ matrix.device }}

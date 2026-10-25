@@ -4,6 +4,7 @@ import QuranCore
 
 @MainActor
 struct PracticeView: View {
+    var initialReference: AyahReference? = nil
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var player: RecitationPlayer
     @EnvironmentObject private var recorder: PracticeRecorder
@@ -20,6 +21,10 @@ struct PracticeView: View {
     @State private var pendingVerseNumber: Int?
     @State private var isVisible = false
     @State private var restoreTask: Task<Void, Never>?
+    @State private var restoreRequestID = UUID()
+    @State private var pendingOpeningReference: AyahReference?
+    @State private var focusedPracticeReference: AyahReference?
+    @State private var queueError: String?
 
     var body: some View {
         ScrollView {
@@ -28,7 +33,15 @@ struct PracticeView: View {
                     .font(.system(.largeTitle, design: .serif)).foregroundStyle(Palette.green)
                 Text("Öva en vers i taget med en recitatör som förebild.")
                     .foregroundStyle(.secondary)
-                if let chapter = store.chapter, !isRestoringTake {
+                NavigationLink {
+                    PracticeQueueView()
+                } label: {
+                    Label("Min övningskö (\(store.practiceQueue.count))", systemImage: "text.badge.checkmark")
+                        .frame(minHeight: 44)
+                }
+                .disabled(selectionLocked)
+                .accessibilityIdentifier("practice.queue.present")
+                if let chapter = store.chapter, !isRestoringTake, !isOpeningReference {
                     selectionControls(chapter: chapter)
                     if let ayah = chapter.ayahs.first(where: { $0.numberInSurah == verseNumber }),
                        let reference = ayah.reference {
@@ -45,6 +58,8 @@ struct PracticeView: View {
                     Button("Försök igen") { restorePracticeChapter() }
                 } else if isRestoringTake {
                     ProgressView("Återgår till din inspelning …")
+                } else if isOpeningReference {
+                    ProgressView("Öppnar övningsversen …")
                 }
                 aboutPractice
             }.padding(24)
@@ -57,10 +72,13 @@ struct PracticeView: View {
                 assessment.reset()
                 uploadError = nil
                 player.stop()
-                Task { await store.openSurah(surah.id) }
+                if let reference = AyahReference(surahID: surah.id, ayahNumber: 1) {
+                    openPracticeReference(reference)
+                }
             }
         }
         .onChange(of: store.chapter?.surah.id) { _, _ in
+            guard isVisible else { return }
             // The reader and practice currently share chapter selection. Browsing
             // elsewhere, including a nil loading transition, must not erase a take.
             if recorder.hasRecording || recorder.isRecording {
@@ -74,12 +92,21 @@ struct PracticeView: View {
             assessment.reset()
             uploadError = nil
             includeBasmala = false
-            verseNumber = lastReadVerseNumber
+            if let reference = pendingOpeningReference {
+                if reference.surahID == store.chapter?.surah.id { applyPracticeReference(reference) }
+            } else {
+                verseNumber = lastReadVerseNumber
+                focusedPracticeReference = store.chapter.flatMap {
+                    AyahReference(surahID: $0.surah.id, ayahNumber: verseNumber)
+                }
+            }
         }
         .onChange(of: verseNumber) { _, _ in
+            guard isVisible else { return }
             let selectedReference = store.chapter.flatMap {
                 AyahReference(surahID: $0.surah.id, ayahNumber: verseNumber)
             }
+            if pendingOpeningReference == nil { focusedPracticeReference = selectedReference }
             if recorder.hasRecording {
                 if recorder.recordedReference == selectedReference {
                     includeBasmala = recorder.recordedIncludesBasmala
@@ -92,6 +119,7 @@ struct PracticeView: View {
             if isVisible { player.stop() }
         }
         .onChange(of: includeBasmala) { _, _ in
+            guard isVisible else { return }
             assessment.reset()
             uploadError = nil
             if isVisible { player.stop() }
@@ -101,20 +129,33 @@ struct PracticeView: View {
             // Practice plays once, independently of the reading autoplay setting.
             player.stop()
             if recorder.hasRecording, let reference = recorder.recordedReference {
+                pendingOpeningReference = nil
+                focusedPracticeReference = reference
                 verseNumber = reference.ayahNumber
                 includeBasmala = recorder.recordedIncludesBasmala
                 if reference.surahID != store.chapter?.surah.id { restorePracticeChapter() }
+            } else if let reference = openingReference {
+                openPracticeReference(reference)
             } else {
                 verseNumber = lastReadVerseNumber
             }
         }
         .onDisappear {
             isVisible = false
+            restoreRequestID = UUID()
             restoreTask?.cancel()
             restoreTask = nil
             assessment.cancel()
             recorder.stopAll()
             player.stop()
+        }
+        .alert("Övningskön kunde inte ändras", isPresented: Binding(
+            get: { queueError != nil },
+            set: { if !$0 { queueError = nil } }
+        )) {
+            Button("OK", role: .cancel) { queueError = nil }
+        } message: {
+            if let queueError { Text(queueError) }
         }
     }
 
@@ -159,6 +200,7 @@ struct PracticeView: View {
     private func verseCard(ayah: Ayah, reference: AyahReference) -> some View {
         Card {
             Text("\(reference.surahID):\(reference.ayahNumber)").font(.caption).foregroundStyle(.secondary)
+                .accessibilityIdentifier("practice.reference.\(reference.surahID).\(reference.ayahNumber)")
             if let basmala = QuranPresentation.basmala(for: ayah) {
                 Toggle("Läs även Basmala", isOn: $includeBasmala)
                     .font(.subheadline).padding(.top, 12).disabled(phraseChoiceLocked)
@@ -170,6 +212,20 @@ struct PracticeView: View {
             }
             ArabicText(text: QuranPresentation.verseText(ayah), tajweed: ayah.tajweed, colored: store.tajweedEnabled)
                 .padding(.vertical, 14)
+            Button {
+                let alreadyQueued = store.isQueuedForPractice(reference)
+                guard !store.togglePracticeQueue(reference) else { return }
+                queueError = !alreadyQueued && store.practiceQueue.count >= AppStore.maximumPracticeQueueCount
+                    ? "Kön rymmer högst \(AppStore.maximumPracticeQueueCount) verser. Ta bort någon vers ur kön och försök igen."
+                    : "Ändringen kunde inte sparas. Din tidigare övningskö finns kvar. Försök igen."
+            } label: {
+                Label(store.isQueuedForPractice(reference) ? "Ta bort ur övningskön" : "Öva igen",
+                      systemImage: store.isQueuedForPractice(reference) ? "checkmark.circle.fill" : "plus.circle")
+                    .frame(minHeight: 44)
+            }
+            .accessibilityIdentifier("practice.queue.toggle")
+            Text("Du väljer själv när en vers ska lämna kön. Övning räknas inte automatiskt som läsning.")
+                .font(.caption).foregroundStyle(.secondary)
         }
     }
 
@@ -311,17 +367,58 @@ struct PracticeView: View {
         recorder.hasRecording && recorder.recordedReference?.surahID != store.chapter?.surah.id
     }
 
-    private func restorePracticeChapter() {
+    private var isOpeningReference: Bool {
+        // Keep the old verse hidden until its exact queued reference has been
+        // applied, including the frame between chapter publication and onChange.
+        pendingOpeningReference != nil
+    }
+
+    private var openingReference: AyahReference? {
+        if let pendingOpeningReference { return pendingOpeningReference }
+        // A queued destination retains subsequent explicit practice selections.
+        // The ordinary tab keeps its existing follow-the-reader behaviour.
+        return initialReference == nil ? nil : focusedPracticeReference ?? initialReference
+    }
+
+    private func applyPracticeReference(_ reference: AyahReference) {
+        guard reference.surahID == store.chapter?.surah.id else { return }
+        // An incoming selection cannot silently replace the context of a take.
+        guard !recorder.hasRecording || recorder.recordedReference == reference else { return }
+        pendingOpeningReference = nil
+        focusedPracticeReference = reference
+        verseNumber = reference.ayahNumber
+        includeBasmala = recorder.hasRecording ? recorder.recordedIncludesBasmala : false
+    }
+
+    private func openPracticeReference(_ reference: AyahReference) {
         restoreTask?.cancel()
-        let reference = recorder.hasRecording ? recorder.recordedReference : nil
+        let requestID = UUID()
+        restoreRequestID = requestID
+        pendingOpeningReference = reference
+        if reference.surahID == store.chapter?.surah.id {
+            applyPracticeReference(reference)
+            return
+        }
         restoreTask = Task { @MainActor in
-            guard !Task.isCancelled, isVisible else { return }
-            if let reference {
-                guard recorder.hasRecording, recorder.recordedReference == reference else { return }
-                await store.openSurah(reference.surahID)
-            } else {
-                await store.load()
-            }
+            guard !Task.isCancelled, isVisible, restoreRequestID == requestID else { return }
+            await store.openSurah(reference.surahID)
+            guard !Task.isCancelled, isVisible, restoreRequestID == requestID,
+                  pendingOpeningReference == reference else { return }
+            applyPracticeReference(reference)
+        }
+    }
+
+    private func restorePracticeChapter() {
+        if let reference = recorder.hasRecording ? recorder.recordedReference : pendingOpeningReference {
+            openPracticeReference(reference)
+            return
+        }
+        restoreTask?.cancel()
+        let requestID = UUID()
+        restoreRequestID = requestID
+        restoreTask = Task { @MainActor in
+            guard !Task.isCancelled, isVisible, restoreRequestID == requestID else { return }
+            await store.load()
         }
     }
 

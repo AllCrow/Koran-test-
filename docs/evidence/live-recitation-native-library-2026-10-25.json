@@ -1,0 +1,270 @@
+{
+  "verified_on_utc": "2026-10-25",
+  "workflow_run_id": 40205401991,
+  "workflow_run_url": "https://github.com/AllCrow/Koran-test-/actions/runs/40205401991",
+  "job_id": 121205132864,
+  "head_sha": "b7725676b6ea578a5be4daec98c784bffb8087b1",
+  "normal_candidate_source": "b3bf6993b585816a56b1fc429f3703063193644e",
+  "conclusion": "success",
+  "native_test_cases": 3,
+  "test_failures": 0,
+  "native_test_seconds": 16.583,
+  "xcode": "26.2",
+  "xcode_build": "17C52",
+  "simulator": "iPhone 16e",
+  "ios": "26.2",
+  "artifact_id": 12603418118,
+  "artifact_bytes": 99251,
+  "artifact_zip_sha256": "276550199206adcee9f074510bce066c7c6b8e91646dbf6c1c98c1f0b82bb77d",
+  "artifact_expires_at": "2026-11-01T15:12:48Z",
+  "archive_entries": 46,
+  "archive_checked_no_audio_file_entries": true,
+  "downloaded_files": 12,
+  "downloaded_mp3_bytes": 855505,
+  "native_decoded_pcm_seconds": 52.02061224489795,
+  "source_hashes_checked": 6,
+  "reason": "PR12 moved MP3 validation into a shared storage file and changed player/library flows. Reused the existing isolated suite and expanded fingerprints to shared storage/loop implementations; no new tests or application code.",
+  "scope": "Separate simulator service flow: real default HTTPS downloads, fresh local lookup, native full-file decode and muted AVPlayer EOF of112:2 for three reciters. Normal PR12 hosted/UI approval must be read separately. No physical radio, energy, human content/rights/tajweed approval.",
+  "attachments": [
+    {
+      "exported_attachment": "2CD21478-84C0-4691-8190-B98999F31212.json",
+      "attachment_sha256": "28acb5da1f9c27f53c2f393866b08badba0b5293343b017b90e95bd513a8d391",
+      "result": {
+        "actual_mp3_bytes": 42759,
+        "actual_mp3_sha256": "4cbe11d08e1f887a9f20a7f34248a3cab28821ffeb308fbf18fb553ddb011deb",
+        "actual_native_end_observed": true,
+        "actual_native_playback_observed": true,
+        "app_directory": "Minshawy_Murattal_128kbps",
+        "app_reciter": "minshawi",
+        "audio_source_selections": [
+          "minshawi/112:2"
+        ],
+        "device_kind": "iPhone",
+        "download_error": "",
+        "download_seconds": 0.9853811666666843,
+        "expected_mp3_bytes": 42759,
+        "expected_mp3_sha256": "4cbe11d08e1f887a9f20a7f34248a3cab28821ffeb308fbf18fb553ddb011deb",
+        "fallback_attempts": 0,
+        "human_content_adjudication": false,
+        "ios_version": "26.2",
+        "microphone_used": false,
+        "model_invoked": false,
+        "native_decoded_files": [
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 141696,
+            "mp3_bytes": 51537,
+            "mp3_sha256": "c250515d4e51dde18a53ec208847e819d26388c349f3e52a9c0168237564081e",
+            "nonzero_peak": 0.90045166015625,
+            "reference": "112:1",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/112001.mp3"
+          },
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 117504,
+            "mp3_bytes": 42759,
+            "mp3_sha256": "4cbe11d08e1f887a9f20a7f34248a3cab28821ffeb308fbf18fb553ddb011deb",
+            "nonzero_peak": 0.934722900390625,
+            "reference": "112:2",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/112002.mp3"
+          },
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 148608,
+            "mp3_bytes": 54045,
+            "mp3_sha256": "5f05f7988cca0112096d390989726e55c9bd1e1a80f7bc7b3bd5cf42f6c90666",
+            "nonzero_peak": 0.859130859375,
+            "reference": "112:3",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/112003.mp3"
+          },
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 208512,
+            "mp3_bytes": 75779,
+            "mp3_sha256": "0d38e61d572eb148bc9dd63c275a3489da0e8c524986328ecb9f776894dfd7c2",
+            "nonzero_peak": 0.987274169921875,
+            "reference": "112:4",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/112004.mp3"
+          }
+        ],
+        "physical_iphone_tested": false,
+        "rights_cleared": false,
+        "same_native_item_at_end": true,
+        "schema_version": 1,
+        "scope": "Real default AudioLibrary HTTPS download, fresh local lookup, native PCM decode and muted AVPlayer EOF on simulator",
+        "selected_native_asset_is_local_file": true,
+        "selected_reference": "112:2",
+        "selected_source_url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/112002.mp3",
+        "source_code_sha256_json": "{\"App/Services/AudioFileDownloader.swift\": \"0c97387f1bba4de51e614f88bfe48fa9921516711b3bfc6f15e638b3db5202ba\", \"App/Services/AudioLibrary.swift\": \"c3472378773badd32659bc8d8afc37b2bb3f6b45692ade60dc6b4013c75c29e6\", \"App/Services/AudioStorageInventory.swift\": \"8d26925818a812b106674f773ffa023456374478e3ecee30c4ce4d534a348f8b\", \"App/Services/RecitationPlayer.swift\": \"023133a1001f06b26ad355038e881cbaeee1d5cf3fccb9e7483e415b44b180ce\", \"Sources/QuranCore/Models.swift\": \"a627d0f8f46637fdef62da43459ba641da9b5b15a9178e0360c4692d10922b1f\", \"Sources/QuranCore/RecitationLoop.swift\": \"36f7213ace58dd026047281eece092f68d0fe6e98c25b7d37864d8d28b22358c\"}",
+        "source_commit": "b7725676b6ea578a5be4daec98c784bffb8087b1",
+        "source_manifest_sha256": "6ce5c7e1df5c51de3c264a1d11e40bd00d5e86704215fc559a01711841792f63",
+        "status": "passed",
+        "unexpected_offline_downloads": 0
+      }
+    },
+    {
+      "exported_attachment": "A72C2F05-642F-4A31-81D7-B85FA2AE8A77.json",
+      "attachment_sha256": "41ea098ab7a4968f0c2c233cd71e2fa821b132f26bddde0b775e9064a20ea586",
+      "result": {
+        "actual_mp3_bytes": 84891,
+        "actual_mp3_sha256": "0b117b005794ad6ac371949bc7ba37dfc0bce28897510b79e9ade583777829a3",
+        "actual_native_end_observed": true,
+        "actual_native_playback_observed": true,
+        "app_directory": "Husary_128kbps",
+        "app_reciter": "husary",
+        "audio_source_selections": [
+          "husary/112:2"
+        ],
+        "device_kind": "iPhone",
+        "download_error": "",
+        "download_seconds": 1.0660586666666632,
+        "expected_mp3_bytes": 84891,
+        "expected_mp3_sha256": "0b117b005794ad6ac371949bc7ba37dfc0bce28897510b79e9ade583777829a3",
+        "fallback_attempts": 0,
+        "human_content_adjudication": false,
+        "ios_version": "26.2",
+        "microphone_used": false,
+        "model_invoked": false,
+        "native_decoded_files": [
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 256896,
+            "mp3_bytes": 97428,
+            "mp3_sha256": "bb8ed6ccb26360926ff82046aa8d92fd06d76f49b7f3954f5e9c2a3050b5cd31",
+            "nonzero_peak": 0.4591064453125,
+            "reference": "112:1",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Husary_128kbps/112001.mp3"
+          },
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 222336,
+            "mp3_bytes": 84891,
+            "mp3_sha256": "0b117b005794ad6ac371949bc7ba37dfc0bce28897510b79e9ade583777829a3",
+            "nonzero_peak": 0.434539794921875,
+            "reference": "112:2",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Husary_128kbps/112002.mp3"
+          },
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 261504,
+            "mp3_bytes": 99100,
+            "mp3_sha256": "623c821118210a0731114f7d86a81a25f92b90b4fc17a46ff2553fa2ad431c1e",
+            "nonzero_peak": 0.423675537109375,
+            "reference": "112:3",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Husary_128kbps/112003.mp3"
+          },
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 358272,
+            "mp3_bytes": 134210,
+            "mp3_sha256": "0c791d9b40f9744a118ac364e59f4e95f0e70a8d3619bc2f9d9d31d3d9cef092",
+            "nonzero_peak": 0.47479248046875,
+            "reference": "112:4",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Husary_128kbps/112004.mp3"
+          }
+        ],
+        "physical_iphone_tested": false,
+        "rights_cleared": false,
+        "same_native_item_at_end": true,
+        "schema_version": 1,
+        "scope": "Real default AudioLibrary HTTPS download, fresh local lookup, native PCM decode and muted AVPlayer EOF on simulator",
+        "selected_native_asset_is_local_file": true,
+        "selected_reference": "112:2",
+        "selected_source_url": "https://everyayah.com/data/Husary_128kbps/112002.mp3",
+        "source_code_sha256_json": "{\"App/Services/AudioFileDownloader.swift\": \"0c97387f1bba4de51e614f88bfe48fa9921516711b3bfc6f15e638b3db5202ba\", \"App/Services/AudioLibrary.swift\": \"c3472378773badd32659bc8d8afc37b2bb3f6b45692ade60dc6b4013c75c29e6\", \"App/Services/AudioStorageInventory.swift\": \"8d26925818a812b106674f773ffa023456374478e3ecee30c4ce4d534a348f8b\", \"App/Services/RecitationPlayer.swift\": \"023133a1001f06b26ad355038e881cbaeee1d5cf3fccb9e7483e415b44b180ce\", \"Sources/QuranCore/Models.swift\": \"a627d0f8f46637fdef62da43459ba641da9b5b15a9178e0360c4692d10922b1f\", \"Sources/QuranCore/RecitationLoop.swift\": \"36f7213ace58dd026047281eece092f68d0fe6e98c25b7d37864d8d28b22358c\"}",
+        "source_commit": "b7725676b6ea578a5be4daec98c784bffb8087b1",
+        "source_manifest_sha256": "6ce5c7e1df5c51de3c264a1d11e40bd00d5e86704215fc559a01711841792f63",
+        "status": "passed",
+        "unexpected_offline_downloads": 0
+      }
+    },
+    {
+      "exported_attachment": "F6F5B8C9-ED1C-4C4C-B563-ADB0722AA741.json",
+      "attachment_sha256": "185f40a1f9f4817d27c46c1d3a22f35f275d4f03cef96d8f06604faa9ade7d31",
+      "result": {
+        "actual_mp3_bytes": 41087,
+        "actual_mp3_sha256": "52fd57829c924926152df2175343d115aecbf3b83632f853cb94356697421eee",
+        "actual_native_end_observed": true,
+        "actual_native_playback_observed": true,
+        "app_directory": "Alafasy_128kbps",
+        "app_reciter": "alafasy",
+        "audio_source_selections": [
+          "alafasy/112:2"
+        ],
+        "device_kind": "iPhone",
+        "download_error": "",
+        "download_seconds": 1.0750752083333737,
+        "expected_mp3_bytes": 41087,
+        "expected_mp3_sha256": "52fd57829c924926152df2175343d115aecbf3b83632f853cb94356697421eee",
+        "fallback_attempts": 0,
+        "human_content_adjudication": false,
+        "ios_version": "26.2",
+        "microphone_used": false,
+        "model_invoked": false,
+        "native_decoded_files": [
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 128639,
+            "mp3_bytes": 48192,
+            "mp3_sha256": "8166d4ae6fbdae1748e215d5b31dbbf246530da0e849f1488ac35316488f1caf",
+            "nonzero_peak": 0.551025390625,
+            "reference": "112:1",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Alafasy_128kbps/112001.mp3"
+          },
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 109623,
+            "mp3_bytes": 41087,
+            "mp3_sha256": "52fd57829c924926152df2175343d115aecbf3b83632f853cb94356697421eee",
+            "nonzero_peak": 0.45599365234375,
+            "reference": "112:2",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Alafasy_128kbps/112002.mp3"
+          },
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 128639,
+            "mp3_bytes": 48192,
+            "mp3_sha256": "b50ce19c51314817e9a4885de55ad332a19585e0e221dbec86b98405a08400c4",
+            "nonzero_peak": 0.528900146484375,
+            "reference": "112:3",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Alafasy_128kbps/112003.mp3"
+          },
+          {
+            "channels": 2,
+            "decoded_pcm_frames": 211880,
+            "mp3_bytes": 78285,
+            "mp3_sha256": "67a565d4951ff5956a8299eb84cf57b5e0d44374dba8e24c9f0175cb4309b68e",
+            "nonzero_peak": 0.418212890625,
+            "reference": "112:4",
+            "sample_rate": 44100,
+            "source_url": "https://everyayah.com/data/Alafasy_128kbps/112004.mp3"
+          }
+        ],
+        "physical_iphone_tested": false,
+        "rights_cleared": false,
+        "same_native_item_at_end": true,
+        "schema_version": 1,
+        "scope": "Real default AudioLibrary HTTPS download, fresh local lookup, native PCM decode and muted AVPlayer EOF on simulator",
+        "selected_native_asset_is_local_file": true,
+        "selected_reference": "112:2",
+        "selected_source_url": "https://everyayah.com/data/Alafasy_128kbps/112002.mp3",
+        "source_code_sha256_json": "{\"App/Services/AudioFileDownloader.swift\": \"0c97387f1bba4de51e614f88bfe48fa9921516711b3bfc6f15e638b3db5202ba\", \"App/Services/AudioLibrary.swift\": \"c3472378773badd32659bc8d8afc37b2bb3f6b45692ade60dc6b4013c75c29e6\", \"App/Services/AudioStorageInventory.swift\": \"8d26925818a812b106674f773ffa023456374478e3ecee30c4ce4d534a348f8b\", \"App/Services/RecitationPlayer.swift\": \"023133a1001f06b26ad355038e881cbaeee1d5cf3fccb9e7483e415b44b180ce\", \"Sources/QuranCore/Models.swift\": \"a627d0f8f46637fdef62da43459ba641da9b5b15a9178e0360c4692d10922b1f\", \"Sources/QuranCore/RecitationLoop.swift\": \"36f7213ace58dd026047281eece092f68d0fe6e98c25b7d37864d8d28b22358c\"}",
+        "source_commit": "b7725676b6ea578a5be4daec98c784bffb8087b1",
+        "source_manifest_sha256": "6ce5c7e1df5c51de3c264a1d11e40bd00d5e86704215fc559a01711841792f63",
+        "status": "passed",
+        "unexpected_offline_downloads": 0
+      }
+    }
+  ]
+}

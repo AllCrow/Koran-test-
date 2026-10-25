@@ -359,6 +359,68 @@ final class AudioLibraryTests: XCTestCase {
         }
     }
 
+    func testWiFiOnlyDownloadMarksEveryRequestAndKeepsExistingAudio() async throws {
+        let root = try temporaryDirectory()
+        let existing = try save(mpegFrames(), reference: reference(1), reciter: .husary, root: root)
+        let before = try Data(contentsOf: existing)
+        let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+        let library = AudioLibrary(directory: root, download: transport.download)
+        library.setAllowsCellularAccess(false)
+
+        library.beginDownload(chapter(), reciter: .husary)
+        await waitForDownloadToFinish(library)
+
+        XCTAssertEqual(transport.requests.count, 6)
+        XCTAssertTrue(transport.requests.allSatisfy { !$0.allowsCellularAccess })
+        XCTAssertEqual(try Data(contentsOf: existing), before)
+        XCTAssertEqual(library.completed, 7)
+        XCTAssertNil(library.errorMessage)
+    }
+
+    func testChangingNetworkChoiceCancelsAnOldResponseBeforeNewRequestsUseTheChoice() async throws {
+        let root = try temporaryDirectory()
+        let started = expectation(description: "A request using the old network choice is held")
+        let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+        transport.pauseFirstResponse = true
+        transport.onRequest = { started.fulfill() }
+        let library = AudioLibrary(directory: root, download: transport.download)
+        defer { library.cancelDownload(); transport.resumeResponse() }
+        library.beginDownload(chapter(), reciter: .alafasy)
+        await fulfillment(of: [started], timeout: 2)
+        XCTAssertTrue(try XCTUnwrap(transport.requests.first).allowsCellularAccess)
+
+        library.setAllowsCellularAccess(false)
+        transport.resumeResponse()
+        await waitForDownloadToFinish(library)
+        XCTAssertEqual(library.completed, 0)
+        XCTAssertNil(library.errorMessage)
+        XCTAssertNil(library.localURL(for: try reference(1), reciter: .alafasy))
+        XCTAssertTrue(transport.createdFiles.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
+
+        library.beginDownload(chapter(), reciter: .alafasy)
+        await waitForDownloadToFinish(library)
+        XCTAssertEqual(transport.requests.count, 8)
+        XCTAssertTrue(transport.requests.dropFirst().allSatisfy { !$0.allowsCellularAccess })
+        XCTAssertEqual(library.completed, 7)
+        XCTAssertNil(library.errorMessage)
+    }
+
+    func testExplicitDownloadRecoversARemovedStorageRootAndItsBackupExclusion() async throws {
+        let root = try temporaryDirectory()
+        let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+        let library = AudioLibrary(directory: root, download: transport.download)
+        try FileManager.default.removeItem(at: root)
+
+        library.beginDownload(chapter(), reciter: .minshawi)
+        await waitForDownloadToFinish(library)
+
+        XCTAssertEqual(library.completed, 7)
+        XCTAssertEqual(transport.requests.count, 7)
+        XCTAssertNil(library.errorMessage)
+        XCTAssertEqual(try root.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup, true)
+        XCTAssertEqual(AudioLibrary(directory: root).downloadedVerseCount(surahID: 1, reciter: .minshawi), 7)
+    }
+
     private func waitForDownloadToFinish(_ library: AudioLibrary) async {
         guard library.downloadingSurahID != nil else { return }
         let finished = expectation(description: "Foreground download has finished")

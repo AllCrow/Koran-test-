@@ -68,6 +68,35 @@ Den automatiska tajweedbedömningen är **avstängd i standardbygget**. Lokal
 inspelning och återlyssning finns, men motsvarar inte Tarteels betalda analys.
 Kvalitetsmålet för den automatiska hjälpen återstår.
 
+## Bibliotek, repetition och övningskö
+
+I versionen med dessa funktioner, prova också följande:
+
+1. Öppna **Mitt → Ljud för offline-lyssning**. Kontrollera vilka suror och
+   recitatörer som är sparade och lagringsmängden. Välj ett annat sparat val
+   än det första, öppna det och radera bara det valet efter bekräftelse.
+   Övriga filer ska finnas kvar även efter omstart. Skadade filer ska inte
+   räknas som spelbara men ska gå att radera eller hämta igen.
+2. Under **Koranen → Läsinställningar → Repetera verser**, välj två verser,
+   två omgångar och några sekunders paus. Kontrollera verkliga versgränser,
+   ordningen och att passet slutar. Pausa under väntan: ingen senare vers
+   ska börja innan du själv fortsätter. Prova också låsskärm, bakgrund och
+   en paus på 15 sekunder; simulatorprov garanterar inte bakgrundsbeteendet.
+3. Lägg en vers i **Övningskön** med **Öva igen**. Öppna den exakta versen,
+   starta om appen och ta sedan bort posten själv. Ingen av åtgärderna ska
+   ge läskredit. Prova med en befintlig inspelning för en annan vers:
+   tagningen ska behållas tills du uttryckligen godkänner ett byte.
+4. Stäng av **Mitt → Använd mobildata för ljud**. Med Wi-Fi avstängt ska nytt
+   recitationsljud inte hämtas över mobilnätet; tidigare sparat ljud ska
+   fungera. Återställ Wi-Fi och prova igen. Inställningen gäller ljud,
+   inte ny tafsir eller en separat aktiverad analystjänst.
+5. Skapa en **Felsökningsrapport** under **Mitt** och granska den. Prova att
+   spara filen lokalt med Filer. Röst, läshistorik och valda verser ska inte
+   finnas med, och ingen automatisk delning ska ske.
+6. Exportera en ny läskopia med en köpost. Importera en äldre kopia:
+   befintlig kö, läsposition och inställningar ska behållas. Prova därefter
+   den nya kopian efter en personlig uppdatering eller ominstallation.
+
 ## Längre användning och uppdateringar
 
 Prova ett längre läspass och ett separat pass med sparad recitation. Notera

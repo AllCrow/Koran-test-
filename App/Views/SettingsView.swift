@@ -9,6 +9,8 @@ struct SettingsView: View {
     @EnvironmentObject private var player: RecitationPlayer
     @EnvironmentObject private var recorder: PracticeRecorder
     @EnvironmentObject private var assessment: RecitationAssessmentStore
+    @EnvironmentObject private var audioLibrary: AudioLibrary
+    @EnvironmentObject private var audioNetwork: AudioNetworkPreferences
     @State private var exportDocument: ReadingBackupDocument?
     @State private var exportFilename = "Sakina-lasdata"
     @State private var showExporter = false
@@ -39,6 +41,7 @@ struct SettingsView: View {
                 .pickerStyle(.menu)
                 .accessibilityIdentifier("settings.appearance")
                 NavigationLink("Ljud för offline-lyssning") { AudioDownloadsView() }
+                    .accessibilityIdentifier("settings.audioLibrary")
                 Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: { store.setTajweedEnabled($0) }))
                     .accessibilityIdentifier("settings.tajweed")
                 NavigationLink {
@@ -55,7 +58,31 @@ struct SettingsView: View {
                 }
                 Toggle("Spela nästa vers automatiskt", isOn: $player.autoplay)
             }
+            Section {
+                Toggle("Använd mobildata för ljud", isOn: Binding(
+                    get: { audioNetwork.allowsCellularAudio },
+                    set: { allowed in
+                        audioNetwork.setAllowsCellularAudio(allowed)
+                        audioLibrary.setAllowsCellularAccess(allowed)
+                        player.setAllowsCellularAccess(allowed)
+                    }
+                ))
+                .accessibilityIdentifier("settings.audioCellular")
+            } header: {
+                Text("Nätverk för ljud")
+            } footer: {
+                Text("När mobildata är avstängt behöver nytt ljud Wi-Fi. Sparat ljud fungerar fortfarande offline. Ändrar du valet pausas pågående hämtning och strömning.")
+                    .font(.caption)
+            }
             readingBackupSection
+            Section("Övning") {
+                NavigationLink {
+                    PracticeQueueView()
+                } label: {
+                    LabeledContent("Min övningskö", value: "\(store.practiceQueue.count) verser")
+                }
+                .accessibilityIdentifier("settings.practiceQueue")
+            }
             Section("Bokmärken") {
                 if store.bookmarks.isEmpty {
                     Label("Spara en vers med bokmärkessymbolen i läsvyn.", systemImage: "bookmark")
@@ -83,6 +110,10 @@ struct SettingsView: View {
                 }
                 NavigationLink("Källor och textutgåvor") { SourceNoticeView() }
                 NavigationLink("Integritet") { PrivacyView() }
+                NavigationLink("Felsökningsrapport") {
+                    DiagnosticsView(allowsCellularAudio: audioNetwork.allowsCellularAudio)
+                }
+                .accessibilityIdentifier("settings.diagnostics")
                 Text("Ingen prenumeration, inget konto och inga annonser i den här versionen.")
                     .font(.footnote).foregroundStyle(.secondary)
                 Text(assessment.isAvailable
@@ -122,7 +153,7 @@ struct SettingsView: View {
             }
             Button("Avbryt", role: .cancel) { pendingImport = nil }
         } message: {
-            Text("Bokmärken och läsdagar läggs till. Din befintliga läsposition och dina inställningar behålls.")
+            Text("Bokmärken, läsdagar och övningskö läggs till. Din befintliga läsposition och dina inställningar behålls.")
         }
         .onDisappear {
             backupRequestID = UUID()
@@ -156,7 +187,7 @@ struct SettingsView: View {
             }
             .accessibilityIdentifier("settings.backup.import")
             .disabled(isReadingBackup)
-            Text("Spara bokmärken, läsposition och läsdagar i en fil inför en ominstallation. Ljud, inspelningar och inställningar ingår inte.")
+            Text("Spara bokmärken, läsposition, läsdagar och övningskö i en fil inför en ominstallation. Ljud, inspelningar och inställningar ingår inte.")
                 .font(.caption).foregroundStyle(.secondary)
             if isReadingBackup { ProgressView("Läser säkerhetskopian …") }
             if let backupNotice {
@@ -381,10 +412,11 @@ struct PrivacyView: View {
     var body: some View {
         List {
             Section("Sparas på din iPhone") {
-                Text("Läsposition, bokmärken, läsmål och streak sparas lokalt. Appen kräver inget konto och innehåller ingen användningsspårning eller annonser.")
+                Text("Läsposition, bokmärken, övningskö, läsmål och streak sparas lokalt. Appen kräver inget konto och innehåller ingen användningsspårning eller annonser.")
                 Text("Tidigare öppnade tafsirförklaringar kan sparas på telefonen för läsning utan internet. De senaste förklaringarna prioriteras när utrymmet fylls.")
                 Text("Inspelningar kan raderas i övningsvyn och tas bort vid nästa appstart. Ingen röst laddas upp automatiskt.")
                 Text("Du kan själv exportera läsdata till en fil och lägga till dem igen efter en ominstallation. Appen gör ingen automatisk säkerhetskopiering till en server.")
+                Text("En felsökningsrapport skapas först när du själv väljer det. Du kan granska och spara rapporten i Filer; appen skickar den inte automatiskt. Den innehåller inte läshistorik eller inspelningar.")
             }
             Section("När du använder internet") {
                 Text("När du strömmar eller laddar ned recitationsljud kontaktar appen EveryAyah. Sparat ljud spelas från telefonen. När en tafsirförklaring behöver hämtas kontaktar appen AlQuran Cloud. Tjänsterna får din IP-adress och vilken vers du begär, men ingen röstinspelning från appen.")
