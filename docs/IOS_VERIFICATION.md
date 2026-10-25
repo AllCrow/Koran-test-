@@ -28,6 +28,15 @@ simulatorbygge och de hostade native-/UI-proven. Den personliga osignerade
 iPhone-IPA:n byggs separat med **Xcode 26.2 / iOS 26.2 SDK**. Minsta stödda
 körversion för appen är fortsatt **iOS 17**.
 
+CI-konfigurationen bygger testmålen en gång för den valda simulatorn och
+kör sedan de hostade tjänsteproven före UI-flödena med `test-without-building`.
+Ett tjänstefel ska stoppa omgången före de långsammare UI-proven; samma
+UI-svit krävs fortfarande för ett godkänt nativejobb. Resultatartefakten
+bevarar `HostedTests.xcresult` och, när tjänsterna passerat,
+`UITestResults.xcresult`. Skärmbilder exporteras från UI-resultatet, eller
+från tjänsteresultatet om körningen stannade där. Det är en ändrad
+konfiguration som behöver faktisk Mac-verifiering innan den kan godkännas.
+
 Det genererade Xcode-projektet har tre mål: `Sakina`, `SakinaTests` och
 `SakinaUITests`. Schemat `Sakina` kopplar båda testmålen till appen.
 De hostade proven använder isolerade inställningar, temporära filer, kontrollerad

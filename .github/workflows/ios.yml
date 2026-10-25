@@ -65,7 +65,7 @@ jobs:
           xcodebuild -project Sakina.xcodeproj -scheme Sakina
           -configuration Debug -destination 'generic/platform=iOS Simulator'
           -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build
-      - name: Test native reading state on an iPhone simulator
+      - name: Build native tests for the selected iPhone simulator
         shell: bash
         run: |
           simulator_id=$(xcrun simctl list devices available --json | python3 -c '
@@ -77,23 +77,41 @@ jobs:
           if not iphones:
               sys.exit("The requested iPhone simulator/runtime is unavailable")
           print(iphones[0])')
+          echo "SAKINA_TEST_SIMULATOR_ID=$simulator_id" >> "$GITHUB_ENV"
           xcodebuild -project Sakina.xcodeproj -scheme Sakina \
             -configuration Debug -destination "platform=iOS Simulator,id=$simulator_id" \
-            -derivedDataPath DerivedData -resultBundlePath TestResults.xcresult \
-            -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test
+            -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build-for-testing
+      - name: Test native app services before UI flows
+        run: |
+          xcodebuild -project Sakina.xcodeproj -scheme Sakina \
+            -configuration Debug -destination "platform=iOS Simulator,id=$SAKINA_TEST_SIMULATOR_ID" \
+            -derivedDataPath DerivedData -resultBundlePath HostedTests.xcresult \
+            -parallel-testing-enabled NO -only-testing:SakinaTests \
+            CODE_SIGNING_ALLOWED=NO test-without-building
+      - name: Test native reading flows after services pass
+        run: |
+          xcodebuild -project Sakina.xcodeproj -scheme Sakina \
+            -configuration Debug -destination "platform=iOS Simulator,id=$SAKINA_TEST_SIMULATOR_ID" \
+            -derivedDataPath DerivedData -resultBundlePath UITestResults.xcresult \
+            -parallel-testing-enabled NO -only-testing:SakinaUITests \
+            CODE_SIGNING_ALLOWED=NO test-without-building
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: Sakina-native-test-results-${{ matrix.label }}
-          path: TestResults.xcresult
+          path: |
+            HostedTests.xcresult
+            UITestResults.xcresult
           if-no-files-found: ignore
           retention-days: 7
       - name: Export simulator test screenshots
         if: always()
         shell: bash
         run: |
-          if [ -d TestResults.xcresult ]; then
-            xcrun xcresulttool export attachments --path TestResults.xcresult --output-path SimulatorAttachments
+          if [ -d UITestResults.xcresult ]; then
+            xcrun xcresulttool export attachments --path UITestResults.xcresult --output-path SimulatorAttachments
+          elif [ -d HostedTests.xcresult ]; then
+            xcrun xcresulttool export attachments --path HostedTests.xcresult --output-path SimulatorAttachments
           fi
       - uses: actions/upload-artifact@v7
         if: always()
