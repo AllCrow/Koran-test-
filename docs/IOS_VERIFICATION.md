@@ -7,6 +7,15 @@ inte dessa prov. **Ingen fysisk iPhone eller personlig signering är verifierad.
 
 ## Automatiska prov på macOS
 
+**Aktuell källa `c907121e59eab81ae8848e2ca0311ab54f2aa6ec` passerar [huvudkörning 51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)**
+med **91 hostade + åtta UI-prov per variant**, 82 separata portabla
+Swift-prov per Mac-variant och 36 backendprov. Alla sex jobb inklusive
+ägarutkastet är godkända. Elva nya native-regressioner täcker ljudtjänstförlust,
+importgränser och avbrutna/överlappande laddningar. Se
+[fortsättningsunderlaget](CONTINUED_STABILITY_2026-10-25.md).
+
+**Historisk baslinje för bygge 46:**
+
 Den samlade kandidaten har passerat [PR-körning 44](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
 på alla tre varianter. Huvudgrenens byteidentiska källa
 `8cd977c4f2063e51784cc0b7c3fbca75b1760ec3` passerade också
@@ -70,6 +79,7 @@ en osignerad fysisk iPhone-IPA; efter alla godkända jobb bevaras den som ett
 | Testgrupp | Avsikt |
 | --- | --- |
 | AppStore | Unika uttryckliga läsmarkeringar, återstart, kalender-/systemklockebyten, måländring, bokmärken, tajweedval och korrupt sparad data. Sju dagars historik med stabila civila datum, intjänade mål och inga påhittade versantal. Fyra textstorlekar, äldre/okända sparvärden och bevarat storleksval vid import. Export/import sammanfogar läsdata idempotent; ogiltiga eller för stora filer ändrar inga data. |
+| ChapterLoading | Sju kontrollerade async-prov: föravbruten öppning/kallstart, prompt avbrytning med bibehållna sparade byte, sena lyckade/felaktiga resultat efter nyare färdig eller pågående laddning, korrekt återförsöksmål och bevarad katalog under överlappande kallstart. Loaders ignorerar avsiktligt cancellation tills provet svarar. |
 | AudioLibrary | Vers/sura/recitatör, MPEG-/ID3-validering, diskåteröppning, avgränsad radering, felaktig lagring och lagringsfel. Kontrollerad nedladdning provar exakt URL, fortsättning efter avbrott, avbrytning, sena svar, HTTP/MIME/storleksfel och städning av temporära filer. |
 | RecitationPlayer | Riktig AVPlayer-uppspelning av egna korta PCM-WAV-filer: start, naturligt slut, automatisk nästa vers, surans sista vers och enstaka övningsvers. Även trasig lokal fil/återförsök, sena händelser, sparade inställningar och uppskjuten laddning vid pausat recitatörsbyte. Simulerad omstart av ljudtjänsten behåller valet, förnyar spelaren och kräver uttrycklig återupptagning. Ett separat långt WAV-prov framtvingar sen native-uppspelning efter paus och kräver riktig motorpaus utan naturligt slut samt fungerande uttrycklig återupptagning. |
 | OfflineMP3Playback | Sju prov av verklig MP3-till-PCM-avkodning och AVPlayer med AudioLibrary:s lokala filval för alla tre recitatörer, aktiverad systemljudsession, paus/återstart, naturligt versslut/autospelning, enstaka övningsvers, simulerade avbrotts-/hörlursnotiser, gamla händelser och en ospelbar fil. En genererad svag ton används, inga externa ljudförfrågningar eller röster. |

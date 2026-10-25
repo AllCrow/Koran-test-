@@ -10,11 +10,11 @@ förutsättningen efter resume kontrollerade bara appens publicerade flagga.
 Provet bevakar nu motorn före varje kommando och kräver positiv native-rate
 och playing före avbrottet. KVO är endast väckning för nya aktuella getter-
 kontroller på huvudaktorn. Samma tvåsekundersgräns, riktiga MP3-avkodning,
-tresekunderston, kvarvarande ljud under 2,5 s, inget naturligt slut och
+tresekunderston, uppspelningsklocka under 2,5 s med ljud kvar, inget naturligt slut och
 slutliga rate0/paused-krav behålls. Samma item och ljudfil kontrolleras också.
 De senaste 64 tillståndsobservationerna bifogas om kvittensen misslyckas.
 Detta testbyte påstår inte att ett ihållande produktfel har bevisats eller
-att en tidigare misslyckad körning har blivit godkänd. Ny Mac-verifiering krävs.
+att en tidigare misslyckad körning har blivit godkänd. Det uppdaterade provet omfattas av slutresultaten nedan.
 
 Användaren bad om fortsatt förbättringsarbete efter det godkända personliga
 bygget 46. Det paketet och dess fullständiga historik/backup bevaras.
@@ -40,63 +40,89 @@ bygget 46. Det paketet och dess fullständiga historik/backup bevaras.
   iOS 17 och senare i stället för den deprekerade sammanslagningsinitieraren.
   Källa, färgtoner, text och kontrastkrav är oförändrade.
 
-## Prov och status före Mac-körningen
+## Verifierade resultat
 
-Elva nya hostade regressioner tillförs: två för ljudtjänstförlust, två för
-importgränser och sex för laddning/cancellation. De två sena laddningsproven
-provar både framgång och fel från den gamla laddningen. Förväntad native-svit
-är nu **91 hostade + åtta UI-fall per simulator**. Det är ett förväntat antal,
-inte ett godkänt Mac-utfall.
+[PR-körning 40184479157](https://github.com/AllCrow/Koran-test-/actions/runs/40184479157)
+godkändes för grenens `0d85b19426980c8f2c3c5ae46ac6a71458c11162`. Faktisk PR-checkout var
+`7d29ca28190cb24171c6ebaf61c7a8d203d55a3b` med Git-träd `188fe37ce0dfb1d2eaee63e78427f68482e8480d`. Den inkluderar också
+den redan integrerade fristående käll-/villkorsgranskningen. App-, test-,
+resurs-, bygg- och workflow-indata matchar kandidaten; skillnaderna består
+av dokumentation och det manuella källkontrollverktyget som inte körs i app
+eller normal CI. Resultaten nedan gäller den faktiskt körda checkouten.
+[Huvudkörning 51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325) godkändes också på `c907121e59eab81ae8848e2ca0311ab54f2aa6ec`.
 
-Innehålls-, referens-, font- och ikonvalidering passerade lokalt. Projektet
-har återskapats med åtta hostade testfiler. Linux/Swift 6.0.3:s frontend
-godkände syntaxen i alla ändrade Swift-filer; den kontrollen ersätter inte
-Apple-SDK-typkontroll eller ett native-test. **Mac CI återstår för kandidaten.**
+Varje simulator utförde **91 hostade prov och åtta UI-flöden utan fel**,
+samt separat **82 portabla Swift-prov**. Det är 99 unika native-/UI-fall
+och 297 exekveringar över de tre konfigurationerna. Backendjobbet passerade
+36 prov med ffmpeg och ResourceWarning som fel. Innehåll, font, referenser,
+projektgenerering samt simulator- och osignerat iPhone-bygge passerade.
 
-Nya ljudprov använder riktig AVPlayer med en genererad åtta sekunders WAV,
-men ljudtjänstnotiserna är simulerade. Inspelningar, fysisk iPhone, externa
-ljudrutter, energiförbrukning och faktisk installation är fortfarande inte
-provade. Automatisk recitationsanalys är fortsatt avstängd i standardbygget;
-inget nytt påstående om Tarteels kvalitet görs.
+Hostade grupper: 25 AppStore, 11 text/färg, fem HTTP-transport, 13 AudioLibrary,
+sju ChapterLoading, sju MP3, 11 inspelnings- och tolv spelarprov. De elva
+nya fallen består av två import-, två ljudtjänst- och sju laddningsprov.
+Kallstartsprovet täcker både katalogsvar efter ett nyare färdigt kapitel och
+medan det nyare kapitlet väntar. Den första kandidaten ersattes efter denna
+konkreta granskningsupptäckt; en ersatt körning är inget godkännande för slutkällan.
 
-Senaste fullständigt godkända personliga paket och tidigare verifiering finns
-i [STATUS.md](../STATUS.md) och [underlaget för bygge 46](evidence/premium-readiness-2026-10-25.md).
+Även körning 48 hade ett kompakt UI-fel efter riktig återstart: den tidiga
+AX-roten pekade på gamla PID38019, den senare rätta läsaren på PID39656.
+Bild och senare diagnostik visar hela rätta 114:1-badgen vid y92–118,5 inom
+y64–202,5. Det är inte bevis för att det ursprungliga tidsprovet passerade.
+Den rättade harnessen läser rätt badge, navigering, tabbrad och fönster ur en
+sammanhängande native-snapshot. Det undviker blandade fjärrfrågor och kräver
+fortfarande en unik exakt vers, samma fullständiga geometri, förgrund och
+femsekundersgräns. Alla åtta flöden och interaktiva kontrollkrav behålls.
+Ett separat förslag med nya XCUIApplication-objekt vid omstart bevaras på
+`codex/relaunch-process-harness-alternative` men är inte antagen produktkod.
+De nya godkännandena ovan gäller den sammanhängande snapshot-harnessen.
+Utvalda felbilder, AX-data och råloggen bevaras i slutbackupen.
 
-En separat granskning av den första kandidaten hittade att ett sent giltigt
-katalogsvar kunde tappas när ett nyare suraval redan hade börjat. Katalogen
-lagras nu efter cancellation-kontroll men före kapitelgenerationens kontroll.
-Det sjunde laddningsprovet täcker både nyare färdigt och pågående kapitel.
-Den ersatta körningen räknas inte som godkännande för denna rättade källa.
+Körning49 hittade därefter för tidig native-pauskvittens efter explicit resume:
+rate1 lästes trots paused och två assertions misslyckades. Hela provet tog0,309s utan timeout.
+Det förbättrade MP3-provet bevakar före kommandon och kräver riktig native-
+uppspelning före avbrott; appens flagga ensam räcker inte. Alla tidigare
+slutkrav och2s/3s/<2,5s/noEOF behålls, med samma item/fil och upp till64
+observationer som feldiagnostik. Den gamla felloggen bevaras. Slutresultaten
+ovan gäller den förbättrade kvittensen; ingen misslyckad körning räknas som grön.
 
-## Lästa resultat och positionskontroll på kompakt simulator
+Linux/Swift6-syntaxkontrollen var bara förkontroll. Resultaten ovan kommer från
+faktiska Apple-SDK-byggen och native-körningar med Xcode26.2/iOS18.5 på
+iPhone16Pro, Xcode16.4/iOS18.5 på iPhoneSE3 och Xcode26.2/iOS26.2 på iPhone16e.
+Testmål byggs en gång; hostade prov måste passera före UI-flöden.
 
-[Körning 48](https://github.com/AllCrow/Koran-test-/actions/runs/40181293204)
-på `19a50e11becf236853cab29f779d5007cdbef7ba` är **failure**. Samtliga tre
-hostade grupper passerade 91 prov. 16Pro/iOS18.5 och 16e/iOS26.2 passerade
-även åtta UI-prov; SE3 hade ett fel i åtta UI-prov, vid återstarten till
-114:1 i `testNextSurahSavesPositionWithoutReadingCreditAndEndsAtAnNas`.
-Backendens 36 prov och det osignerade iPhoneOS-bygget passerade. Ingen
-ny ägarnedladdning skapades av den underkända helkörningen.
+## Personligt paket och bevarande
 
-SE-jobbet `121133205250` har lästs. Den första positionspredikatkörningen
-gjorde flera efterföljande tillgänglighetsfrågor, med omförsök vid målfrågans
-`exists`, genom femsekundersfönstret. Den hämtade felbilden och senare
-ramdiagnostiken visar hela rätta badgen vid **(40,92,55,26.5)**, inom
-krävda **y64–202.5**, med versbörjan synlig. Det senare belägget gör inte
-den underkända femsekunderskontrollen godkänd i efterhand.
+Den separata [live-källgranskningen](LIVE_RECITATION_AUDIT.md) passerade tre
+andra native-fall på en simulatorvariant: tolv riktiga filer avkodades och
+lokal 112:2 spelades till faktiskt slut för alla tre recitatörer. Dess rålogg,
+ZIP, tre originalbilagors hashvärden och bindning till aktuella kodhashar
+kontrollerades separat. Den ändrar inte ordinarie testantal, appkod, byggprojekt
+eller minsta iOS. De senare opt-in-filerna ingår i källbackupen och har egen
+verifieringsproveniens; de körs inte av standardappen eller normal CI.
 
-Artefakt `12594797373` har rätt käll-SHA och verifierad ZIP-SHA256
-`7183ef36a8ae95b1e3a2876679da8f07833f044c9d538504a2042d4805593dde`.
-Bild `C02DF83D-293C-46E4-9546-E2D0910F98E6.png`, ramtext
-`5908B0D9-6E19-40EB-8743-6DBE81042D14.txt` och skärminspelningen har
-granskats. Källans faktiska Apple-checkout `ca485ed4d3afdf9c3e5f5873011ba67e70c4c447`
-är hämtad och helt tree-identisk med `19a50e1`.
+- Version **0.1.0 (51)**, **3269813 byte**.
+- IPA SHA256: `279803799a1f3d72626c42ab7e7a651e3859cb528a80625e0c5ef26de5e6854b`.
+- Yttre artefakt-ZIP SHA256: `0c38c04d9d018eedcbe198825f38e680e02357dc844f40dcb955ef1b2037c3a2`.
+- Källa `c907121e59eab81ae8848e2ca0311ab54f2aa6ec`, artefakt **12596352350**.
+- Oberoende Mach-O-/plistkontroll: arm64, iOS-plattform, min iOS17.0, SDK26.2.
+- Alla 115 koran-JSON-filer, fonten och 118 övningsresurser är byteidentiska.
+- Analysflagga av och serveradress tom; inga profiler, testpaket eller externa dylibs.
 
-Positionshjälparen läser nu badge, navigationsfält, flikfält och fönster ur
-**en sammanhängande native-ögonblicksbild** i stället för många separata
-fjärrfrågor som kan korsa ett flikbyte. Den kräver en enda matchande badge,
-rätt globalt ID/etikett, hela ändliga ramen nära toppen och inom fönstrets
-bredd samt appen i förgrunden. **Samma fem sekunder**, fyra långa hopp-/
-återstarts-/upprepnings-/senarepositionskrav och verkliga knapptryck är kvar.
-Läsaren, gesterna och all produktionskod är oförändrade av denna korrigering.
-Den är ännu inte native-godkänd; en ny Mac-körning måste läsas före integration.
+Ägarutkast **423341980**, tagg `personal-build-51-1`, är bekräftat som
+draft/prerelease på rätt källa. IPA, byggrapport och installationsguide matchar
+GitHubs asset-digests och storlekar. Hämta via
+[Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som AllCrow.
+Råloggar, tre bildartefakter och metadata bevaras med källarkiv och fullständigt
+Git-bundle i arbetsytans slutbackup. Äldre bygge46/backup finns kvar.
+
+Även den separata live-granskningens logg och metadata-ZIP bevaras i bevisarkivet.
+
+## Kvarvarande provgränser
+
+Ljudproven spelar en riktig genererad WAV i AVPlayer, men ljudtjänstnotiserna
+är simulerade. Laddningsproven använder kontrollerade async-svar. Fysisk iPhone,
+personlig signering/installation, mikrofon, externa ljudrutter, filproviders,
+VoiceOver, temperatur och batteri återstår enligt
+[telefonprovet](FIRST_IPHONE_TEST.md). Ingen fysisk stabilitet eller låg värme
+påstås från simulatorerna. Automatisk tajweedanalys är fortfarande avstängd
+utan serveradress och Tarteels kvalitetsmål är inte uppfyllt.

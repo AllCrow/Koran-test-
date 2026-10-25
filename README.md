@@ -63,18 +63,16 @@ behöver fortfarande verifieras. Minsta körversion iOS17 är en annan
 inställning än bygg-SDK:n. Den personliga installationsvägen
 beskrivs i [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
-**Aktuell verifiering:** [PR-körning 44](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
-passerade **80 hostade iOS-prov och åtta UI-flöden på var och en av tre
+**Aktuell verifiering:** [huvudkörning 51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)
+passerar **91 hostade iOS-prov och åtta UI-flöden på var och en av tre
 simulatorvarianter**, samt **82 portabla Mac-prov och 36 backendprov**.
-Det är 88 unika native-/UI-fall och 264 exekveringar över matrisen.
-Den integrerade huvudgrenens filträd är byteidentiskt med kandidaten.
-[Huvudkörning 46](https://github.com/AllCrow/Koran-test-/actions/runs/40176707574)
-är också **godkänd i alla sex jobb** med samma testantal. **Bygge 46** är
-sparat som ett ägaråtkomligt utkast under
+Det är 99 unika native-/UI-fall och 297 exekveringar över matrisen.
+Fortsättningsrundan skyddar läsdata vid stora importer, gör suraladdning
+avbrytbar utan sena vybyten och hanterar förlorad ljudtjänst direkt.
+**Bygge 51** finns som ägaråtkomligt utkast under
 [Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som AllCrow.
-Den osignerade IPA:n är oberoende kontrollerad mot källan; fysisk
-installation och värme/batteri återstår.
-Se [aktuell status](STATUS.md) och [exakt verifieringsunderlag](docs/evidence/premium-readiness-2026-10-25.md).
+IPA:n är oberoende kontrollerad mot källan. Personlig installation,
+fysisk mikrofon och värme/batteri återstår. Se [underlaget](docs/CONTINUED_STABILITY_2026-10-25.md).
 
 Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, personlig signering och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
 
