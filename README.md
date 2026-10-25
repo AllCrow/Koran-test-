@@ -26,7 +26,9 @@ Se [kraven](KRAV.md), [aktuell status](STATUS.md), [modellundersökningen](docs/
 
 Du behöver inte äga en Mac, men appen behöver byggas och signeras i en macOS-miljö. [GitHub Actions har nu byggt appen och godkänt alla 18 native-tester](https://github.com/AllCrow/Koran-test-/actions/runs/40154414555): 15 hostade tester och tre UI-flöden på iPhone 16 Pro-simulator med iOS 18.5. Inget fysiskt iPhone-prov är utfört. En simulatorartefakt kan **inte** installeras på en fysisk iPhone.
 
-Distributionsvägen är en betrodd molnbaserad Mac, Apple Developer-medlemskap, App Store Connect och korrekt signering, därefter TestFlight. Dessa delar är ännu inte färdiga. Inga Apple-uppgifter eller signeringsnycklar ingår i Git. Eventuella Apple- och byggkostnader är projektets distributionskostnader, inte en obligatorisk månadsavgift för appens användare.
+För **privat installation** finns nu en riktig, osignerad iPhoneOS/arm64-IPA från [molnbygget](https://github.com/AllCrow/Koran-test-/actions/runs/40156140923). Den behöver personlig signering innan den kan installeras. [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md) beskriver en gratisväg med vanligt Apple-konto och lånad Mac eller Windows-dator för grundinstallationen. Förnyelse behövs normalt före sju dagar, och en dator kan behövas igen vid återställning. Ingen faktisk SideStore-installation är ännu verifierad.
+
+Användaren har uttryckligen valt att behålla iPhone-appen och avstått från Safari/PWA. Om en dator inte går att låna behövs en signerande distributör. För TestFlight-alternativet krävs Apple Developer-medlemskap hos den som publicerar; testaren behöver inget eget betalt medlemskap. Inga Apple-uppgifter eller signeringsnycklar ingår i Git.
 
 ## Bygga och kontrollera
 

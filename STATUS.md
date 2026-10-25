@@ -2,6 +2,29 @@
 
 Uppdaterat: **2026-10-25**. Den senaste omgången fokuserar på användarens begärda finjusteringar, granskning och bevarande. Detta är en utvecklingsversion i källkod; ingen signerad eller färdigtestad iPhone-release är publicerad. Produktkraven finns i [KRAV.md](KRAV.md).
 
+## Privat installation och fysisk iPhone-fil
+
+Användaren vill behålla den riktiga iPhone-appen och har uttryckligen valt bort
+Safari/PWA. [Körning 40156140923](https://github.com/AllCrow/Koran-test-/actions/runs/40156140923),
+kodcommit `bc3e54852ceee1adf26b3d0fa29740f3042bd204`, har byggt **Release för
+fysisk iPhoneOS/arm64** utan signeringsuppgifter. Alla tre jobb är `success`:
+simulatorbygge och 18 native-prov, 61 portabla tester, 28 backendtester samt
+det separata paketjobbet. `Sakina-iPhone-unsigned.ipa` är 3 003 282 byte, kräver iOS 17+ och
+har SHA256 `54e5e62bb29e5f4a515ca928da50d0ed8d8922ad90cca065f5c4f6172fa6b995`.
+
+Paketet är nedladdat och återkontrollerat lokalt: ZIP-integritet, plist,
+arm64 Mach-O och plattform `IOS` (inte simulator) stämmer. Ingen utvecklarprofil
+ingår. **Filen är osignerad och kan inte installeras genom ett tryck i Filer.**
+Artefakten `Sakina-iPhone-personal-unsigned` har ID 12584129644 och sju dagars
+CI-lagring; en lokal kopia och byggrapport är också bevarade.
+
+[Installationsguiden](docs/PERSONAL_IPHONE_INSTALL.md) beskriver gratis personlig
+signering med SideStore, vanligt Apple-konto och en lånad Mac/Windows-dator för
+grundinstallation. Användarens tillgång till en lånad dator är ännu inte
+bekräftad. Förnyelse behövs före sjudagarsgränsen och en dator kan behövas igen
+vid problem. **Personlig signering, installation, mikrofon/ljud och energi på
+användarens fysiska iPhone är fortfarande inte verifierade.**
+
 ## Projektledarens fortsatta verifiering
 
 [Den samlade körningen 40154414555](https://github.com/AllCrow/Koran-test-/actions/runs/40154414555)
@@ -38,7 +61,7 @@ Den tidigare [Linux-sammanställningen](docs/evidence/polish-verification-2026-1
 
 | Del | Nuvarande läge | Återstående kontroll |
 | --- | --- | --- |
-| iPhone-app | SwiftUI för iOS 17+, startsida, läsare, övning, inställningar och ljudnedladdningar. Riktigt Mac-bygge och 18 native-tester har passerat. | Fysisk iPhone-verifiering och återstående manuella flöden. |
+| iPhone-app | SwiftUI för iOS 17+, startsida, läsare, övning, inställningar och ljudnedladdningar. Mac-byggen för simulator och fysisk iPhone samt 18 native-tester har passerat. | Personlig signering, installation och fysisk iPhone-verifiering. |
 | Korantext | Alla 114 suror och 6 236 ayat lokalt, uppdelade per sura. Källmaterial och hashmanifest ingår. | Visuell arabisk återgivning och läsflöde på enheten. |
 | Tajweedvisning | Separat annoterad edition, parser och på/av-val. | Färger, diakritik och växling på iPhone. |
 | Arabisk font | Amiri Quran är bundlad med OFL-licens och fixerad proveniens. Hashar och täckning av lästextens synliga tecken är verifierade. | Formgivning, radbrytning och tillgänglighet på iPhone. Glyph-täckning är inte ett renderingsprov. |
@@ -117,7 +140,7 @@ Simulatorappen kan **inte** installeras på fysisk iPhone. Ingen signerad iPhone
 
 REA finns separat i `/workspace/rea`, commit `f196ebf80665107aedc16892af25a1e1f9f26f43`. Det har faktiskt inventerat Muaalems safetensors-fil och strömmat hela filen för SHA256; den matchar den fixerade HF-artefakten. [Oförändrad evidens och metod](docs/REA_MODEL_INSPECTION.md) är sparade. Detta är en artefaktundersökning, inte en kvalitetsbedömning. **Tarteels app eller servrar har inte analyserats.**
 
-Användaren har iPhone men ingen Mac. Molnbaserad macOS-byggmiljö, Apple Developer-medlemskap, App Store Connect och signering behövs för den tänkta TestFlight-vägen. **Signering och TestFlight är inte färdiga.** Det förberedda GitHub Actions-flödet ersätter inte dessa förutsättningar, och en osignerad simulatorartefakt kan inte installeras på fysisk iPhone. Inga serverhemligheter eller signeringsnycklar ska checkas in.
+Användaren har iPhone men ingen egen Mac. Den prioriterade privata vägen är nu personlig signering enligt guiden ovan om en dator kan lånas. TestFlight är ett alternativ som kräver medlemskap hos en signerande utgivare och App Store Connect; testaren behöver inget eget betalt medlemskap. **Varken personlig signering eller TestFlight är färdigt.** Inga Apple-lösenord, parkopplingsfiler, serverhemligheter eller signeringsnycklar ska checkas in.
 
 ## Återstående releasekrav och fortsatt arbete
 
