@@ -40,6 +40,7 @@ struct RepeatPlaybackSheet: View {
                     }
                     .pickerStyle(.menu)
                     .accessibilityIdentifier("repeat.start")
+                    .accessibilityValue("Vers \(firstVerse)")
                     Picker("Till vers", selection: $lastVerse) {
                         ForEach(firstVerse...max(firstVerse, surah.numberOfAyahs), id: \.self) { number in
                             Text("Vers \(number)").tag(number)
@@ -48,6 +49,7 @@ struct RepeatPlaybackSheet: View {
                     }
                     .pickerStyle(.menu)
                     .accessibilityIdentifier("repeat.end")
+                    .accessibilityValue("Vers \(lastVerse)")
                 }
                 Section {
                     Stepper(value: $cycles, in: 1...20) {
@@ -65,6 +67,7 @@ struct RepeatPlaybackSheet: View {
                     }
                     .pickerStyle(.menu)
                     .accessibilityIdentifier("repeat.pause")
+                    .accessibilityValue(pauseSeconds == 0 ? "Ingen paus" : "\(pauseSeconds) sekunder")
                 } footer: {
                     Text("Ett varv spelar hela intervallet. Använd pausen för att recitera själv. Repetitionen stannar efter det antal varv du väljer.")
                 }

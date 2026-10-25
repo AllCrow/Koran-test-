@@ -44,6 +44,13 @@ final class RecitationPlayer: ObservableObject {
     private let waitBetweenVerses: RepetitionDelay
     private var allowsCellularAccess = true
     private var currentSourceURL: URL?
+    private struct PinnedLocalSource {
+        let id: UUID
+        let reference: AyahReference
+        let reciter: Reciter
+        let url: URL
+    }
+    private var pinnedLocalSource: PinnedLocalSource?
     private var pendingRepetition: RecitationLoopPosition?
     private var repetitionDelayTask: Task<Void, Never>?
     private var repetitionDelayGeneration = UUID()
@@ -179,6 +186,28 @@ final class RecitationPlayer: ObservableObject {
         startSession(reference: reference, chapterVerseCount: chapterVerseCount, allowsAutoplay: false)
     }
 
+    /// An explicit saved-audio selection remains attached to this exact file,
+    /// including a later retry if the file disappears. It never silently turns
+    /// into a streamed verse from the ordinary URL provider.
+    @discardableResult
+    func playSavedOnce(reference: AyahReference, chapterVerseCount: Int, reciter: Reciter, localURL: URL) -> UUID? {
+        guard localURL.isFileURL else {
+            stop()
+            errorMessage = "Det sparade ljudets fil kunde inte öppnas. Välj en sparad vers igen."
+            return nil
+        }
+        guard startSession(reference: reference, chapterVerseCount: chapterVerseCount, allowsAutoplay: false,
+                           pinnedLocalURL: localURL, reciter: reciter) else { return nil }
+        return pinnedLocalSource?.id
+    }
+
+    /// Closing an older saved-reader route cannot stop a newer session, even
+    /// when both sessions selected the same verse and reciter.
+    func stopSavedSession(_ token: UUID) {
+        guard pinnedLocalSource?.id == token else { return }
+        stop()
+    }
+
     func playRepeatedly(_ loop: RecitationLoop) {
         clearRepetition()
         repetition = loop
@@ -188,17 +217,27 @@ final class RecitationPlayer: ObservableObject {
                      allowsAutoplay: false, preservingRepetition: true)
     }
 
+    @discardableResult
     private func startSession(reference: AyahReference, chapterVerseCount: Int, allowsAutoplay: Bool,
-                              preservingRepetition: Bool = false) {
+                              preservingRepetition: Bool = false, pinnedLocalURL: URL? = nil,
+                              reciter: Reciter? = nil) -> Bool {
         guard chapterVerseCount >= reference.ayahNumber,
               AyahReference(surahID: reference.surahID, ayahNumber: chapterVerseCount) != nil else {
             errorMessage = "Den valda versen kunde inte spelas. Öppna suran igen och försök på nytt."
-            return
+            return false
         }
         if !preservingRepetition { clearRepetition() }
+        if let reciter, reciter != selectedReciter {
+            selectedReciter = reciter
+            defaults.set(reciter.rawValue, forKey: Self.reciterPreferenceKey)
+        }
+        pinnedLocalSource = pinnedLocalURL.map {
+            PinnedLocalSource(id: UUID(), reference: reference, reciter: selectedReciter, url: $0)
+        }
         self.chapterVerseCount = chapterVerseCount
         self.allowsAutoplay = allowsAutoplay
         load(reference: reference, shouldPlay: true)
+        return true
     }
 
     func pause() {
@@ -245,6 +284,7 @@ final class RecitationPlayer: ObservableObject {
 
     func stop() {
         clearRepetition()
+        pinnedLocalSource = nil
         generation = UUID()
         removeItemObservers()
         wantsToPlay = false
@@ -265,6 +305,7 @@ final class RecitationPlayer: ObservableObject {
 
     func selectReciter(_ reciter: Reciter) {
         guard selectedReciter != reciter else { return }
+        pinnedLocalSource = nil
         let shouldPlay = wantsToPlay
         let pending = pendingRepetition
         cancelRepetitionDelay(keepingTransition: false)
@@ -288,6 +329,7 @@ final class RecitationPlayer: ObservableObject {
                 surahID: reference.surahID,
                 ayahNumber: reference.ayahNumber + 1
               ) else { return }
+        pinnedLocalSource = nil
         cancelRepetitionDelay(keepingTransition: false)
         repetitionComplete = false
         load(reference: nextReference, shouldPlay: true)
@@ -300,6 +342,7 @@ final class RecitationPlayer: ObservableObject {
                 surahID: reference.surahID,
                 ayahNumber: reference.ayahNumber - 1
               ) else { return }
+        pinnedLocalSource = nil
         cancelRepetitionDelay(keepingTransition: false)
         repetitionComplete = false
         load(reference: previousReference, shouldPlay: true)
@@ -355,7 +398,13 @@ final class RecitationPlayer: ObservableObject {
             return
         }
 
-        let url = audioURL(reference, selectedReciter)
+        let url: URL
+        if let pinned = pinnedLocalSource, pinned.reference == reference, pinned.reciter == selectedReciter {
+            url = pinned.url
+        } else {
+            pinnedLocalSource = nil
+            url = audioURL(reference, selectedReciter)
+        }
         currentSourceURL = url
         let item = makePlayerItem(url, allowsCellularAccess)
         player.replaceCurrentItem(with: item)

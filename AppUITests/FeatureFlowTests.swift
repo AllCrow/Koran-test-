@@ -125,20 +125,24 @@ final class FeatureFlowTests: XCTestCase {
         // Raising the start must also raise the end; an inverted range must
         // never be selectable or passed to the actual start action.
         chooseRepeatOption(picker: "repeat.start", option: "repeat.start.option.3", label: "Vers 3")
+        XCTAssertTrue(waitForValue("Vers 3", on: app.buttons["repeat.start"]))
         let end = app.buttons["repeat.end"]
-        XCTAssertTrue((end.value as? String ?? end.label).contains("3"))
+        XCTAssertTrue(waitForValue("Vers 3", on: end))
         tapContent(end)
         XCTAssertFalse(app.buttons["repeat.end.option.2"].exists)
         XCTAssertFalse(app.buttons["Vers 2"].exists, "An end before the chosen start must not be offered")
         tapMenuOption(identifier: "repeat.end.option.3", label: "Vers 3")
         chooseRepeatOption(picker: "repeat.start", option: "repeat.start.option.1", label: "Vers 1")
+        XCTAssertTrue(waitForValue("Vers 1", on: app.buttons["repeat.start"]))
         chooseRepeatOption(picker: "repeat.end", option: "repeat.end.option.2", label: "Vers 2")
+        XCTAssertTrue(waitForValue("Vers 2", on: app.buttons["repeat.end"]))
         let cycles = app.steppers["repeat.cycles"]
         scrollFullyIntoView(cycles)
         XCTAssertEqual(cycles.value as? String, "3")
         cycles.coordinate(withNormalizedOffset: CGVector(dx: 0.94, dy: 0.5)).tap()
         XCTAssertTrue(waitForValue("4", on: cycles))
         chooseRepeatOption(picker: "repeat.pause", option: "repeat.pause.option.0", label: "Ingen paus")
+        XCTAssertTrue(waitForValue("Ingen paus", on: app.buttons["repeat.pause"]))
         attachScreenshot("Repetition-validated-range")
         let start = app.buttons["repeat.startButton"]
         scrollFullyIntoView(start)
@@ -171,10 +175,10 @@ final class FeatureFlowTests: XCTestCase {
         XCTAssertTrue(waitForValue("2502 byte", on: bytes))
         let fatiha = app.buttons["downloads.saved.1.alafasy"]
         scrollFullyIntoView(fatiha)
-        XCTAssertEqual(fatiha.value as? String, "2 av 7 verser, 1668 byte")
+        XCTAssertEqual(ungroupedAccessibilityValue(fatiha.value), "2 av 7 verser, 1668 byte")
         let ikhlas = app.buttons["downloads.saved.112.husary"]
         scrollFullyIntoView(ikhlas)
-        XCTAssertEqual(ikhlas.value as? String, "1 av 4 verser, 834 byte")
+        XCTAssertEqual(ungroupedAccessibilityValue(ikhlas.value), "1 av 4 verser, 834 byte")
         attachScreenshot("Audio-library-exact-saved-selections")
         ikhlas.tap()
         let selectedSurah = app.buttons["downloads.surah"]
@@ -186,6 +190,22 @@ final class FeatureFlowTests: XCTestCase {
         let selectedCount = element("downloads.selection.count")
         scrollFullyIntoView(selectedCount)
         XCTAssertEqual(selectedCount.value as? String, "1 av 4 verser")
+        tapContent(app.buttons["downloads.saved.play"])
+        XCTAssertTrue(element("reader.verse.112.1").waitForExistence(timeout: 5))
+        XCTAssertTrue(waitUntilReadableBadgeIsInsideReader("reader.verse.112.1"),
+                      "Saved playback must reveal the matching verse text")
+        let playingReciter = app.buttons["Byt recitatör"]
+        XCTAssertTrue(playingReciter.waitForExistence(timeout: 5))
+        XCTAssertEqual(playingReciter.value as? String, "Mahmoud al-Husary")
+        let stop = app.buttons["reader.playback.stop"]
+        XCTAssertTrue(stop.waitForExistence(timeout: 5))
+        XCTAssertTrue(stop.isHittable)
+        attachScreenshot("Audio-library-matching-text-and-controls")
+        stop.tap()
+        XCTAssertTrue(waitUntilAbsent(app.buttons["reader.playback.stop"]))
+        returnFromDownloadedReader()
+        XCTAssertEqual(app.buttons["downloads.surah"].value as? String, "Al-Ikhlaas",
+                       "Returning from playback must retain the exact library selection")
         tapContent(app.buttons["downloads.delete.present"])
         let confirm = app.buttons["downloads.delete.confirm"]
         XCTAssertTrue(confirm.waitForExistence(timeout: 5))
@@ -195,7 +215,8 @@ final class FeatureFlowTests: XCTestCase {
         XCTAssertTrue(waitForValue("1668 byte", on: element("downloads.inventory.bytes")))
         scrollFullyIntoView(app.buttons["downloads.saved.1.alafasy"])
         XCTAssertFalse(app.buttons["downloads.saved.112.husary"].exists)
-        XCTAssertEqual(app.buttons["downloads.saved.1.alafasy"].value as? String, "2 av 7 verser, 1668 byte")
+        XCTAssertEqual(ungroupedAccessibilityValue(app.buttons["downloads.saved.1.alafasy"].value),
+                       "2 av 7 verser, 1668 byte")
 
         relaunch()
         app.tabBars.buttons["Mitt"].tap()
@@ -221,6 +242,19 @@ final class FeatureFlowTests: XCTestCase {
 
     private func openSettingsLink(_ identifier: String) {
         tapContent(app.buttons[identifier])
+    }
+
+    private func returnFromDownloadedReader() {
+        let bar = app.navigationBars["Koranen"]
+        let candidates = [bar.buttons["Ljud offline"], bar.buttons["Tillbaka"], bar.buttons["Back"]]
+        guard let back = candidates.first(where: { $0.exists }) else {
+            attachScreenshot("Audio-library-reader-back-control-missing")
+            XCTFail("Downloaded playback must provide a real back control to Ljud offline")
+            return
+        }
+        XCTAssertTrue(back.isHittable)
+        back.tap()
+        XCTAssertTrue(app.navigationBars["Ljud offline"].waitForExistence(timeout: 5))
     }
 
     private func chooseRepeatOption(picker: String, option: String, label: String) {
@@ -289,9 +323,25 @@ final class FeatureFlowTests: XCTestCase {
     private func waitForValue(_ expected: String, on element: XCUIElement) -> Bool {
         let predicate = NSPredicate { candidate, _ in
             guard let candidate = candidate as? XCUIElement, candidate.exists else { return false }
-            return candidate.value as? String == expected
+            return self.ungroupedAccessibilityValue(candidate.value) == expected
         }
         return XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: element)], timeout: 5) == .completed
+    }
+
+    private func ungroupedAccessibilityValue(_ value: Any?) -> String? {
+        guard let value = value as? String else { return nil }
+        let scalars = Array(value.unicodeScalars)
+        var result = ""
+        for (index, scalar) in scalars.enumerated() {
+            // Swedish AX values can group digits as "2\u{00A0}502 byte".
+            // Remove only NBSP/narrow-NBSP between decimal digits. Quantities,
+            // units, ordinary spaces and every other character remain exact.
+            if [0x00A0, 0x202F].contains(scalar.value), index > 0, index + 1 < scalars.count,
+               CharacterSet.decimalDigits.contains(scalars[index - 1]),
+               CharacterSet.decimalDigits.contains(scalars[index + 1]) { continue }
+            result.unicodeScalars.append(scalar)
+        }
+        return result
     }
 
     private func waitForLabel(_ expected: String, on element: XCUIElement) -> Bool {

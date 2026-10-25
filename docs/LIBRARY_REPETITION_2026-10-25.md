@@ -9,7 +9,10 @@ kandidaten har verifierats; förväntade funktioner är inte godkända provresul
 
 - Ljudbiblioteket samlar sparade suror och recitatörer. Tillgängliga verser
   skiljs från filer som tar plats men behöver hämtas igen. Varje val kan
-  öppnas och raderas separat efter bekräftelse.
+  öppnas och raderas separat efter bekräftelse. Uppspelning öppnar rätt sura
+  och vers med spelkontroller. Det uttryckliga sparade valet binds till den
+  lokala filen även vid nytt försök och får inte byta till strömning om filen
+  har försvunnit.
 - Repetition väljs uttryckligen för ett intervall i en sura, 1–20 omgångar
   och 0–15 sekunders paus mellan verserna. Den vanliga inställningen för
   automatisk nästa vers ändras inte. Ett färdigt pass stannar; explicit
@@ -52,7 +55,7 @@ energiförbrukning behöver fortfarande provas på telefon. Automatisk
 tajweedanalys är avstängd i normalbygget; inga nya lärarbedömningar eller
 anspråk på Tarteel-kvalitet följer av denna omgång.
 
-Förväntad ordinarie native-svit är 138 hostade och tolv UI-fall per
+Förväntad ordinarie native-svit är 139 hostade och tolv UI-fall per
 simulatorvariant, samt 89 separata portabla Mac-fall och 57 backendfall.
 Det är förväntade antal, inte ett godkänt körresultat. Innehålls-, referens-,
 font-, ikon- och projektkontrollerna har passerat lokalt. Backendens indata
@@ -87,6 +90,37 @@ samma fem sekunder. Därefter görs ett verkligt långt tryck vid dess mitt.
 Menyns interaktiva knapp måste fortfarande vara nåbar och tryckas på riktigt.
 De åtta tidigare UI-proven är oförändrade. Inga UI-fall kördes i54 eftersom
 tjänstegrinden stoppade dem; rättningen kräver en ny fullständig körning.
+
+[PR-körning55](https://github.com/AllCrow/Koran-test-/actions/runs/40201628843)
+på `42ed270ad805f01dd684dfa97bea4560abca08e6` bekräftade rättningen av kön.
+iOS26 passerade samtliga 138 hostade fall och tio av tolv UI-fall, inklusive
+alla åtta tidigare UI-fall. Två nya UI-avläsningar underkändes: svenskt
+lagringsvärde innehöll ett hårt blanksteg i `2 502 byte`, och versväljaren
+visade korrekt start- och slutvers3 men saknade ett tillförlitligt explicit
+AX-värde. Bytejämförelsen normaliserar nu endast numeriska gruppblanksteg;
+vers- och pausväljarna anger sina faktiska val som tillgänglighetsvärden.
+Exakta värden, riktiga menytryck och kontrollen av ogiltiga intervall behålls.
+
+De två andra simulatorerna stoppades av var sitt tjänsteprov. Det nya
+sekventiella inventeringsprovet väntade på en onödig tidsstyrd testgrind.
+Det väntar nu direkt på två riktiga genomgångar och kontrollerar både bevarade
+rader och byte samt okontrollerat felstatus. Det äldre pausprovet läste en
+övergående native-status efter första pausnotisen. Observationen installeras
+nu före kommandot och kräver ett sammanhängande 100ms lugnt tillstånd inom
+samma tidigare tvåsekundersgräns, med avgränsad feltidslinje. Produktionspaus,
+samma ljudkälla, uteblivet filslut och uttrycklig återstart behålls.
+Körning55 är underkänd som helhet och dess loggar och felbilder bevaras.
+
+Granskningen upptäckte dessutom att bibliotekets tidigare spelknapp inte
+öppnade motsvarande text. Den nya vägen laddar och verifierar rätt lokala
+kapitel före uppspelning, avbryter inaktuell navigation och visar läsaren
+med vanliga spelkontroller. En sessionsidentitet hindrar att stängning av
+vyn stoppar ett nyare uttryckligt ljudval. En avbruten öppning visar ett
+uttryckligt återförsök även när en kvarhållen vy återkommer efter flikbyte.
+Ett ytterligare native-prov kontrollerar faktisk
+MP3-uppspelning från en bunden lokal fil och utebliven nätfallback vid förlust.
+Det befintliga UI-biblioteksfallet utökas med ljud/textkopplingen för112/Husary;
+antalet UI-fall är fortfarande tolv. Allt detta kräver nästa fullständiga körning.
 
 Molnmiljön fick tillfälligt slut på disk under förkontrollen. Återskapbar
 paketcache och en oanvänd härledd backend-containerbild rensades; källkod,

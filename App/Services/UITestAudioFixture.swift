@@ -47,6 +47,11 @@ enum UITestAudioFixture {
                                     let replacement = AVPlayer()
                                     replacement.isMuted = true
                                     return replacement
+                                }, makePlayerItem: { _, _ in
+                                    // Pinned offline-source routes also use the
+                                    // same playable local fixture. Inventory's
+                                    // tiny structural MP3s are not sound proof.
+                                    AVPlayerItem(url: wave)
                                 })
     }
 

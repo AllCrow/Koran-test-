@@ -211,22 +211,24 @@ final class AudioInventoryTests: XCTestCase {
     }
 
     func testFailedRefreshRetainsPreviousRowsButDoesNotReportThemAsVerified() async throws {
-        let first = expectation(description: "A first snapshot is ready")
-        let second = expectation(description: "A failed replacement is held")
-        let gate = ScanGate { call in if call == 0 { first.fulfill() } else { second.fulfill() } }
-        defer { Task { await gate.finishAll() } }
-        let library = AudioLibrary(directory: try directory(), inventoryScan: { _ in try await gate.scan() })
-        let successful = Task { await library.refreshInventory() }
-        await fulfillment(of: [first], timeout: 2)
         let previous = entry()
-        try await gate.complete(0, with: [previous])
-        await successful.value
-        let failing = Task { await library.refreshInventory() }
-        await fulfillment(of: [second], timeout: 2)
-        try await gate.fail(1)
-        await failing.value
-
+        let outcomes = ScanOutcomeSequence(firstSnapshot: [previous])
+        let library = AudioLibrary(directory: try directory(), inventoryScan: { _ in try await outcomes.scan() })
+        // This case checks persistence across sequential outcomes. The separate
+        // stale/cancellation cases retain their held responses and deadlines.
+        await library.refreshInventory()
         XCTAssertEqual(library.entries, [previous])
+        XCTAssertEqual(library.inventoryBytes, previous.bytes)
+        XCTAssertTrue(library.hasCurrentInventory)
+        XCTAssertFalse(library.isScanning)
+        XCTAssertNil(library.inventoryError)
+
+        await library.refreshInventory()
+
+        let callCount = await outcomes.callCount
+        XCTAssertEqual(callCount, 2)
+        XCTAssertEqual(library.entries, [previous])
+        XCTAssertEqual(library.inventoryBytes, previous.bytes)
         XCTAssertFalse(library.hasCurrentInventory)
         XCTAssertFalse(library.isScanning)
         XCTAssertNotNil(library.inventoryError)
@@ -304,6 +306,21 @@ final class AudioInventoryTests: XCTestCase {
 private actor ScanThreadLog {
     private(set) var values: [Bool] = []
     func record(_ value: Bool) { values.append(value) }
+}
+
+/// Immediate, ordered results still traverse the library's real detached worker.
+private actor ScanOutcomeSequence {
+    enum Failure: Error { case unavailable }
+    private let firstSnapshot: [AudioDownloadEntry]
+    private(set) var callCount = 0
+
+    init(firstSnapshot: [AudioDownloadEntry]) { self.firstSnapshot = firstSnapshot }
+
+    func scan() throws -> [AudioDownloadEntry] {
+        callCount += 1
+        if callCount == 1 { return firstSnapshot }
+        throw Failure.unavailable
+    }
 }
 
 /// Deliberately ignores cancellation to prove actual stale-result suppression.

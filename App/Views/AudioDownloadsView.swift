@@ -20,6 +20,7 @@ struct AudioDownloadsView: View {
     @State private var deletionTarget: DeletionTarget?
     @State private var inventoryRefreshTask: Task<Void, Never>?
     @State private var playbackNotice: String?
+    @State private var playbackTarget: DownloadedVerseTarget?
 
     private struct DeletionTarget {
         let surah: Surah
@@ -174,6 +175,9 @@ struct AudioDownloadsView: View {
                     Text("\(target.surah.englishName) med \(target.reciter.displayName) tas bort från telefonen. Du kan ladda ned ljudet igen senare.")
                 }
             }
+            .navigationDestination(item: $playbackTarget) { target in
+                DownloadedVerseDestination(target: target)
+            }
             .task(id: scenePhase) {
                 guard scenePhase == .active else { return }
                 await audioLibrary.refreshInventory()
@@ -188,7 +192,7 @@ struct AudioDownloadsView: View {
                 else { inventoryRefreshTask?.cancel(); inventoryRefreshTask = nil }
             }
             .onAppear {
-                initializeSelection()
+                if !initializedSelection { initializeSelection() }
                 refreshDownloadedCount()
             }
             .onChange(of: selectedSurahID) { _, _ in playbackNotice = nil; refreshDownloadedCount() }
@@ -303,9 +307,8 @@ struct AudioDownloadsView: View {
         playbackNotice = nil
         recorder.stopAll()
         player.stop()
-        player.selectReciter(selectedReciter)
-        player.playOnce(reference: reference, chapterVerseCount: surah.numberOfAyahs)
-        store.setLastRead(reference)
+        playbackTarget = DownloadedVerseTarget(reference: reference, reciter: selectedReciter,
+                                               chapterVerseCount: surah.numberOfAyahs)
     }
 
     private var selectedSurah: Surah? {
@@ -355,5 +358,95 @@ struct AudioDownloadsView: View {
         // Reserve the job before this action returns, so quick taps cannot queue
         // a request using a selection that has already changed.
         audioLibrary.beginDownload(surah, reciter: selectedReciter)
+    }
+}
+
+private struct DownloadedVerseTarget: Hashable {
+    let reference: AyahReference
+    let reciter: Reciter
+    let chapterVerseCount: Int
+}
+
+/// A saved-audio action opens the exact text before starting its one-verse
+/// session. The library's own selection remains unchanged when this route ends.
+@MainActor
+private struct DownloadedVerseDestination: View {
+    let target: DownloadedVerseTarget
+    @EnvironmentObject private var store: AppStore
+    @EnvironmentObject private var player: RecitationPlayer
+    @EnvironmentObject private var audioLibrary: AudioLibrary
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var loadToken: UUID?
+    @State private var hasOpened = false
+    @State private var savedSessionToken: UUID?
+    @State private var readerReady = false
+    @State private var errorMessage: String?
+
+    var body: some View {
+        ZStack {
+            if readerReady {
+                ReaderView(initialReference: target.reference)
+            } else {
+                VStack(spacing: 18) {
+                    if let error = errorMessage {
+                        ErrorBanner(message: error)
+                        Button("Försök igen") { loadToken = UUID() }
+                            .frame(minHeight: 44)
+                            .accessibilityIdentifier("downloads.reader.retry")
+                    } else {
+                        ProgressView("Öppnar den sparade versen …")
+                            .accessibilityIdentifier("downloads.reader.loading")
+                    }
+                }
+                .padding(24)
+            }
+        }
+        .navigationTitle("Koranen")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            guard !hasOpened else { return }
+            hasOpened = true
+            if scenePhase == .active { loadToken = UUID() }
+            else { errorMessage = "Öppningen avbröts. Tryck på Försök igen när du vill lyssna." }
+        }
+        .onDisappear {
+            loadToken = nil
+            if !readerReady {
+                errorMessage = "Öppningen avbröts. Tryck på Försök igen när du vill lyssna."
+            }
+            if let token = savedSessionToken { player.stopSavedSession(token) }
+            savedSessionToken = nil
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active && !readerReady {
+                loadToken = nil
+                errorMessage = "Öppningen avbröts. Tryck på Försök igen när du vill lyssna."
+            }
+        }
+        .task(id: loadToken) {
+            guard let token = loadToken, scenePhase == .active, !Task.isCancelled else { return }
+            errorMessage = nil
+            readerReady = false
+            await store.openSurah(target.reference.surahID)
+            guard !Task.isCancelled, loadToken == token, scenePhase == .active else { return }
+            guard let chapter = store.chapter,
+                  chapter.surah.id == target.reference.surahID,
+                  chapter.surah.numberOfAyahs == target.chapterVerseCount,
+                  chapter.ayahs.contains(where: { $0.reference == target.reference }) else {
+                errorMessage = store.errorMessage ?? "Den valda suran kunde inte öppnas. Försök igen."
+                return
+            }
+            guard let localURL = audioLibrary.localURL(for: target.reference, reciter: target.reciter) else {
+                errorMessage = "Den sparade ljudfilen finns inte kvar. Gå tillbaka och hämta den igen."
+                return
+            }
+            // There is no suspension between the final local admission check
+            // and the fixed-file session; it cannot fall back to streaming.
+            savedSessionToken = player.playSavedOnce(reference: target.reference,
+                                 chapterVerseCount: target.chapterVerseCount,
+                                 reciter: target.reciter, localURL: localURL)
+            store.setLastRead(target.reference)
+            readerReady = true
+        }
     }
 }

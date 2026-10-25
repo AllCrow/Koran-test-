@@ -47,25 +47,70 @@ final class RecitationPlayerTests: XCTestCase {
         let item = try XCTUnwrap(rig.engine.currentItem)
 
         rig.service.pause()
-        // Model the measured late AVFoundation restart explicitly. Waiting for
-        // its positive native rate prevents the original pause's zero-rate
-        // acknowledgement from satisfying the recovery assertion by itself.
+        // Observe before the late command. KVO only wakes a new read of the
+        // actual getters on MainActor; buffered Combine tuples are not evidence
+        // that the engine has settled. PR55 observed a transient 0/paused
+        // acknowledgement followed by playing before the next assertion.
         let attemptedRestart = expectation(description: "A late native play sets a positive rate")
-        let restartToken = rig.engine.publisher(for: \.rate, options: [.initial, .new])
-            .first(where: { $0 > 0 }).sink { _ in attemptedRestart.fulfill() }
-        defer { restartToken.cancel() }
-        rig.engine.play()
-        await fulfillment(of: [attemptedRestart], timeout: 2)
-
-        let paused = expectation(description: "The latest pause intent wins on the actual engine")
-        let pauseToken = rig.engine.publisher(for: \.rate, options: [.initial, .new])
-            .combineLatest(rig.engine.publisher(for: \.timeControlStatus, options: [.initial, .new]))
+        let paused = expectation(description: "The actual engine stays quiet at zero rate and paused for 100ms")
+        let snapshots = PassthroughSubject<NativePauseSample, Never>()
+        var trace: [String] = []
+        var lateCommandIssued = false
+        var attemptedRateObserved = false
+        var quietPauseObserved = false
+        let read: @MainActor (String) -> NativePauseSample = { reason in
+            let sample = NativePauseSample(rate: rig.engine.rate,
+                                           control: rig.engine.timeControlStatus.rawValue,
+                                           sameItem: rig.engine.currentItem === item)
+            trace.append(String(format: "%.6f %@ rate=%.3f control=%d sameItem=%@ clock=%.6f",
+                                ProcessInfo.processInfo.systemUptime, reason, Double(sample.rate),
+                                sample.control, String(sample.sameItem), rig.engine.currentTime().seconds))
+            if trace.count > 64 { trace.removeFirst(trace.count - 64) }
+            return sample
+        }
+        let observe: @MainActor (String) -> Void = { reason in
+            let sample = read(reason)
+            if lateCommandIssued && sample.rate > 0 && !attemptedRateObserved {
+                attemptedRateObserved = true
+                attemptedRestart.fulfill()
+            }
+            snapshots.send(sample)
+        }
+        let wakeToken = Publishers.Merge(
+            rig.engine.publisher(for: \.rate, options: [.initial, .new]).map { _ in () },
+            rig.engine.publisher(for: \.timeControlStatus, options: [.initial, .new]).map { _ in () }
+        )
             .receive(on: DispatchQueue.main)
-            .first(where: { $0.0 == 0 && $0.1 == .paused
-                && rig.engine.rate == 0 && rig.engine.timeControlStatus == .paused })
-            .sink { _ in paused.fulfill() }
-        defer { pauseToken.cancel() }
-        await fulfillment(of: [paused], timeout: 2)
+            .sink { _ in MainActor.assumeIsolated { observe("native KVO wake") } }
+        let pauseToken = snapshots
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
+            .first(where: { previous in
+                MainActor.assumeIsolated {
+                    let current = read("100ms quiet-window check")
+                    return attemptedRateObserved && previous.isPaused && current.isPaused
+                }
+            })
+            .sink { _ in
+                MainActor.assumeIsolated {
+                    quietPauseObserved = true
+                    paused.fulfill()
+                }
+            }
+        defer { wakeToken.cancel(); pauseToken.cancel() }
+        observe("before late play command")
+        lateCommandIssued = true
+        rig.engine.play()
+        observe("late play command returned")
+        // Both witnesses share the original two-second deadline. This is an
+        // event-driven stability window, with no polling or extended timeout.
+        await fulfillment(of: [attemptedRestart, paused], timeout: 2)
+        let finalPause = read("after quiet-pause expectation")
+        if !attemptedRateObserved || !quietPauseObserved || !finalPause.isPaused {
+            let attachment = XCTAttachment(string: trace.joined(separator: "\n"))
+            attachment.name = "Late-native-pause-current-getter-trace"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
 
         XCTAssertEqual(rig.engine.rate, 0)
         XCTAssertEqual(rig.engine.timeControlStatus, .paused)
@@ -76,6 +121,7 @@ final class RecitationPlayerTests: XCTestCase {
         XCTAssertEqual(rig.service.requestedReference, verse)
         XCTAssertEqual(rig.service.activeReference, verse)
         XCTAssertTrue(rig.engine.currentItem === item)
+        XCTAssertEqual((rig.engine.currentItem?.asset as? AVURLAsset)?.url, source)
         XCTAssertEqual(requests, [verse], "Enforcing a pause must not load another recording")
         XCTAssertNil(rig.service.errorMessage)
 
@@ -90,8 +136,16 @@ final class RecitationPlayerTests: XCTestCase {
         rig.service.resume()
         await fulfillment(of: [resumed], timeout: 2)
         XCTAssertTrue(rig.engine.currentItem === item)
+        XCTAssertEqual((rig.engine.currentItem?.asset as? AVURLAsset)?.url, source)
         XCTAssertEqual(requests, [verse])
         XCTAssertEqual(rig.service.requestedReference, verse)
+    }
+
+    private struct NativePauseSample {
+        let rate: Float
+        let control: Int
+        let sameItem: Bool
+        var isPaused: Bool { rate == 0 && control == AVPlayer.TimeControlStatus.paused.rawValue && sameItem }
     }
 
     func testRealPlaybackStartsAndNaturalEndAdvancesToTheExactNextVerse() async throws {

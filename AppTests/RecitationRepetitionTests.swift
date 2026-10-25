@@ -346,6 +346,96 @@ final class RecitationRepetitionTests: XCTestCase {
         XCTAssertNil(rig.service.errorMessage)
     }
 
+    func testSavedMP3SessionPinsItsExactFileAndMissingFileRetryNeverFallsBackToProvider() async throws {
+        let data = try XCTUnwrap(GeneratedMP3Fixture.data)
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("sakina.pinned-mp3.\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let saved = directory.appendingPathComponent("112002.mp3")
+        try data.write(to: saved)
+        let engine = AVPlayer()
+        engine.isMuted = true
+        var providerRequests: [AyahReference] = []
+        let service = RecitationPlayer(
+            player: engine, audioURL: { reference, _ in
+                providerRequests.append(reference)
+                XCTFail("A pinned saved-audio session must never resolve through the ordinary source provider")
+                return directory.appendingPathComponent("forbidden-fallback.mp3")
+            }, defaults: try defaults(), integratesWithSystemAudio: true
+        )
+        defer { service.stop() }
+        let target = try XCTUnwrap(AyahReference(surahID: 112, ayahNumber: 2))
+        let began = expectation(description: "The default AVURLAsset factory actually plays the saved MP3")
+        let beganToken = Publishers.Merge(
+            engine.publisher(for: \.rate, options: [.initial, .new]).map { _ in () },
+            engine.publisher(for: \.timeControlStatus, options: [.initial, .new]).map { _ in () }
+        )
+            .receive(on: DispatchQueue.main)
+            .first(where: { _ in
+                MainActor.assumeIsolated {
+                    engine.rate > 0 && engine.timeControlStatus == .playing
+                        && (engine.currentItem?.asset as? AVURLAsset)?.url == saved
+                }
+            })
+            .sink { _ in began.fulfill() }
+        defer { beganToken.cancel() }
+        let savedToken = try XCTUnwrap(service.playSavedOnce(reference: target, chapterVerseCount: 4,
+                                                            reciter: .minshawi, localURL: saved))
+        await fulfillment(of: [began], timeout: 12)
+
+        XCTAssertGreaterThan(engine.rate, 0)
+        XCTAssertEqual(engine.timeControlStatus, .playing)
+        XCTAssertEqual((engine.currentItem?.asset as? AVURLAsset)?.url, saved)
+        XCTAssertEqual(service.requestedReference, target)
+        XCTAssertEqual(service.activeReference, target)
+        XCTAssertEqual(service.selectedReciter, .minshawi)
+        XCTAssertTrue(providerRequests.isEmpty)
+        XCTAssertTrue(service.autoplay, "A single saved verse must not rewrite the user's autoplay preference")
+        service.stopSavedSession(UUID())
+        XCTAssertGreaterThan(engine.rate, 0, "An unrelated owner must not stop the playing saved session")
+        XCTAssertEqual(service.requestedReference, target)
+        service.pause()
+
+        // Capture a second valid file, then remove it before constructing its
+        // native asset. This models a stored file vanishing after admission,
+        // without depending on whether the first asset retains an open handle.
+        let vanished = directory.appendingPathComponent("vanished-112002.mp3")
+        try data.write(to: vanished)
+        XCTAssertEqual(try Data(contentsOf: vanished), data)
+        try FileManager.default.removeItem(at: vanished)
+        let failed = expectation(description: "A vanished pinned file fails locally")
+        let failedToken = service.$errorMessage.compactMap { $0 }.first().sink { _ in failed.fulfill() }
+        defer { failedToken.cancel() }
+        let vanishedToken = try XCTUnwrap(service.playSavedOnce(reference: target, chapterVerseCount: 4,
+                                                               reciter: .minshawi, localURL: vanished))
+        XCTAssertNotEqual(vanishedToken, savedToken)
+        await fulfillment(of: [failed], timeout: 12)
+        let failedItem = try XCTUnwrap(engine.currentItem)
+        XCTAssertEqual((failedItem.asset as? AVURLAsset)?.url, vanished)
+        XCTAssertTrue(providerRequests.isEmpty)
+        XCTAssertTrue(service.errorMessage?.contains("sparade ljudet") == true)
+        service.stopSavedSession(savedToken)
+        XCTAssertEqual(service.requestedReference, target, "An older route with the same verse and reciter does not own this session")
+        XCTAssertTrue(engine.currentItem === failedItem)
+
+        let retryFailed = expectation(description: "Explicit retry attempts the same missing file without streaming")
+        let retryToken = service.$errorMessage.dropFirst().compactMap { $0 }.first().sink { _ in retryFailed.fulfill() }
+        defer { retryToken.cancel() }
+        service.resume()
+        await fulfillment(of: [retryFailed], timeout: 12)
+
+        XCTAssertFalse(engine.currentItem === failedItem, "Retry must construct a new native attempt")
+        XCTAssertEqual((engine.currentItem?.asset as? AVURLAsset)?.url, vanished)
+        XCTAssertEqual(service.requestedReference, target)
+        XCTAssertEqual(service.selectedReciter, .minshawi)
+        XCTAssertTrue(providerRequests.isEmpty)
+        XCTAssertFalse(service.isPlaying)
+        XCTAssertFalse(service.isBuffering)
+        service.stopSavedSession(vanishedToken)
+        XCTAssertNil(service.requestedReference, "The current owner token survives local retry and can stop its session")
+        XCTAssertNil(engine.currentItem)
+    }
+
     private func makePlayer(wait: @escaping RecitationPlayer.RepetitionDelay = { try await Task.sleep(for: .seconds($0)) },
                             source: @escaping RecitationPlayer.AudioURLProvider)
         throws -> (service: RecitationPlayer, engine: AVPlayer) {
