@@ -5,10 +5,38 @@ tonerna och loopback-servern inte täcker: verkliga EveryAyah-filer genom
 appens ordinarie HTTPS-nedladdare, diskantagning och lokala filval, följt
 av native-avkodning och faktisk uppspelning på simulator.
 
-**Status före första körningen: oprövat.** Linux har bara verifierat staging,
-hashkoppling och källkod. Ett skapat arbetsflöde eller en kompilerbar mall
-är inte ett native-resultat. Faktiska loggar, JSON-bilagor och käll-SHA måste
-läsas före ett påstående om godkänt utfall.
+**Verifierat 2026-10-25:** [den första riktiga körningen](https://github.com/AllCrow/Koran-test-/actions/runs/40185506975)
+är avslutad med **success** på källan `3d980b3d97a7ac4c690eca0e5e5648209cd288e7`.
+Jobbet `121145330461` kompilerade med Xcode26.2/17C52 och körde **tre
+godkända native-fall**, utan fel, på iPhone16e/iOS26.2-simulatorn.
+Jobbloggen, alla tre ursprungliga JSON-bilagor, deras hashkoppling och
+artefaktens head-SHA/ZIP har faktiskt lästs och kontrollerats.
+
+| Recitatör | Hela filer hämtade och native-avkodade | Lokalt spelad vers till native-EOF | Hashkontrollerade bytes för spelad fil |
+| --- | --- | --- | --- |
+| al-Afasy | 112:1–4 | 112:2 | 41 087 |
+| al-Husary | 112:1–4 | 112:2 | 84 891 |
+| al-Minshawi | 112:1–4 | 112:2 | 42 759 |
+
+Totalt hämtades **12 riktiga filer / 855 505 byte** och avkodades
+**52,020612 sekunder PCM** med `AVAudioFile`. Alla tre uppspelningar
+visade positiv native-rate/`.playing`, faktiskt versslut, samma item,
+lokal fil och exakt versreferens. Ingen fallback eller ny nedladdning
+under den lokala fasen behövdes. De tre fallen tog sammanlagt 16,867
+sekunder; detta är CI:s provtid, inte ett prestandalöfte för en telefon.
+
+[Sparade resultatdata, originalbilagornas SHA256 och verifieringsmetadata](evidence/live-recitation-native-2026-10-25.json)
+binder varje fil, kodhash och referens till körningen. Artefakt
+`12595977499` är **96 942 byte**, ZIP-SHA256
+`d54d4aa294e9e343f6aacd4bc48fbe3306dd6bb593c865ba3987e07e045fa1c7`,
+med rätt käll-SHA och lagring till 2026-11-01. Den hämtade ZIP-filen har
+46 poster och innehåller resultat/JSON, inga ljudfiler.
+
+Appkod och ordinarie test-/byggindata i källan matchar den godkända
+stabilitetskandidaten `0d85b19`. Huvudgrenens integration `c907121`
+och dess faktiska CI50-checkout `7d29ca2` har samma filträd som den
+gemensamma basen `5941917`: `188fe37ce0dfb1d2eaee63e78427f68482e8480d`.
+Det separata live-provet räknas inte in i CI50:s 91 hostade/åtta UI-fall.
 
 ## Omfattning och källbindning
 

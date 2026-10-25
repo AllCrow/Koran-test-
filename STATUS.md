@@ -150,6 +150,15 @@ imaminspelningarna. Katalogtäckning bevisar inte korrekt ljud i samtliga
 sakkunnigt avgjort. EveryAyah-/tafsirvillkor och Tarteel-kvalitet är öppna.
 Denna källgranskning ändrar inte det godkända appbygget 46.
 
+Ett senare **separat native-källprov** har passerat på
+iPhone16e/iOS26.2/Xcode26.2: tolv riktiga EveryAyah-filer hämtades och
+avkodades via appens standardnedladdare och `AVAudioFile`. Hashkontrollerad
+112:2 spelades från återöppnad lokal lagring till faktiskt native-EOF för
+alla tre recitatörer, utan fallback. [Lästa loggar och resultatbilagor](docs/LIVE_RECITATION_AUDIT.md).
+Det är tre ytterligare opt-in-fall, skilda från ordinarie host-/UI-matris.
+Fysisk radio/offlineväxling, hörsel-/klippgränsgranskning och ljudrättigheter
+är fortfarande oprövade eller öppna; tajweedindikationen för112:2 är inte avgjord.
+
 ## Automatisk tajweedhjälp och REA
 
 Standardbygget har `SAKINA_ENABLE_EXPERIMENTAL_ANALYSIS=false` och tom
