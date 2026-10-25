@@ -6,6 +6,25 @@ Direkt vershopp och säkerhetskopiering av läsdata är tillagda.
 **Native-listläsaren, skärpta positionstester och samtliga 61 native-prov har passerat.** Personlig signering,
 fysisk installation och en offentlig apprelease är inte verifierade.
 
+## Pågående verifiering av faktisk nativepaus
+
+Den integrerade PR-körningen
+[40169525111](https://github.com/AllCrow/Koran-test-/actions/runs/40169525111)
+på `8519f74303025bdc9f5a8549e6969566b617d652` är inte godkänd. iOS26-loggen
+visar bland annat att MP3-provet för hörlursnotis såg AVPlayer-rate 1 efter
+appens publicerade pausflagga. Flaggan kan också bli falsk vid buffring och
+räcker inte som kvitto på att ljudmotorn har pausat.
+
+Branch `codex/native-pause-event-verification` låter därför befintliga pausprov
+invänta AVPlayers riktiga rate-KVO med en tvåsekundersgräns. Rate måste bli
+noll och appen måste visa paus innan den tre sekunder långa tonen har tagit
+slut; naturligt versslut får inte godkänna pausen. Ingen sömn, längre
+tolvsekundersväntan, ljudersättning eller produktionsändring införs.
+**Det skärpta provet inväntar native CI.** Det avgör ännu inte om den
+observerade avvikelsen var en tidig avläsning eller ett produktionsfel.
+Huvudgrenens senare läsar-/utseendeändringar och samtliga fyra strikta
+kontroller av lång versposition bevaras.
+
 ## Pågående verifiering av HTTP-nedladdning
 
 Branch `codex/native-download-transport-verification` tillför fem hostade
