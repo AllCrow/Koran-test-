@@ -7,14 +7,17 @@ inte dessa prov. **Ingen fysisk iPhone eller personlig signering är verifierad.
 
 ## Automatiska prov på macOS
 
-Den aktuella källans samlade native-utfall inväntar den nya CI-omgången.
-[Flödet](../.github/workflows/ios.yml) är konfigurerat för följande tre
-simulatorvarianter. Ett konfigurerat jobb är ingen verifierad testkörning;
-utfall och exakta källversioner redovisas i [STATUS.md](../STATUS.md).
+Den samlade [körningen 40175540017](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
+passerar 80 hostade prov och åtta UI-flöden i var och en av följande tre
+varianter, samt 82 portabla Swift-prov och 36 backendprov. Källan är
+3511431, faktisk Apple-checkout 8ded616d och mergad main 8cd977c har samma
+kompletta filträd. Jobbloggar, artefakternas head-SHA och alla tre bilder
+av 2:255 har kontrollerats. Exakta versioner/paket och senare körningar
+redovisas i [STATUS.md](../STATUS.md).
 
 | Variant | Byggverktyg / simulator | Enhet |
 | --- | --- | --- |
-| ios18 | Xcode 16.4 / iOS 18.5 | iPhone 16 Pro |
+| ios18 | Xcode 26.2 / iOS 18.5 | iPhone 16 Pro |
 | ios18-compact | Xcode 16.4 / iOS 18.5 | iPhone SE (3:e generationen) |
 | ios26 | Xcode 26.2 / iOS 26.2 | iPhone 16e |
 
@@ -85,11 +88,11 @@ ljudtjänståterhämtning och den nya HTTP-transporten. Antalen ska inte använd
 som resultat för den aktuella källversionen eller den nya CI-matrisen.
 
 Apples [uppladdningskrav](https://developer.apple.com/news/upcoming-requirements/)
-kontrollerades 2026-10-25: App Store Connect kräver Xcode26+/iOS26 SDK sedan
-28 april 2026. Den nya konfigurationen använder Xcode26.2/iOS26.2 SDK för
+kontrollerades 2026-10-25: App Store Connect kräver Xcode26+/iOS 26 SDK sedan
+28 april 2026. Den nya konfigurationen använder Xcode 26.2/iOS 26.2 SDK för
 iPhone-paketet och en av simulatorvarianterna. Ett lyckat osignerat bygge
 eller simulatorprov ersätter inte signering och en faktisk godkänd
-App Store Connect-uppladdning. Minsta stödda iOS17 är en annan inställning
+App Store Connect-uppladdning. Minsta stödda iOS 17 är en annan inställning
 än bygg-SDK:n. Personlig installation på aktuell
 fysisk telefon behöver fortfarande provas.
 

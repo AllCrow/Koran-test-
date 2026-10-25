@@ -59,21 +59,19 @@ med Xcode 16.4, samt iOS 26.2 på iPhone 16e med Xcode 26.2. Därmed provas
 även en app byggd med den aktuella SDK:n på en äldre iOS-körmiljö.
 Konfigurerade jobb eller ett lyckat osignerat bygge bevisar inte att en
 TestFlight-/App Store-uppladdning accepteras. Signering och faktisk uppladdning
-behöver fortfarande verifieras. Minsta körversion iOS17 är en annan
+behöver fortfarande verifieras. Minsta körversion iOS 17 är en annan
 inställning än bygg-SDK:n. Den personliga installationsvägen
 beskrivs i [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
-**Historisk baslinje:** [Mac-körningen 40165021106](https://github.com/AllCrow/Koran-test-/actions/runs/40165021106)
-passerar **67 portabla Swift-tester, 32 backendtester och 61 native-prov**:
-56 hostade iOS-prov och alla fem UI-flöden. Sju nya MP3-prov använder riktig
-avkodning och AVPlayer med en genererad ton. Native-listläsaren visar versens
-början nära toppen efter långt hopp, återstart, upprepning och senare läsning.
-Femsekunderskraven och skärmbilden är kontrollerade; navigation ger ingen läskredit.
-Den körningen föregår förbättringarna av textstorlek, veckohistorik, sparad
-tafsir och ljudåterhämtning. Källan innehåller nu även fem riktiga HTTP-prov
-från [PR #3](https://github.com/AllCrow/Koran-test-/pull/3), med storleksavbrott
-före ett öppet svars slut. **Det aktuella samlade native-utfallet inväntar ny
-CI-verifiering**; den historiska baslinjens antal gäller inte dagens källkod.
+**Aktuell verifiering:** [Mac-körning40175540017](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
+passerar **82 portabla Swift-prov,36 backendprov och80 hostade + 8 UI per
+simulatorvariant** på iPhone SE3/iOS18.5/Xcode16.4, iPhone 16 Pro/iOS18.5/Xcode 26.2
+och iPhone 16e/iOS 26.2/Xcode 26.2. Båda byggena är godkända. App-/test-/byggkällan
+i mergad main 8cd977c är byteidentisk med godkänd branch 3511431 och faktisk
+Apple-checkout 8ded616d. Nytt pausskydd och ett verkligt sen-start-regressionstest
+passerar; alla fyra strikta femsekundersprov av versposition är kvar.
+Bilderna av 2:255 har granskats på alla tre varianter. Se [STATUS.md](STATUS.md)
+för exakta källor, paket, historik och kvarvarande färdigkriterier.
 
 Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, personlig signering och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
 

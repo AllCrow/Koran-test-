@@ -73,11 +73,11 @@ project whenever App Swift files or resource groups change. Local package produc
 are wired by `scripts/generate_project.py`; no external Swift dependencies.
 The scheme also contains hosted `AppTests` and `AppUITests`; use an actual
 available iPhone simulator destination with `xcodebuild test`. See `STATUS.md`
-for the exact latest tested source, run and counts. Mac CI selects Xcode26.2/
-iOS18.5 on iPhone16Pro, Xcode16.4/iOS18.5 on compact iPhoneSE3, and
-Xcode26.2/iOS26.2 on iPhone16e. The first job specifically verifies a build
+for the exact latest tested source, run and counts. Mac CI selects Xcode 26.2/
+iOS18.5 on iPhone 16 Pro, Xcode16.4/iOS18.5 on compact iPhone SE3, and
+Xcode 26.2/iOS 26.2 on iPhone 16e. The first job specifically verifies a build
 linked to the current SDK on the earlier operating-system runtime.
-The physical unsigned package uses Xcode26.2. Configuration is not a passing run;
+The physical unsigned package uses Xcode 26.2. Configuration is not a passing run;
 read the actual jobs/results before claiming compatibility. Native suites cover AppStore, AudioLibrary, PracticeRecorder,
 RecitationPlayer and text/search/navigation. Audio validation uses synthetic MPEG
 frames; PCM player tests perform real muted playback of generated local WAVs.
@@ -117,9 +117,28 @@ within five seconds; mere existence or hittability is insufficient. Inspect
 the resulting screenshots as well as test results. Actual latest verification
 is recorded in STATUS.md; do not describe an unrun change as verified.
 
-Apple requirements checked 2026-10-25 require Xcode26+/iOS26 SDK for App Store
-Connect uploads since 2026-04-28. The verified Xcode16.4/iOS18.5 build is not
-upload acceptance proof. Personal signing remains the current priority.
+Run 40175540017 on 3511431 passed 80 hosted plus eight UI tests on each of
+the three configurations, 82 portable Swift tests and 36 backend tests.
+The actual checkout 8ded616d, source 3511431 and merged main 8cd977c have identical
+whole trees. All three 2:255 images were inspected. A tall iOS 26 List cell
+reported its read-only badge as non-hittable despite a fully visible frame.
+Keep the strict five-second complete vertical/horizontal bounds, exact
+reference label and foreground app check for that label. Interactive controls
+still require hittability and real value-changing taps. Do not replace the
+native List reader to repair that XCTest activation-point mismatch.
+
+Native pause intent must stop a late engine start, not just publish a paused
+UI flag. Rate and time-control observers enforce the current intent after
+the setter returns on the actor; a zero rate needs no repeated pause setter.
+Pause test waiters must validate current engine values on the main queue,
+because a buffered KVO tuple can already be stale. Keep the two-second
+deadline, both native pause signals and the remaining-audio assertion.
+The saved native-state-trace-alternative branch is diagnostic history;
+do not apply it over the verified waiter without new failure evidence.
+
+Apple requirements checked 2026-10-25 require Xcode26+/iOS 26 SDK for App Store
+Connect uploads since 2026-04-28. Successful SDK 26.2 builds are not upload
+acceptance proof. Personal signing remains the current priority.
 
 ArabicText's selectable base size comes from EnvironmentValues.quranTextSize;
 retain Dynamic Type scaling. Persist a raw optional size string so old reading
