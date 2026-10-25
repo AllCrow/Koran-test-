@@ -358,8 +358,11 @@ final class ReadingFlowTests: XCTestCase {
             let bottom = tabBar.frame.minY
             let upperLimit = top + min(150, (bottom - top) / 4)
             let frame = candidate.frame
+            let window = self.app.frame
             guard !frame.isEmpty, frame.minY.isFinite, frame.maxY.isFinite,
-                  frame.minY >= top, frame.maxY <= upperLimit else { return false }
+                  frame.minX.isFinite, frame.maxX.isFinite,
+                  frame.minY >= top, frame.maxY <= upperLimit,
+                  frame.minX >= window.minX, frame.maxX <= window.maxX else { return false }
             // The badge is read-only. On iOS 26 its tall native List cell can
             // report it as non-hittable despite correct visible geometry;
             // run 39's failure image/frame show the whole 2:255 badge at y129.
