@@ -536,6 +536,241 @@ final class AppStoreTests: XCTestCase {
         XCTAssertEqual(relaunched.bookmarks, [verse])
     }
 
+    func testPracticeQueueKeepsInsertionOrderAndPersistsWithoutReadingCredit() throws {
+        let storage = try defaults()
+        let today = date(24)
+        let store = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        let first = try reference(255, surah: 2)
+        let second = try reference(2, surah: 112)
+        XCTAssertTrue(store.togglePracticeQueue(first))
+        XCTAssertTrue(store.togglePracticeQueue(second))
+        XCTAssertEqual(store.practiceQueue, [first, second])
+        XCTAssertTrue(store.isQueuedForPractice(first))
+        XCTAssertTrue(store.togglePracticeQueue(first))
+        XCTAssertFalse(store.isQueuedForPractice(first))
+        XCTAssertTrue(store.togglePracticeQueue(first))
+        XCTAssertEqual(store.practiceQueue, [second, first])
+        XCTAssertEqual(store.todayReadCount, 0)
+        XCTAssertNil(store.lastRead)
+        XCTAssertTrue(store.bookmarks.isEmpty)
+        XCTAssertTrue(store.streak.completionDays.isEmpty)
+
+        let restored = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        XCTAssertEqual(restored.practiceQueue, [second, first])
+        XCTAssertEqual(restored.todayReadCount, 0)
+        XCTAssertNil(restored.lastRead)
+        var publications = 0
+        let subscription = restored.objectWillChange.sink { _ in publications += 1 }
+        defer { subscription.cancel() }
+        let original = storage.data(forKey: "sakina.reading-state.v1")
+        XCTAssertTrue(restored.removeFromPracticeQueue(try reference(1)))
+        XCTAssertEqual(publications, 0, "Removing an absent verse is a no-op")
+        XCTAssertEqual(storage.data(forKey: "sakina.reading-state.v1"), original)
+    }
+
+    func testMalformedOptionalSavedQueueNeverDiscardsExistingReadingState() throws {
+        let storage = try defaults()
+        let today = date(24)
+        let store = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        let verse = try reference(3)
+        store.setDailyGoal(1)
+        store.markRead(verse)
+        store.toggleBookmark(verse)
+        store.setArabicTextSize(.large)
+        store.setAppearance(.dark)
+        let original = try XCTUnwrap(storage.data(forKey: "sakina.reading-state.v1"))
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: original) as? [String: Any])
+        let malformed: [Any] = ["not-an-array", ["unexpected": true],
+                                [["surahID": 115, "ayahNumber": 1]], NSNull()]
+        for invalid in malformed {
+            var saved = object
+            saved["practiceQueue"] = invalid
+            storage.set(try JSONSerialization.data(withJSONObject: saved), forKey: "sakina.reading-state.v1")
+            let restored = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+            XCTAssertTrue(restored.practiceQueue.isEmpty)
+            XCTAssertEqual(restored.lastRead, verse)
+            XCTAssertEqual(restored.bookmarks, [verse])
+            XCTAssertEqual(restored.todayReadCount, 1)
+            XCTAssertEqual(restored.streakSummary.current, 1)
+            XCTAssertEqual(restored.arabicTextSize, .large)
+            XCTAssertEqual(restored.appearance, .dark)
+        }
+        var legacy = object
+        legacy.removeValue(forKey: "practiceQueue")
+        storage.set(try JSONSerialization.data(withJSONObject: legacy), forKey: "sakina.reading-state.v1")
+        let legacyRestored = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        XCTAssertTrue(legacyRestored.practiceQueue.isEmpty)
+        XCTAssertEqual(legacyRestored.bookmarks, [verse])
+        XCTAssertTrue(legacyRestored.dailyGoalMet)
+    }
+
+    func testSavedQueueDeduplicatesAndBoundsOnlyItsOwnOptionalField() throws {
+        let storage = try defaults()
+        let today = date(24)
+        let store = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        let position = try reference(4)
+        store.setLastRead(position)
+        let original = try XCTUnwrap(storage.data(forKey: "sakina.reading-state.v1"))
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: original) as? [String: Any])
+        let references = try (1...201).map { try reference($0, surah: 2) }
+        let encoded = try JSONEncoder().encode([references[0]] + references)
+        object["practiceQueue"] = try JSONSerialization.jsonObject(with: encoded)
+        storage.set(try JSONSerialization.data(withJSONObject: object), forKey: "sakina.reading-state.v1")
+        let restored = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        XCTAssertEqual(restored.practiceQueue, Array(references.prefix(200)))
+        XCTAssertEqual(restored.lastRead, position)
+        XCTAssertEqual(restored.todayReadCount, 0)
+    }
+
+    func testPracticeQueueCapacityRejectsWithoutPublicationOrSavedMutation() throws {
+        let storage = try defaults()
+        let today = date(24)
+        let store = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        let queue = try (1...200).map { try reference($0, surah: 2) }
+        var envelope = try XCTUnwrap(JSONSerialization.jsonObject(with: store.readingBackupData()) as? [String: Any])
+        envelope["practiceQueue"] = try JSONSerialization.jsonObject(with: JSONEncoder().encode(queue))
+        try store.mergeReadingBackup(JSONSerialization.data(withJSONObject: envelope))
+        let original = storage.data(forKey: "sakina.reading-state.v1")
+        var publications = 0
+        let subscription = store.objectWillChange.sink { _ in publications += 1 }
+        defer { subscription.cancel() }
+        XCTAssertFalse(store.togglePracticeQueue(try reference(201, surah: 2)))
+        XCTAssertEqual(publications, 0)
+        XCTAssertEqual(store.practiceQueue, queue)
+        XCTAssertEqual(storage.data(forKey: "sakina.reading-state.v1"), original)
+        XCTAssertEqual(store.todayReadCount, 0)
+        XCTAssertNil(store.lastRead)
+        XCTAssertTrue(store.removeFromPracticeQueue(queue[0]))
+        XCTAssertTrue(store.togglePracticeQueue(try reference(201, surah: 2)))
+        XCTAssertEqual(store.practiceQueue.count, 200)
+        XCTAssertEqual(store.practiceQueue.last, try reference(201, surah: 2))
+    }
+
+    func testPracticeQueueBackupMergeIsOrderedAdditiveAndLegacyImportKeepsQueue() throws {
+        let today = date(24)
+        let first = try reference(1)
+        let second = try reference(2)
+        let third = try reference(3)
+        let source = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        XCTAssertTrue(source.togglePracticeQueue(first))
+        XCTAssertTrue(source.togglePracticeQueue(second))
+        let data = try source.readingBackupData()
+        let storage = try defaults()
+        let target = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        target.setLastRead(third)
+        target.setAppearance(.dark)
+        XCTAssertTrue(target.togglePracticeQueue(second))
+        XCTAssertTrue(target.togglePracticeQueue(third))
+        try target.mergeReadingBackup(data)
+        try target.mergeReadingBackup(data)
+        XCTAssertEqual(target.practiceQueue, [second, third, first])
+        var legacy = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        legacy.removeValue(forKey: "practiceQueue")
+        try target.mergeReadingBackup(JSONSerialization.data(withJSONObject: legacy))
+        XCTAssertEqual(target.practiceQueue, [second, third, first])
+        XCTAssertEqual(target.lastRead, third)
+        XCTAssertEqual(target.appearance, .dark)
+        XCTAssertEqual(target.todayReadCount, 0)
+        let restored = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        XCTAssertEqual(restored.practiceQueue, [second, third, first])
+        XCTAssertEqual(restored.lastRead, third)
+    }
+
+    func testPracticeQueueUnionOverflowRejectsEntireReadingImportBeforeMutation() throws {
+        let today = date(24)
+        let storage = try defaults()
+        let target = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        target.setLastRead(try reference(1))
+        let queue = try (1...200).map { try reference($0, surah: 2) }
+        var full = try XCTUnwrap(JSONSerialization.jsonObject(with: target.readingBackupData()) as? [String: Any])
+        full["practiceQueue"] = try JSONSerialization.jsonObject(with: JSONEncoder().encode(queue))
+        try target.mergeReadingBackup(JSONSerialization.data(withJSONObject: full))
+        let source = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        let extra = try reference(201, surah: 2)
+        source.setDailyGoal(1)
+        source.markRead(extra)
+        source.toggleBookmark(extra)
+        XCTAssertTrue(source.togglePracticeQueue(extra))
+        let incoming = try source.readingBackupData()
+        let beforeSaved = storage.data(forKey: "sakina.reading-state.v1")
+        let beforeExport = try target.readingBackupData()
+        var publications = 0
+        let subscription = target.objectWillChange.sink { _ in publications += 1 }
+        defer { subscription.cancel() }
+        XCTAssertThrowsError(try target.mergeReadingBackup(incoming)) { error in
+            guard case AppStore.ReadingBackupError.practiceQueueFull = error else {
+                return XCTFail("Expected queue-union admission error, received \(error)")
+            }
+        }
+        XCTAssertEqual(publications, 0)
+        XCTAssertEqual(storage.data(forKey: "sakina.reading-state.v1"), beforeSaved)
+        XCTAssertEqual(try target.readingBackupData(), beforeExport)
+        XCTAssertEqual(target.practiceQueue, queue)
+        XCTAssertTrue(target.bookmarks.isEmpty)
+        XCTAssertEqual(target.todayReadCount, 0)
+        XCTAssertTrue(target.streak.completionDays.isEmpty)
+    }
+
+    func testInvalidBackupQueueNeverChangesExistingReadingData() throws {
+        let today = date(24)
+        let storage = try defaults()
+        let target = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        let first = try reference(1)
+        target.markRead(first)
+        XCTAssertTrue(target.togglePracticeQueue(first))
+        let exported = try target.readingBackupData()
+        let original = storage.data(forKey: "sakina.reading-state.v1")
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: exported) as? [String: Any])
+        let tooMany = try (1...201).map { try reference($0, surah: 2) }
+        let invalid: [Any] = ["not-an-array", [["surahID": 115, "ayahNumber": 1]],
+                              [["surahID": 1, "ayahNumber": 1], ["surahID": 1, "ayahNumber": 1]],
+                              try JSONSerialization.jsonObject(with: JSONEncoder().encode(tooMany))]
+        var publications = 0
+        let subscription = target.objectWillChange.sink { _ in publications += 1 }
+        defer { subscription.cancel() }
+        for malformed in invalid {
+            var incoming = object
+            incoming["practiceQueue"] = malformed
+            XCTAssertThrowsError(try target.mergeReadingBackup(JSONSerialization.data(withJSONObject: incoming)))
+            XCTAssertEqual(storage.data(forKey: "sakina.reading-state.v1"), original)
+            XCTAssertEqual(target.practiceQueue, [first])
+            XCTAssertEqual(target.todayReadCount, 1)
+        }
+        XCTAssertEqual(publications, 0)
+    }
+
+    func testPracticeQueueByteBudgetIsCheckedBeforePublishingItsEdit() throws {
+        let today = date(24)
+        let first = try reference(1)
+        let probeStorage = try defaults()
+        let probe = AppStore(defaults: probeStorage, now: { today }, calendar: { self.calendar() })
+        probe.setLastRead(first)
+        XCTAssertTrue(probe.togglePracticeQueue(first))
+        let queuedState = try XCTUnwrap(probeStorage.data(forKey: "sakina.reading-state.v1"))
+        let queuedExport = try probe.readingBackupData()
+        let exactBudget = max(queuedState.count, queuedExport.count)
+        let storage = try defaults()
+        let target = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() },
+                              readingDataByteLimit: exactBudget - 1)
+        target.setLastRead(first)
+        let before = try XCTUnwrap(storage.data(forKey: "sakina.reading-state.v1"))
+        var publications = 0
+        let subscription = target.objectWillChange.sink { _ in publications += 1 }
+        defer { subscription.cancel() }
+        XCTAssertFalse(target.togglePracticeQueue(first))
+        XCTAssertEqual(publications, 0)
+        XCTAssertTrue(target.practiceQueue.isEmpty)
+        XCTAssertEqual(storage.data(forKey: "sakina.reading-state.v1"), before)
+        let acceptedStorage = try defaults()
+        let accepted = AppStore(defaults: acceptedStorage, now: { today }, calendar: { self.calendar() },
+                                readingDataByteLimit: exactBudget)
+        accepted.setLastRead(first)
+        XCTAssertTrue(accepted.togglePracticeQueue(first))
+        let restored = AppStore(defaults: acceptedStorage, now: { today }, calendar: { self.calendar() },
+                                readingDataByteLimit: exactBudget)
+        XCTAssertEqual(restored.practiceQueue, [first])
+    }
+
     func testCombinedReadingBackupLimitRejectsWithoutPublishingOrReplacingSavedState() throws {
         let first = try backup(completedOn: 1...12)
         let second = try backup(completedOn: 13...24)

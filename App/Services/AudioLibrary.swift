@@ -8,6 +8,7 @@ final class AudioLibrary: ObservableObject {
     /// A narrow transport seam keeps disk admission and cancellation testable
     /// without reaching the recitation service. Production owns one URLSession.
     typealias Download = @MainActor @Sendable (URLRequest, any URLSessionTaskDelegate) async throws -> (URL, URLResponse)
+    typealias InventoryScan = @Sendable (URL) async throws -> [AudioDownloadEntry]
 
     static let shared = AudioLibrary()
 
@@ -16,6 +17,12 @@ final class AudioLibrary: ObservableObject {
     @Published private(set) var downloadingSurahID: Int?
     @Published private(set) var downloadingReciter: Reciter?
     @Published private(set) var errorMessage: String?
+    @Published private(set) var entries: [AudioDownloadEntry] = []
+    @Published private(set) var isScanning = false
+    @Published private(set) var inventoryError: String?
+    @Published private(set) var hasCurrentInventory = false
+
+    @Published private(set) var inventoryBytes: Int64 = 0
 
     var progress: Double { total > 0 ? Double(completed) / Double(total) : 0 }
 
@@ -24,13 +31,19 @@ final class AudioLibrary: ObservableObject {
     private let downloader: AudioFileDownloader
     private let downloadFile: Download
     private let fileManager = FileManager.default
-    private let maximumVerseBytes: Int64 = 32 * 1_024 * 1_024
+    private let maximumVerseBytes = AudioStoredFile.maximumBytes
+    private let inventoryScan: InventoryScan
+    private var inventoryTask: Task<[AudioDownloadEntry], Error>?
+    private var inventoryRequestID: UUID?
+    private var inventoryMutationID = UUID()
+    private var allowsCellularAccess = true
     private var downloadTask: Task<Void, Never>?
     private var downloadID: UUID?
     private var validatedFiles: [URL: FileIdentity] = [:]
 
-    init(directory: URL? = nil, download: Download? = nil) {
+    init(directory: URL? = nil, download: Download? = nil, inventoryScan: InventoryScan? = nil) {
         configuredDirectory = directory
+        self.inventoryScan = inventoryScan ?? { root in try AudioStorageInventory.scan(at: root) }
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil
         configuration.httpCookieStorage = nil
@@ -55,13 +68,15 @@ final class AudioLibrary: ObservableObject {
     }
 
     deinit {
+        inventoryTask?.cancel()
         downloadTask?.cancel()
         downloader.invalidateAndCancel()
     }
 
     /// Returns only a file with a valid MP3 header, with its size and date unchanged.
     func localURL(for reference: AyahReference, reciter: Reciter) -> URL? {
-        guard let url = fileURL(for: reference, reciter: reciter) else { return nil }
+        guard safeChapterDirectory(surahID: reference.surahID, reciter: reciter) != nil,
+              let url = fileURL(for: reference, reciter: reciter) else { return nil }
         guard let identity = try? fileIdentity(at: url),
               identity.bytes >= 128, identity.bytes <= maximumVerseBytes else {
             validatedFiles.removeValue(forKey: url)
@@ -78,7 +93,7 @@ final class AudioLibrary: ObservableObject {
 
     func downloadedVerseCount(surahID: Int, reciter: Reciter) -> Int {
         guard (1...AyahReference.ayahCounts.count).contains(surahID),
-              let folder = chapterDirectory(surahID: surahID, reciter: reciter),
+              let folder = safeChapterDirectory(surahID: surahID, reciter: reciter),
               let files = try? fileManager.contentsOfDirectory(
                 at: folder, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]
               ) else { return 0 }
@@ -94,21 +109,116 @@ final class AudioLibrary: ObservableObject {
         }
     }
 
+    /// A damaged selection must still offer a way to remove its occupied files.
+    func hasStoredAudio(surahID: Int, reciter: Reciter) -> Bool {
+        guard (1...AyahReference.ayahCounts.count).contains(surahID),
+              let folder = safeChapterDirectory(surahID: surahID, reciter: reciter),
+              let files = fileManager.enumerator(at: folder, includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants, .skipsPackageDescendants]) else { return false }
+        var examined = 0
+        while let url = files.nextObject() as? URL {
+            examined += 1
+            guard examined <= AyahReference.ayahCounts[surahID - 1] + 64 else { return false }
+            if AudioStorageInventory.canonicalVerse(in: url.lastPathComponent, surahID: surahID) != nil,
+               (try? fileIdentity(at: url)) != nil { return true }
+        }
+        return false
+    }
+
+    /// Explicitly refresh the library. The detached worker owns only immutable
+    /// paths and sends a bounded snapshot back; it never performs network work.
+    func refreshInventory() async {
+        guard !Task.isCancelled else { return }
+        inventoryTask?.cancel()
+        let requestID = UUID()
+        let mutationID = inventoryMutationID
+        inventoryRequestID = requestID
+        isScanning = true
+        hasCurrentInventory = false
+        inventoryError = nil
+        defer {
+            if inventoryRequestID == requestID {
+                inventoryRequestID = nil
+                inventoryTask = nil
+                isScanning = false
+            }
+        }
+        guard let root = directory else {
+            inventoryError = "Ljudets sparplats är inte tillgänglig. Försök igen när lagringsutrymmet är tillgängligt."
+            return
+        }
+        let scan = inventoryScan
+        let task = Task.detached(priority: .utility) { try await scan(root) }
+        inventoryTask = task
+        do {
+            let snapshot = try await withTaskCancellationHandler {
+                try await task.value
+            } onCancel: {
+                task.cancel()
+            }
+            try Task.checkCancellation()
+            guard inventoryRequestID == requestID, inventoryMutationID == mutationID else { return }
+            let bytes = try Self.checkedInventoryBytes(snapshot)
+            entries = snapshot
+            inventoryBytes = bytes
+            hasCurrentInventory = true
+        } catch is CancellationError {
+            // Cancellation or a newer filesystem mutation must not publish an
+            // earlier snapshot, error, or completion over the current request.
+        } catch {
+            guard !Task.isCancelled, inventoryRequestID == requestID,
+                  inventoryMutationID == mutationID else { return }
+            inventoryError = "Det sparade ljudet kunde inte läsas just nu. Försök uppdatera listan."
+        }
+    }
+
+    func cancelInventoryScan() {
+        hasCurrentInventory = false
+        inventoryRequestID = nil
+        inventoryTask?.cancel()
+        inventoryTask = nil
+        if isScanning { isScanning = false }
+    }
+
+    /// Changing the choice is an explicit boundary: the current request stops,
+    /// while every already committed verse remains available locally.
+    func setAllowsCellularAccess(_ allowed: Bool) {
+        guard allowsCellularAccess != allowed else { return }
+        allowsCellularAccess = allowed
+        cancelDownload()
+    }
+
+    private static func checkedInventoryBytes(_ snapshot: [AudioDownloadEntry]) throws -> Int64 {
+        guard snapshot.count <= Reciter.allCases.count * AyahReference.ayahCounts.count else {
+            throw AudioStorageInventory.ScanError.unavailable
+        }
+        var total: Int64 = 0
+        for entry in snapshot {
+            guard entry.bytes >= 0 else { throw AudioStorageInventory.ScanError.unavailable }
+            let (next, overflow) = total.addingReportingOverflow(entry.bytes)
+            guard !overflow else { throw AudioStorageInventory.ScanError.unavailable }
+            total = next
+        }
+        return total
+    }
+
+    private func invalidateInventory() {
+        inventoryMutationID = UUID()
+        cancelInventoryScan()
+    }
+
     /// Reserve the foreground job synchronously with the button action. A
     /// subsequent cancellation or selection change cannot leave an old request
     /// queued to start later. Completed verses survive cancellation and resume.
     func beginDownload(_ surah: Surah, reciter: Reciter) {
         guard downloadTask == nil else { return }
-        if directory == nil {
-            do {
-                // Storage can become available after the user frees space or
-                // the OS releases a temporary filesystem restriction. Retry
-                // only on an explicit action, without requiring an app restart.
-                directory = try Self.prepareStorage(at: configuredDirectory)
-            } catch {
-                errorMessage = "Ljudets sparplats är inte tillgänglig. Kontrollera lagringsutrymmet och försök igen."
-                return
-            }
+        do {
+            // An explicit retry can also recover a root removed since setup.
+            // Reapply backup exclusion before any newly created audio is saved.
+            directory = try Self.prepareStorage(at: directory ?? configuredDirectory)
+        } catch {
+            errorMessage = "Ljudets sparplats är inte tillgänglig. Kontrollera lagringsutrymmet och försök igen."
+            return
         }
         guard (1...AyahReference.ayahCounts.count).contains(surah.id),
               surah.numberOfAyahs == AyahReference.ayahCounts[surah.id - 1] else {
@@ -116,6 +226,7 @@ final class AudioLibrary: ObservableObject {
             return
         }
 
+        invalidateInventory()
         let id = UUID()
         downloadID = id
         downloadingSurahID = surah.id
@@ -145,12 +256,20 @@ final class AudioLibrary: ObservableObject {
             completed = 0
             total = 0
         }
-        guard let folder = chapterDirectory(surahID: surah.id, reciter: reciter) else { return }
+        invalidateInventory()
         do {
-            if fileManager.fileExists(atPath: folder.path) {
+            let folder = try deletionFolder(surahID: surah.id, reciter: reciter)
+            if let folder, fileManager.fileExists(atPath: folder.path) {
                 try fileManager.removeItem(at: folder)
             }
-            validatedFiles = validatedFiles.filter { $0.key.deletingLastPathComponent() != folder }
+            if let folder {
+                validatedFiles = validatedFiles.filter { $0.key.deletingLastPathComponent() != folder }
+            }
+            let kept = entries.filter { $0.surahID != surah.id || $0.reciter != reciter }
+            let keptBytes = try Self.checkedInventoryBytes(kept)
+            entries = kept
+            inventoryBytes = keptBytes
+            inventoryError = nil
             errorMessage = nil
             objectWillChange.send()
         } catch {
@@ -192,6 +311,7 @@ final class AudioLibrary: ObservableObject {
         var request = URLRequest(url: reciter.audioURL(for: reference))
         request.httpMethod = "GET"
         request.httpShouldHandleCookies = false
+        request.allowsCellularAccess = allowsCellularAccess
         request.setValue("audio/mpeg, application/octet-stream;q=0.5", forHTTPHeaderField: "Accept")
         let limit = AudioDownloadLimit(maximumBytes: maximumVerseBytes)
         let result: (URL, URLResponse)
@@ -221,7 +341,7 @@ final class AudioLibrary: ObservableObject {
         guard let destination = fileURL(for: reference, reciter: reciter) else {
             throw AudioDownloadError.storageUnavailable
         }
-        try fileManager.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try prepareChapterDirectory(surahID: reference.surahID, reciter: reciter)
         try Task.checkCancellation()
 
         // Prepare all required metadata before publishing the final filename.
@@ -237,6 +357,7 @@ final class AudioLibrary: ObservableObject {
         // The rename retains the prepared protection and file identity, so no
         // fallible operation remains after the verse is committed to storage.
         validatedFiles[destination] = installedIdentity
+        invalidateInventory()
     }
 
     private static func prepareStorage(at requestedDirectory: URL?) throws -> URL {
@@ -252,6 +373,7 @@ final class AudioLibrary: ObservableObject {
             ).appendingPathComponent("Recitations", isDirectory: true)
         }
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        guard AudioStoredFile.isDirectory(root) else { throw AudioDownloadError.storageUnavailable }
         var values = URLResourceValues()
         values.isExcludedFromBackup = true
         try root.setResourceValues(values)
@@ -264,6 +386,44 @@ final class AudioLibrary: ObservableObject {
             .appendingPathComponent(String(format: "%03d", surahID), isDirectory: true)
     }
 
+    /// Recheck parent components immediately before a destructive operation.
+    /// A replaced root or reciter link must never route deletion elsewhere.
+    private func deletionFolder(surahID: Int, reciter: Reciter) throws -> URL? {
+        guard let root = directory else { throw AudioDownloadError.storageUnavailable }
+        for url in [root, root.appendingPathComponent(reciter.rawValue, isDirectory: true)] {
+            do {
+                let attributes = try fileManager.attributesOfItem(atPath: url.path)
+                guard attributes[.type] as? FileAttributeType == .typeDirectory else {
+                    throw AudioDownloadError.storageUnavailable
+                }
+            } catch let error as CocoaError where error.code == .fileNoSuchFile || error.code == .fileReadNoSuchFile {
+                return nil // Already absent: there are no files to delete.
+            }
+        }
+        return chapterDirectory(surahID: surahID, reciter: reciter)
+    }
+
+    private func safeChapterDirectory(surahID: Int, reciter: Reciter) -> URL? {
+        guard let root = directory, AudioStoredFile.isDirectory(root) else { return nil }
+        let reciterFolder = root.appendingPathComponent(reciter.rawValue, isDirectory: true)
+        guard AudioStoredFile.isDirectory(reciterFolder),
+              let folder = chapterDirectory(surahID: surahID, reciter: reciter),
+              AudioStoredFile.isDirectory(folder) else { return nil }
+        return folder
+    }
+
+    private func prepareChapterDirectory(surahID: Int, reciter: Reciter) throws {
+        guard let root = directory, AudioStoredFile.isDirectory(root) else {
+            throw AudioDownloadError.storageUnavailable
+        }
+        var folder = root
+        for component in [reciter.rawValue, String(format: "%03d", surahID)] {
+            folder.appendPathComponent(component, isDirectory: true)
+            try fileManager.createDirectory(at: folder, withIntermediateDirectories: true)
+            guard AudioStoredFile.isDirectory(folder) else { throw AudioDownloadError.storageUnavailable }
+        }
+    }
+
     private func fileURL(for reference: AyahReference, reciter: Reciter) -> URL? {
         chapterDirectory(surahID: reference.surahID, reciter: reciter)?
             .appendingPathComponent(filename(for: reference), isDirectory: false)
@@ -273,70 +433,16 @@ final class AudioLibrary: ObservableObject {
         String(format: "%03d%03d.mp3", reference.surahID, reference.ayahNumber)
     }
 
-    private struct FileIdentity: Equatable {
-        let bytes: Int64
-        let modified: Date
-    }
+    private typealias FileIdentity = AudioStoredFile.Identity
 
     private func fileIdentity(at url: URL) throws -> FileIdentity {
-        let attributes = try fileManager.attributesOfItem(atPath: url.path)
-        guard attributes[.type] as? FileAttributeType == .typeRegular,
-              let bytes = attributes[.size] as? NSNumber,
-              let modified = attributes[.modificationDate] as? Date else {
-            throw AudioDownloadError.invalidAudio
-        }
-        return FileIdentity(bytes: bytes.int64Value, modified: modified)
+        do { return try AudioStoredFile.identity(at: url) }
+        catch { throw AudioDownloadError.invalidAudio }
     }
 
-    /// Check two consecutive MPEG Layer III frames, allowing an ID3v2 tag first.
-    /// This rejects error pages and partial headers without loading a whole verse.
     private func validateMP3(at url: URL, identity: FileIdentity) throws {
-        guard (128...maximumVerseBytes).contains(identity.bytes) else { throw AudioDownloadError.invalidAudio }
-        let handle = try FileHandle(forReadingFrom: url)
-        defer { try? handle.close() }
-        let header = [UInt8](try handle.read(upToCount: 10) ?? Data())
-        guard header.count == 10 else { throw AudioDownloadError.invalidAudio }
-        var offset = 0
-        if Array(header.prefix(3)) == [0x49, 0x44, 0x33] {
-            guard (2...4).contains(header[3]), header[6...9].allSatisfy({ $0 < 128 }) else {
-                throw AudioDownloadError.invalidAudio
-            }
-            let tagSize = header[6...9].reduce(0) { ($0 << 7) | Int($1) }
-            let footerSize = header[3] == 4 && header[5] & 0x10 != 0 ? 10 : 0
-            offset = 10 + tagSize + footerSize
-        }
-        guard Int64(offset + 8) <= identity.bytes else { throw AudioDownloadError.invalidAudio }
-        try handle.seek(toOffset: UInt64(offset))
-        let bytes = [UInt8](try handle.read(upToCount: 8_192) ?? Data())
-        guard bytes.count >= 8 else { throw AudioDownloadError.invalidAudio }
-        for start in 0..<min(4_096, bytes.count - 7) {
-            guard let length = frameLength(bytes, at: start),
-                  start + length + 4 <= bytes.count,
-                  let nextLength = frameLength(bytes, at: start + length),
-                  Int64(offset + start + length + nextLength) <= identity.bytes,
-                  bytes[start + 1] & 0x1E == bytes[start + length + 1] & 0x1E,
-                  bytes[start + 2] & 0x0C == bytes[start + length + 2] & 0x0C else { continue }
-            return
-        }
-        throw AudioDownloadError.invalidAudio
-    }
-
-    private func frameLength(_ bytes: [UInt8], at start: Int) -> Int? {
-        guard start >= 0, start + 4 <= bytes.count,
-              bytes[start] == 0xFF, bytes[start + 1] & 0xE0 == 0xE0 else { return nil }
-        let version = (bytes[start + 1] >> 3) & 3
-        let layer = (bytes[start + 1] >> 1) & 3
-        let bitrateIndex = Int(bytes[start + 2] >> 4)
-        let sampleIndex = Int((bytes[start + 2] >> 2) & 3)
-        guard version != 1, layer == 1, (1...14).contains(bitrateIndex), sampleIndex < 3,
-              bytes[start + 3] & 3 != 2 else { return nil }
-        let rates = version == 3
-            ? [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320]
-            : [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160]
-        let divisor = version == 3 ? 1 : (version == 2 ? 2 : 4)
-        let sampleRate = [44_100, 48_000, 32_000][sampleIndex] / divisor
-        let padding = Int((bytes[start + 2] >> 1) & 1)
-        return (version == 3 ? 144_000 : 72_000) * rates[bitrateIndex] / sampleRate + padding
+        do { try AudioStoredFile.validateMP3(at: url, identity: identity) }
+        catch { throw AudioDownloadError.invalidAudio }
     }
 
     private enum AudioDownloadError: Error {
@@ -360,7 +466,9 @@ final class AudioLibrary: ObservableObject {
             (error as? URLError).map({ storageFailures.contains($0.code) }) == true {
             return "Ljudfilen kunde inte sparas på telefonen. Kontrollera lagringsutrymmet och försök igen. Redan hämtade verser finns kvar."
         }
-        return "Nedladdningen avbröts. Kontrollera anslutningen och försök igen. Redan hämtade verser finns kvar."
+        return allowsCellularAccess
+            ? "Nedladdningen avbröts. Kontrollera anslutningen och försök igen. Redan hämtade verser finns kvar."
+            : "Nedladdningen avbröts. Kontrollera Wi-Fi och försök igen. Redan hämtade verser finns kvar."
     }
 
     /// URLSession wraps ENOSPC in a URL error; FileManager may use Cocoa's own

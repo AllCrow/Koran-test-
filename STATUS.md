@@ -7,6 +7,12 @@ analysserver är konfigurerad och Tarteel-kvalitetsmålet är inte uppfyllt.**
 
 ## Senaste fortsättningsrunda
 
+**Nästa kandidat granskas:** samlat ljudbibliotek, ändligt repetitionsläge,
+sparat val för mobildata, personlig övningskö, uppdateringskompatibilitet och
+frivillig lokal felsökningsrapport. [Omgångens omfattning](docs/LIBRARY_REPETITION_2026-10-25.md)
+skiljer genomförande från ännu återstående native-prov. Bygge53 nedan är
+fortfarande den senaste fullständigt godkända ägarnedladdningen.
+
 Offlineomgången är **godkänd i [huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)**:
 **96 hostade + åtta UI-fall per simulator**, **85 separata portabla Mac-fall**
 och **57 backendfall**, varav **21 utvärderingsverktygsprov**. Alla sex jobb
