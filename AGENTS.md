@@ -197,3 +197,22 @@ Markdown-only differences. HostedTests.xcresult and UITestResults.xcresult
 were both inspected in artifact12593107496. Preserve the hosted-success gate
 before UI and both result bundles. Main46's owner draft remains the tested
 app package; the workflow change does not alter its application code.
+
+Later PR8 is merged as c907121. CI50 on 0d85b19 actually passed 91 hosted
+and eight UI cases on each of all three variants, 82 portable cases per Mac,
+36 backend cases and both builds. Actual checkout7d29ca2 and mainc907121
+have the same tree188fe37. The coherent native-snapshot position helper
+preserves all five-second bounds and real interactive controls. MP3 probes
+observe before commands, establish real native playback and retain the
+two-second pause/no-EOF/same-item requirements. Do not revert to stale
+application handles, app-only playing flags or cached KVO tuples.
+
+The separate opt-in real-source workflow passed three cases on iPhone16e/
+iOS26.2: 12 actual EveryAyah files downloaded and fully decoded; pinned112:2
+played locally to native EOF for each reciter. Read docs/LIVE_RECITATION_AUDIT.md
+and its saved JSON evidence. Verification/EveryAyahLiveSourceTests.swift stays
+outside AppTests; staging adds it only in the isolated audit checkout, so
+normal CI remains deterministic. No audio is attached or committed. This is
+one simulator configuration, no physical/offline-radio/rights/expert proof.
+Main51 is still pending in STATUS.md at this update; read its actual result
+and save-personal-download before replacing the verified owner draft46.
