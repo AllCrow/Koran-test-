@@ -32,6 +32,11 @@ jobs:
             xcode: /Applications/Xcode_26.2.app
             runtime: .iOS-26-2
             device: iPhone 16e
+          - label: ios18-compact
+            runner: macos-15
+            xcode: /Applications/Xcode_16.4.app
+            runtime: .iOS-18-5
+            device: iPhone SE (3rd generation)
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 25
     env:
