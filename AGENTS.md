@@ -38,6 +38,21 @@ distribution can still have operating costs; do not promise otherwise.
 
 ## Checks
 
+### Parallel work and a stable delivery candidate
+
+Stage new app, test and workflow work on feature branches while the current
+native verification finishes. Read its actual results before integrating a new
+candidate into main. Repeated small main pushes have cancelled runs 35–38
+before a complete result; keep independent implementation/review moving on a
+branch instead of continually replacing the candidate under test. A reproduced
+failure in that candidate is a concrete reason to replace it with a fix.
+The user already authorized continued work and integration; this does not
+require routine owner confirmation. Preserve already-integrated work and all
+history. Do not reset main to enforce the process. For a result-only Markdown
+commit, verify that executable/test/build inputs match the tested source and
+avoid starting an unnecessary native rerun. Cancelled obsolete runs are neither
+passing evidence nor an instruction to rerun old code.
+
 ```sh
 swift test
 python3 scripts/verify_content.py

@@ -6,6 +6,22 @@ Direkt vershopp och säkerhetskopiering av läsdata är tillagda.
 **Native-listläsaren, skärpta positionstester och samtliga 61 native-prov har passerat.** Personlig signering,
 fysisk installation och en offentlig apprelease är inte verifierade.
 
+## Aktuell samlad verifieringspunkt
+
+Senaste hämtade appkälla är `07088ba8130afbb8daedb52c9d2c2bb71853af85`.
+Dess [huvudkörning 40171995960](https://github.com/AllCrow/Koran-test-/actions/runs/40171995960)
+är ännu inte godkänd vid kontrollen 2026-10-25 kl07:17 UTC. Den bevarar
+integrerade PR3/PR4, huvudgrenens slutliga precisa kompaktgester och
+aktuell-SDK-provet på äldre iOS. Spelande långa verser får nu samma toppläge
+för att inte dölja början av det som reciteras. Det är en ny kodändring som
+behöver sitt faktiska resultat.
+
+Huvudkörningarna 35–38 och den ersatta PR4-körningen36 har avbrutits när ny
+källa integrerats. Inget samlat godkännande påstås för dem. Fortsatt oberoende
+kodarbete ska ske på arbetsgrenar medan denna leveranskandidat verifieras;
+en konstaterad defekt kan motivera en ny kandidat. Tidigare gröna resultat
+nedan är historiska och ersätter inte den aktuella helkörningen.
+
 ## Pågående verifiering av faktisk nativepaus
 
 Den integrerade PR-körningen
