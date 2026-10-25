@@ -6,6 +6,24 @@ Direkt vershopp och säkerhetskopiering av läsdata är tillagda.
 **Native-listläsaren, skärpta positionstester och samtliga 61 native-prov har passerat.** Personlig signering,
 fysisk installation och en offentlig apprelease är inte verifierade.
 
+## Pågående verifiering av HTTP-nedladdning
+
+Branch `codex/native-download-transport-verification` tillför fem hostade
+`AudioDownloadTransportTests` med en server bunden till 127.0.0.1 och riktiga
+URLSession-download tasks. Proven kontrollerar avkodningsbara sparade MP3-filer
+för alla tre recitatörer, diskåteröppning, HTTP-fel/återupptagning, avbrytning av
+ett öppet svar samt annonserad och okänd överföringsstorlek över gränsen.
+Överstorleksproven lämnar kroppen ofullständig; nedladdningsdelegaten måste
+avbryta före EOF för att de ska passera. Den befintliga genererade MP3-tonen
+delas utan ändrade ljudbytes.
+
+Testadaptern skickar bytes över lokal HTTP och återställer den begärda
+HTTPS-adressen i svarens metadata så att AudioLibrary:s ordinarie
+filantagning kan köras. Det är inte ett prov av extern TLS, EveryAyah,
+innehållsrättigheter, fysisk mikrofon eller energi. Ingen appkod, källtext,
+ATS-inställning eller automatisk uppladdning ändras.
+**De nya proven inväntar riktig Mac-/iOS-CI och är inte godkända ännu.**
+
 ## MP3-verifiering och läsflöden
 
 [PR #2](https://github.com/AllCrow/Koran-test-/pull/2), branch
