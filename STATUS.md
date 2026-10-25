@@ -335,3 +335,18 @@ i historiken.
 Tidigare fullständiga statusar och felsökningsbelägg finns i
 [denna omgångs historik](docs/STATUS_HISTORY_PREMIUM_2026-10-25.md)
 och [den äldre historiken](docs/STATUS_HISTORY_2026-10-25.md).
+
+
+## Ny förbättringsrunda 2026-10-25: läsplats, textsökning och källor
+
+Implementationen tillför lokal arabisk verstextsökning, sparad versposition efter
+manuell bläddring, ett uttryckligt alternativ för att spara läsplats och en
+versbunden granskningsrapport med lokal förhandsvisning/export. Läsning tilldelas
+inte kredit genom navigering eller bläddring. Ingen svensk översättning eller
+ljudtidsposition har tillkommit.
+
+Lokalt har verifiering av båda koranutgåvorna, övningsreferenser och appresurser
+passerat, liksom 57 backendtester. Swift och Xcode saknas i denna Linuxmiljö.
+De nya Swift- och native-/UI-fallen är ännu inte körda; tidigare bygge63:s
+resultat gäller den tidigare källan. Faktiska CI-resultat ska läggas till efter
+att körningen avslutats. Se docs/READING_IMPROVEMENTS_2026-10-25.md.

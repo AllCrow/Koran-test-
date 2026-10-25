@@ -43,6 +43,7 @@ struct HomeView: View {
                     Text(lastSurahName).font(.headline)
                     Text("Sura \(readingSurahID) · vers \(store.lastRead?.ayahNumber ?? 1)")
                         .font(.subheadline).foregroundStyle(.secondary)
+                        .accessibilityIdentifier("home.readingPosition")
                 }
                 Spacer(minLength: 0)
             }
