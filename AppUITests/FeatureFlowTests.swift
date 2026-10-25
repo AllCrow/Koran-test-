@@ -76,10 +76,13 @@ final class FeatureFlowTests: XCTestCase {
 
     func testPracticeQueueSurvivesRelaunchAndManualRemovalWithoutReadingCredit() {
         app.tabBars.buttons["Koranen"].tap()
-        let badge = app.staticTexts["reader.verse.1.1"]
+        let badge = element("reader.verse.1.1")
         XCTAssertTrue(badge.waitForExistence(timeout: 5))
-        XCTAssertTrue(badge.isHittable)
-        badge.press(forDuration: 1.1)
+        XCTAssertTrue(waitUntilReadableBadgeIsInsideReader("reader.verse.1.1"))
+        // The badge is read-only text. iOS26 can omit its accessibility
+        // activation point although its complete frame is visible. Long-press
+        // that verified point to operate the card's actual context menu.
+        badge.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(forDuration: 1.1)
         let enqueue = app.buttons["reader.practiceQueue.1.1"]
         XCTAssertTrue(enqueue.waitForExistence(timeout: 5))
         XCTAssertTrue(enqueue.isHittable)
@@ -231,6 +234,49 @@ final class FeatureFlowTests: XCTestCase {
         XCTAssertTrue(option.waitForExistence(timeout: 5))
         XCTAssertTrue(option.isHittable)
         option.tap()
+    }
+
+    private func waitUntilReadableBadgeIsInsideReader(_ identifier: String) -> Bool {
+        let parts = identifier.split(separator: ".")
+        guard parts.count == 4, parts[0] == "reader", parts[1] == "verse" else { return false }
+        let expectedLabel = "\(parts[2]):\(parts[3])"
+        var observation = "No coherent reader snapshot was available."
+        let visible = NSPredicate { _, _ in
+            guard let snapshot = try? self.app.snapshot() else { return false }
+            var pending: [any XCUIElementSnapshot] = [snapshot]
+            var badges: [any XCUIElementSnapshot] = []
+            var readerBar: (any XCUIElementSnapshot)?
+            var tabBar: (any XCUIElementSnapshot)?
+            var window: (any XCUIElementSnapshot)?
+            while let node = pending.popLast() {
+                if node.identifier == identifier { badges.append(node) }
+                if node.elementType == .navigationBar && node.identifier == "Koranen" { readerBar = node }
+                if node.elementType == .tabBar { tabBar = node }
+                if node.elementType == .window && !node.frame.isEmpty { window = node }
+                pending.append(contentsOf: node.children)
+            }
+            observation = "Snapshot contains \(badges.count) matches for \(identifier)."
+            guard badges.count == 1, let badge = badges.first,
+                  let readerBar, let tabBar, let window,
+                  !readerBar.frame.isEmpty, !tabBar.frame.isEmpty,
+                  tabBar.frame.minY > readerBar.frame.maxY else { return false }
+            let frame = badge.frame
+            observation = "Target \(badge.identifier), label \(badge.label), frame \(frame); reader \(readerBar.frame), tab \(tabBar.frame), window \(window.frame)."
+            guard !frame.isEmpty, frame.minX.isFinite, frame.maxX.isFinite,
+                  frame.minY.isFinite, frame.maxY.isFinite,
+                  frame.minX >= window.frame.minX, frame.maxX <= window.frame.maxX,
+                  frame.minY >= readerBar.frame.maxY, frame.maxY <= tabBar.frame.minY else { return false }
+            return self.app.state == .runningForeground && badge.label == expectedLabel
+        }
+        let ready = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: visible, object: nil)], timeout: 5) == .completed
+        if !ready {
+            attachScreenshot("Feature-read-only-badge-not-visible")
+            let diagnostic = XCTAttachment(string: "\(observation)\n\(app.debugDescription)")
+            diagnostic.name = "Feature-read-only-badge-frame-and-hierarchy"
+            diagnostic.lifetime = .keepAlways
+            add(diagnostic)
+        }
+        return ready
     }
 
     private func assertNoReadingCredit() {

@@ -67,6 +67,27 @@ skillnader mellan spelknapparnas symboler/etiketter och deras faktiska avsikt.
 Den utökade native-/UI-sviten har 40 minuters jobbtidsgräns i stället för 25;
 testkrav, interaktioner och de tidigare tidsgränserna inne i proven behålls.
 
+## Observerad rättning före godkännande
+
+[PR-körning54](https://github.com/AllCrow/Koran-test-/actions/runs/40200192657)
+på `63465b5c140160ef35647ada7095da8cd3f99a0e` underkändes i tjänsteproven.
+Kö- och uppdateringsproven visade en verklig återläsningsbugg: en tillståndsfull
+lazy-filterkedja kunde läsas flera gånger av Collection-adaptrar. Redan sedda
+poster förbrukades före kopieringen, vilket gav en tom kö eller inkonsekventa
+index och en Range-krasch. Rättningen använder ett enda uttryckligt varv med
+oförändrad ordning, avduplicering och gräns på 200 poster. Ett separat litet
+Swift-prov reproducerade den tomma gamla utmatningen och den korrekta nya.
+De befintliga nya kö- och uppdateringsproven behålls; inga felkrav tas bort.
+
+Det nya UI-provets gest mot en läsbadge har också anpassats till dess
+dokumenterade tillgänglighetsbeteende. Badgen kan sakna AX-aktiveringspunkt på
+iOS26. En sammanhängande native-ögonblicksbild måste visa exakt en badge med
+rätt ID och text, hela ändliga ramen inom läsytan och appen i förgrunden inom
+samma fem sekunder. Därefter görs ett verkligt långt tryck vid dess mitt.
+Menyns interaktiva knapp måste fortfarande vara nåbar och tryckas på riktigt.
+De åtta tidigare UI-proven är oförändrade. Inga UI-fall kördes i54 eftersom
+tjänstegrinden stoppade dem; rättningen kräver en ny fullständig körning.
+
 Molnmiljön fick tillfälligt slut på disk under förkontrollen. Återskapbar
 paketcache och en oanvänd härledd backend-containerbild rensades; källkod,
 modellfiler, Git-historik, tidigare iPhone-paket och verifieringsunderlag

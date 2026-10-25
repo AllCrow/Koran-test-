@@ -351,7 +351,17 @@ final class AppStore: ObservableObject {
 
     private static func uniqueQueue(_ references: [AyahReference]) -> [AyahReference] {
         var seen: Set<AyahReference> = []
-        return Array(references.lazy.filter { seen.insert($0).inserted }.prefix(maximumPracticeQueueCount))
+        var unique: [AyahReference] = []
+        unique.reserveCapacity(min(references.count, maximumPracticeQueueCount))
+        // Collection adapters may traverse more than once to find bounds or
+        // reserve Array storage. Deduplication therefore needs one eager pass;
+        // mutating seen inside a lazy filter can consume entries before copying.
+        for reference in references {
+            guard seen.insert(reference).inserted else { continue }
+            unique.append(reference)
+            if unique.count == maximumPracticeQueueCount { break }
+        }
+        return unique
     }
 
     /// Only an explicit reading action counts; opening a screen does not.
