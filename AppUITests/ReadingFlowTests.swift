@@ -83,6 +83,12 @@ final class ReadingFlowTests: XCTestCase {
         search.typeText("الفاتحة")
         XCTAssertTrue(app.buttons["surah.select.1"].waitForExistence(timeout: 5))
         clear.tap()
+        search.typeText("Fatiha")
+        XCTAssertTrue(app.buttons["surah.select.1"].waitForExistence(timeout: 5))
+        clear.tap()
+        search.typeText("Ikhlas")
+        XCTAssertTrue(app.buttons["surah.select.112"].waitForExistence(timeout: 5))
+        clear.tap()
         search.typeText("١١٢")
         let surah = app.buttons["surah.select.112"]
         XCTAssertTrue(surah.waitForExistence(timeout: 5))
@@ -101,6 +107,59 @@ final class ReadingFlowTests: XCTestCase {
         XCTAssertFalse(app.buttons["settings.bookmark.1.1"].exists, "The action must save the chosen sura's verse")
     }
 
+    func testDirectVerseJumpValidatesArabicInputAndRestoresPositionWithoutReadingCredit() {
+        app.tabBars.buttons["Koranen"].tap()
+        app.buttons["Välj sura"].tap()
+        let baqara = app.buttons["surah.select.2"]
+        XCTAssertTrue(baqara.waitForExistence(timeout: 5))
+        baqara.tap()
+        XCTAssertTrue(app.staticTexts["reader.chapter.2"].waitForExistence(timeout: 5))
+        app.buttons["Läsinställningar"].tap()
+        app.buttons["reader.jump.present"].tap()
+        let number = app.textFields["reader.jump.number"]
+        XCTAssertTrue(number.waitForExistence(timeout: 5))
+        number.tap()
+        number.typeText("٢٨٧")
+        let open = app.buttons["reader.jump.open"]
+        XCTAssertFalse(open.isEnabled, "A verse beyond Al-Baqara's 286 verses must not open")
+        number.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3) + "٢٥٥")
+        XCTAssertTrue(open.isEnabled)
+        open.tap()
+        let verse = app.staticTexts["reader.verse.2.255"]
+        XCTAssertTrue(verse.waitForExistence(timeout: 5))
+        XCTAssertTrue(verse.isHittable, "A jump must reveal the target's global verse identity")
+        attachScreenshot("Reader-Baqara-255")
+        app.tabBars.buttons["Idag"].tap()
+        let progress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
+        XCTAssertEqual(progress.value as? String, "0 av 3 verser lästa", "Navigation must not award reading credit")
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Koranen"].waitForExistence(timeout: 10))
+        app.tabBars.buttons["Koranen"].tap()
+        XCTAssertTrue(verse.waitForExistence(timeout: 5))
+        XCTAssertTrue(verse.isHittable, "The saved verse position must survive relaunch")
+        // Selecting the same saved position must still execute a jump, and a
+        // later explicit reading action must replace that position on return.
+        app.buttons["Läsinställningar"].tap()
+        app.buttons["reader.jump.present"].tap()
+        XCTAssertTrue(number.waitForExistence(timeout: 5))
+        number.tap()
+        number.typeText("255")
+        open.tap()
+        XCTAssertTrue(verse.waitForExistence(timeout: 5))
+        XCTAssertTrue(verse.isHittable)
+        let markRead = app.buttons["reader.markRead.2.256"]
+        scrollTo(markRead)
+        XCTAssertTrue(markRead.isEnabled)
+        markRead.tap()
+        app.tabBars.buttons["Idag"].tap()
+        XCTAssertEqual(progress.value as? String, "1 av 3 verser lästa")
+        app.tabBars.buttons["Koranen"].tap()
+        let laterVerse = app.staticTexts["reader.verse.2.256"]
+        XCTAssertTrue(laterVerse.waitForExistence(timeout: 5))
+        XCTAssertTrue(laterVerse.isHittable, "A later read must replace the previous jump position on tab return")
+    }
+
     func testLargeTextReadingAndLocalPreferencesRemainUsable() {
         app.terminate()
         app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
@@ -115,9 +174,12 @@ final class ReadingFlowTests: XCTestCase {
         XCTAssertFalse(markRead.isEnabled)
         app.tabBars.buttons["Mitt"].tap()
         let tajweed = app.switches["settings.tajweed"]
-        scrollTo(tajweed)
+        scrollFullyIntoView(tajweed)
         XCTAssertEqual(tajweed.value as? String, "1")
-        tajweed.tap()
+        attachScreenshot("Settings-large-switch-target")
+        // SwiftUI exposes a labelled switch's whole row as its accessibility
+        // frame. Tap the trailing control after the row is fully on screen.
+        tajweed.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         XCTAssertEqual(tajweed.value as? String, "0")
         let export = app.buttons["settings.backup.export"]
         scrollTo(export)
@@ -130,7 +192,7 @@ final class ReadingFlowTests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.tabBars.buttons["Mitt"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Mitt"].tap()
-        scrollTo(tajweed)
+        scrollFullyIntoView(tajweed)
         XCTAssertEqual(tajweed.value as? String, "0", "The reading preference must survive a real app relaunch")
         app.tabBars.buttons["Koranen"].tap()
         scrollTo(markRead)
@@ -150,5 +212,22 @@ final class ReadingFlowTests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(element.exists && element.isHittable)
+    }
+
+    private func scrollFullyIntoView(_ element: XCUIElement) {
+        for _ in 0..<10 {
+            let top = app.navigationBars.firstMatch.frame.maxY
+            let bottom = app.tabBars.firstMatch.frame.minY
+            if element.exists {
+                let frame = element.frame
+                if element.isHittable && frame.minY >= top && frame.maxY <= bottom { return }
+                if !frame.isEmpty && frame.minY < top { app.swipeDown() } else { app.swipeUp() }
+            } else {
+                app.swipeUp()
+            }
+        }
+        XCTAssertTrue(element.exists && element.isHittable)
+        XCTAssertGreaterThanOrEqual(element.frame.minY, app.navigationBars.firstMatch.frame.maxY)
+        XCTAssertLessThanOrEqual(element.frame.maxY, app.tabBars.firstMatch.frame.minY)
     }
 }

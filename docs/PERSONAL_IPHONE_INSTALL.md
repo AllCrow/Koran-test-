@@ -15,7 +15,18 @@ CI-jobbet `personal-iphone-package` bygger `Release` för **iPhoneOS/arm64** och
 paketerar `Payload/Sakina.app` till `Sakina-iPhone-unsigned.ipa`. Scriptet
 verifierar plattform, arkitektur, koranresurser, font och övningsreferenser samt
 att testpaket/provisioneringsprofiler inte följer med. Byggrapporten innehåller
-commit, minsta iOS-version, filstorlek och SHA256.
+commit, appversion/byggnummer, minsta iOS-version, filstorlek och SHA256.
+
+Efter att hela CI-körningen har godkänts sparar flödet även paketet som ett
+**releaseutkast**. Logga in som AllCrow på [repolänkens Releases-sida](https://github.com/AllCrow/Koran-test-/releases)
+och öppna det senaste godkända utkastet **Sakina – privat testbygge**. Hämta
+`Sakina-iPhone-unsigned.ipa`. Utkastet är synligt för ägaren och behöriga
+medarbetare och är inte en publicerad apprelease. Det bevarar nedladdningen
+efter att de vanliga CI-artefakternas sjudagarslagring löper ut.
+
+Som reserv finns samma paket i den godkända [Actions-körningen](https://github.com/AllCrow/Koran-test-/actions),
+under **Artifacts → Sakina-iPhone-personal-unsigned**. Packa upp ZIP-filen om
+GitHub levererar ett arkiv. Behåll IPA-filen och byggrapporten tillsammans.
 
 IPA-filen behöver därefter signeras för användarens telefon. Att trycka på en
 osignerad IPA i Filer eller Safari installerar den inte. Den tidigare artefakten
@@ -68,3 +79,9 @@ När en lånad dator inte är möjlig återstår en distributör med ett befintl
 Apple Developer-konto eller att projektet ansluter ett sådant medlemskap.
 En TestFlight-testare behöver inget eget betalt Developer-konto. Det finns ännu
 ingen signerande distributör ansluten till projektet.
+
+Efter installationen: följ [det korta första iPhone-provet](https://github.com/AllCrow/Koran-test-/blob/main/docs/FIRST_IPHONE_TEST.md).
+Exportera läsdata i **Mitt** före avinstallation eller större uppdateringar.
+Avinstallation raderar appens lokala data; exporten innehåller inte röst eller
+nedladdat ljud. Installera uppdateringar med samma personliga appidentitet när
+verktyget erbjuder det, och bevara en separat läskopia även då.

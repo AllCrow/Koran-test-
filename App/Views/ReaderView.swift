@@ -10,6 +10,8 @@ struct ReaderView: View {
     @State private var showSurahs = false
     @State private var showLegend = false
     @State private var tafsirReference: AyahReference?
+    @State private var showVerseJump = false
+    @State private var prefersLatestReadingPosition = false
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -62,6 +64,18 @@ struct ReaderView: View {
                 store.setLastRead(reference)
                 proxy.scrollTo(reference.id, anchor: .center)
             }
+            .sheet(isPresented: $showVerseJump) {
+                if let chapter = store.chapter {
+                    VerseJumpSheet(surah: chapter.surah) { reference in
+                        guard reference.surahID == store.chapter?.surah.id else { return }
+                        recorder.stopAll()
+                        player.stop()
+                        prefersLatestReadingPosition = true
+                        store.setLastRead(reference)
+                        proxy.scrollTo(reference.id, anchor: .top)
+                    }
+                }
+            }
         }
         .background(Palette.background)
         .navigationTitle("Koranen").navigationBarTitleDisplayMode(.inline)
@@ -71,6 +85,11 @@ struct ReaderView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    Button { showVerseJump = true } label: {
+                        Label("Gå till vers", systemImage: "number")
+                    }
+                    .disabled(store.chapter == nil)
+                    .accessibilityIdentifier("reader.jump.present")
                     Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: { store.setTajweedEnabled($0) }))
                     Toggle("Visa färgförklaring", isOn: $showLegend)
                     Toggle("Fortsätt till nästa vers", isOn: $player.autoplay)
@@ -122,9 +141,11 @@ struct ReaderView: View {
             .accessibilityRepresentation { ArabicAccessibilityLabel(text: chapter.surah.name) }
     }
 
-    /// A bookmark is a preferred position only while its own chapter is open.
+    /// A bookmark sets the first position. After an explicit jump, later
+    /// reading/listening actions keep their newer saved position on return.
     private var preferredReference: AyahReference? {
         let chapterID = store.chapter?.surah.id
+        if prefersLatestReadingPosition, let lastRead = store.lastRead, lastRead.surahID == chapterID { return lastRead }
         if let initialReference, initialReference.surahID == chapterID { return initialReference }
         if let lastRead = store.lastRead, lastRead.surahID == chapterID { return lastRead }
         return nil
@@ -191,6 +212,78 @@ struct ReaderView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 24).strokeBorder(active ? Palette.green : .clear, lineWidth: 2)
         }
+    }
+}
+
+/// A jump is a reading position, never an automatic reading-completion action.
+enum VerseJumpInput {
+    static func number(from input: String, maximum: Int) -> Int? {
+        guard maximum > 0 else { return nil }
+        let input = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !input.isEmpty, input.unicodeScalars.count <= 10 else { return nil }
+        var number = 0
+        for scalar in input.unicodeScalars {
+            guard CharacterSet.decimalDigits.contains(scalar),
+                  let digit = Character(String(scalar)).wholeNumberValue,
+                  (0...9).contains(digit) else { return nil }
+            let (shifted, multiplicationOverflow) = number.multipliedReportingOverflow(by: 10)
+            let (next, additionOverflow) = shifted.addingReportingOverflow(digit)
+            guard !multiplicationOverflow, !additionOverflow, next <= maximum else { return nil }
+            number = next
+        }
+        return number >= 1 ? number : nil
+    }
+}
+
+@MainActor
+private struct VerseJumpSheet: View {
+    let surah: Surah
+    let select: (AyahReference) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var input = ""
+    @FocusState private var numberFocused: Bool
+
+    private var reference: AyahReference? {
+        guard let number = VerseJumpInput.number(from: input, maximum: surah.numberOfAyahs) else { return nil }
+        return AyahReference(surahID: surah.id, ayahNumber: number)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Text("Sura \(surah.id) · \(surah.englishName)").font(.callout)
+                    TextField("Versnummer", text: $input)
+                        .keyboardType(.numberPad)
+                        .focused($numberFocused)
+                        .accessibilityLabel("Versnummer")
+                        .accessibilityIdentifier("reader.jump.number")
+                } footer: {
+                    Text("Välj en vers mellan 1 och \(surah.numberOfAyahs).")
+                }
+                if !input.isEmpty && reference == nil {
+                    Text("Skriv ett helt versnummer inom surans intervall.")
+                        .font(.callout).foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("Gå till vers").navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Stäng") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Öppna") {
+                        guard let reference else { return }
+                        select(reference)
+                        dismiss()
+                    }
+                    .disabled(reference == nil)
+                    .accessibilityIdentifier("reader.jump.open")
+                }
+            }
+            .task { numberFocused = true }
+        }
+        .presentationDetents([.medium, .large])
     }
 }
 
@@ -264,21 +357,35 @@ struct SurahPicker: View {
 /// Preparing the index avoids refolding every sura name on each typed character.
 struct SurahSearchIndex {
     let surahs: [Surah]
-    private let entries: [(surah: Surah, names: [String], number: String)]
+    private let entries: [(surah: Surah, names: [String], transliteration: String, number: String)]
 
     init(surahs: [Surah]) {
         self.surahs = surahs
         entries = surahs.map { surah in
-            (surah, [surah.englishName, surah.name, surah.englishNameTranslation].map(Self.normalized), String(surah.id))
+            (surah, [surah.englishName, surah.name, surah.englishNameTranslation].map(Self.normalized),
+             Self.transliterationKey(Self.normalized(surah.englishName)), String(surah.id))
         }
     }
 
     func matching(_ search: String) -> [Surah] {
         let query = Self.normalized(search)
         guard !query.isEmpty else { return surahs }
+        let transliteration = Self.transliterationKey(query)
         return entries.compactMap { entry in
-            entry.number == query || entry.names.contains(where: { $0.contains(query) }) ? entry.surah : nil
+            entry.number == query || entry.names.contains(where: { $0.contains(query) }) ||
+                entry.transliteration.contains(transliteration) ? entry.surah : nil
         }
+    }
+
+    private static func transliterationKey(_ input: String) -> String {
+        var result = ""
+        var previous: Unicode.Scalar?
+        for scalar in input.unicodeScalars {
+            if scalar == previous && [0x61, 0x65, 0x69, 0x6F, 0x75].contains(scalar.value) { continue }
+            result.unicodeScalars.append(scalar)
+            previous = scalar
+        }
+        return result
     }
 
     private static func normalized(_ input: String) -> String {
