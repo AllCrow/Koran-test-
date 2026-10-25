@@ -83,7 +83,16 @@ final class ReadingFlowTests: XCTestCase {
         XCTAssertTrue(surah.waitForExistence(timeout: 5))
         surah.tap()
         XCTAssertTrue(app.staticTexts["reader.chapter.112"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["reader.markRead.112.1"].isEnabled)
+        let markRead = app.buttons["reader.markRead.112.1"]
+        XCTAssertTrue(markRead.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["reader.markRead.1.1"].exists, "The previous chapter's controls must be replaced")
+        XCTAssertTrue(markRead.isEnabled)
+        markRead.tap()
+        XCTAssertFalse(markRead.isEnabled)
+        app.buttons["reader.bookmark.112.1"].tap()
+        app.tabBars.buttons["Mitt"].tap()
+        scrollTo(app.buttons["settings.bookmark.112.1"])
+        XCTAssertFalse(app.buttons["settings.bookmark.1.1"].exists, "The action must save the chosen sura's verse")
     }
 
     private func scrollTo(_ element: XCUIElement) {

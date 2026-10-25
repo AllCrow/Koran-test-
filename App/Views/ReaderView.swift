@@ -23,8 +23,12 @@ struct ReaderView: View {
                         }
                         if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
                         ForEach(chapter.ayahs) { ayah in
-                            verseCard(ayah, chapter: chapter).id(ayah.numberInSurah)
+                            // Verse numbers repeat in every sura. A global
+                            // identity keeps recycled controls bound to this
+                            // chapter when the reader changes its content.
+                            verseCard(ayah, chapter: chapter).id("\(ayah.surahID):\(ayah.numberInSurah)")
                         }
+                        .id(chapter.surah.id)
                         Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
                             .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)
                     } else if store.isLoading {
@@ -43,20 +47,20 @@ struct ReaderView: View {
                 await Task.yield()
                 guard !Task.isCancelled else { return }
                 if let reference = preferredReference {
-                    proxy.scrollTo(reference.ayahNumber, anchor: .top)
+                    proxy.scrollTo(reference.id, anchor: .top)
                 } else {
                     proxy.scrollTo("chapter-heading", anchor: .top)
                 }
             }
             .onAppear {
                 if let reference = preferredReference {
-                    proxy.scrollTo(reference.ayahNumber, anchor: .top)
+                    proxy.scrollTo(reference.id, anchor: .top)
                 }
             }
             .onChange(of: player.activeReference) { _, reference in
                 guard let reference, reference.surahID == store.chapter?.surah.id else { return }
                 store.setLastRead(reference)
-                proxy.scrollTo(reference.ayahNumber, anchor: .center)
+                proxy.scrollTo(reference.id, anchor: .center)
             }
         }
         .background(Palette.background)
