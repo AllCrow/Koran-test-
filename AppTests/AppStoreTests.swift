@@ -253,4 +253,137 @@ final class AppStoreTests: XCTestCase {
             XCTAssertEqual(try store.readingBackupData(), original, "Validation failure must be atomic")
         }
     }
+
+    func testCivilMarksSurviveWestwardTravelAndReturnAfterRelaunch() throws {
+        let storage = try defaults()
+        let instant = try XCTUnwrap(calendar("Etc/UTC").date(from: DateComponents(year: 2026, month: 10, day: 24, hour: 12)))
+        var zone = calendar("Pacific/Kiritimati") // October 25, 02:00.
+        let store = AppStore(defaults: storage, now: { instant }, calendar: { zone })
+        let first = try reference(1)
+        store.setDailyGoal(2)
+        store.markRead(first)
+        store.markRead(try reference(2))
+        XCTAssertTrue(store.dailyGoalMet)
+        zone = calendar("Pacific/Honolulu") // October 24, 02:00.
+        store.refreshDay()
+        XCTAssertEqual(store.todayReadCount, 0, "Tomorrow's saved label must not count as today's reading")
+        XCTAssertFalse(store.dailyGoalMet)
+        store.markRead(first)
+
+        let restored = AppStore(defaults: storage, now: { instant }, calendar: { zone })
+        XCTAssertEqual(restored.todayReadCount, 1)
+        zone = calendar("Pacific/Kiritimati")
+        restored.refreshDay()
+        XCTAssertEqual(restored.todayReadCount, 2, "Travel must not erase unique verse marks from the original civil label")
+        XCTAssertTrue(restored.dailyGoalMet)
+        XCTAssertTrue(restored.isReadToday(first))
+        zone = calendar("Pacific/Honolulu")
+        restored.refreshDay()
+        XCTAssertEqual(restored.todayReadCount, 1)
+    }
+
+    func testClockCorrectionKeepsCurrentMarksAndExportWithinSevenDetailedDays() throws {
+        var instant = date(18)
+        let store = AppStore(defaults: try defaults(), now: { instant }, calendar: { self.calendar() })
+        for day in 18...24 {
+            instant = date(day)
+            store.markRead(try reference(1))
+        }
+        // All seven stored labels are now in the future. A new current-day mark
+        // must win over a distant one and the app's own backup must stay valid.
+        instant = date(17)
+        store.markRead(try reference(2))
+        XCTAssertEqual(store.todayReadCount, 1)
+        let data = try store.readingBackupData()
+        let envelope = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let marks = try XCTUnwrap(envelope["readAyahsByDay"] as? [String: Any])
+        XCTAssertEqual(marks.count, 7)
+        XCTAssertNotNil(marks["2026-10-17"])
+        XCTAssertNotNil(marks["2026-10-18"])
+        XCTAssertNil(marks["2026-10-24"], "The farthest future detail is pruned before the current day")
+        let restored = AppStore(defaults: try defaults(), now: { instant }, calendar: { self.calendar() })
+        try restored.mergeReadingBackup(data)
+        XCTAssertEqual(restored.todayReadCount, 1)
+        XCTAssertTrue(restored.isReadToday(try reference(2)))
+    }
+
+    func testRecentReadingDaysShowUniqueMarksAndEarnedCompletionAcrossMidnight() throws {
+        var instant = date(24)
+        let store = AppStore(defaults: try defaults(), now: { instant }, calendar: { self.calendar() })
+        XCTAssertEqual(store.recentReadingDays.map(\.id), (18...24).map { "2026-10-\($0)" })
+        XCTAssertEqual(store.recentReadingDays.filter(\.isToday).count, 1)
+        store.setDailyGoal(2)
+        store.markRead(try reference(1))
+        store.markRead(try reference(1))
+        XCTAssertEqual(store.recentReadingDays.last?.readCount, 1)
+        XCTAssertEqual(store.recentReadingDays.last?.goalCompleted, false)
+        store.markRead(try reference(2))
+        store.setDailyGoal(50)
+        XCTAssertEqual(store.recentReadingDays.last?.readCount, 2)
+        XCTAssertEqual(store.recentReadingDays.last?.goalCompleted, true, "Changing today's goal never rewrites an earned completion")
+        instant = date(25, hour: 4)
+        store.refreshDay()
+        XCTAssertEqual(store.recentReadingDays.map(\.id), (19...25).map { "2026-10-\($0)" })
+        let yesterday = try XCTUnwrap(store.recentReadingDays.first { $0.id == "2026-10-24" })
+        XCTAssertEqual(yesterday.readCount, 2)
+        XCTAssertTrue(yesterday.goalCompleted)
+        XCTAssertFalse(yesterday.isToday)
+        XCTAssertEqual(store.recentReadingDays.last?.readCount, 0)
+        XCTAssertEqual(store.recentReadingDays.last?.goalCompleted, false)
+    }
+
+    func testRecentHistoryKeepsImportedCompletionWithoutInventingVerseCount() throws {
+        let today = date(24)
+        let source = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        source.setDailyGoal(1)
+        source.markRead(try reference(1))
+        var envelope = try XCTUnwrap(JSONSerialization.jsonObject(with: source.readingBackupData()) as? [String: Any])
+        envelope["readAyahsByDay"] = [String: Any]()
+        let target = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        target.setDailyGoal(50)
+        try target.mergeReadingBackup(JSONSerialization.data(withJSONObject: envelope))
+        XCTAssertEqual(target.recentReadingDays.last?.readCount, 0)
+        XCTAssertEqual(target.recentReadingDays.last?.goalCompleted, true)
+        XCTAssertTrue(target.dailyGoalMet)
+    }
+
+    func testRecentHistoryUsesStableCivilLabelsInSkippedDateTimezone() throws {
+        let apia = calendar("Pacific/Apia")
+        let instant = try XCTUnwrap(apia.date(from: DateComponents(year: 2011, month: 12, day: 31, hour: 12)))
+        let store = AppStore(defaults: try defaults(), now: { instant }, calendar: { apia })
+        XCTAssertEqual(store.recentReadingDays.map(\.id), (25...31).map { "2011-12-\($0)" })
+        let utc = calendar("Etc/UTC")
+        for progress in store.recentReadingDays {
+            XCTAssertEqual(ReadingDay(date: progress.date, calendar: utc), progress.day)
+        }
+    }
+
+    func testRepeatedReadingActionDoesNotRepublishUnchangedProgress() throws {
+        let today = date(24)
+        let store = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        let first = try reference(1)
+        let second = try reference(2)
+        store.markRead(first)
+        store.markRead(second)
+        var countChanges = 0
+        var positionChanges = 0
+        var historyChanges = 0
+        let subscriptions = [
+            store.$todayReadCount.dropFirst().sink { _ in countChanges += 1 },
+            store.$lastRead.dropFirst().sink { _ in positionChanges += 1 },
+            store.$recentReadingDays.dropFirst().sink { _ in historyChanges += 1 }
+        ]
+        defer { subscriptions.forEach { $0.cancel() } }
+        store.markRead(second)
+        store.refreshDay()
+        store.setDailyGoal(store.dailyGoal)
+        XCTAssertEqual(countChanges, 0)
+        XCTAssertEqual(positionChanges, 0)
+        XCTAssertEqual(historyChanges, 0)
+        store.markRead(first)
+        XCTAssertEqual(store.lastRead, first, "An already-read verse can still become the latest explicit position")
+        XCTAssertEqual(positionChanges, 1)
+        XCTAssertEqual(countChanges, 0)
+        XCTAssertEqual(historyChanges, 0)
+    }
 }

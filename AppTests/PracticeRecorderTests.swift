@@ -184,6 +184,7 @@ final class PracticeRecorderTests: XCTestCase {
         }
         recorder.playRecording()
         XCTAssertFalse(recorder.isPlaying)
+        XCTAssertEqual(recorder.elapsedRecordingTime, 0, "The recording clock is inactive without a take")
         XCTAssertThrowsError(try recorder.recordingData()) { error in
             guard case PracticeRecorder.RecordingDataError.missingRecording = error else {
                 return XCTFail("Expected a missing recording error, got \(error)")
@@ -209,7 +210,19 @@ final class PracticeRecorderTests: XCTestCase {
         )
     }
 
-    private func assertPendingPermissionCancelled(by name: Notification.Name, userInfo: [AnyHashable: Any]) async throws {
+    func testMediaServicesLossAndResetCancelPendingPermissionWithoutRestarting() async throws {
+        try await assertPendingPermissionCancelled(
+            by: AVAudioSession.mediaServicesWereLostNotification, userInfo: [:], thenReset: true
+        )
+    }
+
+    func testMediaServicesResetCancelsPendingPermissionWithoutRestarting() async throws {
+        try await assertPendingPermissionCancelled(by: AVAudioSession.mediaServicesWereResetNotification, userInfo: [:])
+    }
+
+    private func assertPendingPermissionCancelled(
+        by name: Notification.Name, userInfo: [AnyHashable: Any], thenReset: Bool = false
+    ) async throws {
         let notifications = NotificationCenter()
         let requested = expectation(description: "Permission callback reached before audio event")
         var completion: (@Sendable (Bool) -> Void)?
@@ -222,6 +235,13 @@ final class PracticeRecorderTests: XCTestCase {
         notifications.post(name: name, object: AVAudioSession.sharedInstance(), userInfo: userInfo)
         XCTAssertFalse(recorder.isRequestingPermission)
         XCTAssertFalse(recorder.isRecording)
+        XCTAssertEqual(recorder.elapsedRecordingTime, 0, "An interrupted permission request must not leave a running clock")
+        if thenReset {
+            notifications.post(name: AVAudioSession.mediaServicesWereResetNotification, object: AVAudioSession.sharedInstance())
+            XCTAssertFalse(recorder.isRequestingPermission)
+            XCTAssertFalse(recorder.isRecording)
+            XCTAssertFalse(recorder.hasRecording)
+        }
 
         let noLateDenial = expectation(description: "Audio-event cancellation invalidates the permission result")
         noLateDenial.isInverted = true

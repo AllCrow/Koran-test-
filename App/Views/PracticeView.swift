@@ -176,8 +176,24 @@ struct PracticeView: View {
     private func recordingControls(ayah: Ayah, reference: AyahReference) -> some View {
         Card {
             Label("Din recitation", systemImage: "mic").font(.headline).accessibilityAddTraits(.isHeader)
-            Text(recorder.isRecording ? "Inspelning pågår. Läs lugnt i din egen takt." : "Spela in upp till en minut och lyssna tillbaka.")
+            Text(recorder.isRecording ? "Läs lugnt i din egen takt. Inspelningen avslutas automatiskt efter en minut." : "Spela in upp till en minut och lyssna tillbaka.")
                 .font(.callout).foregroundStyle(.secondary).padding(.top, 6)
+            if recorder.isRecording {
+                // This subtree exists only during a take. A one-second refresh
+                // reads AVAudioRecorder's clock without an idle/background timer.
+                TimelineView(.periodic(from: .now, by: 1)) { _ in
+                    let elapsed = recorder.elapsedRecordingTime
+                    let remaining = max(0, Int(ceil(PracticeRecorder.maximumRecordingDuration - elapsed)))
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("\(recordingClock(elapsed)) / \(recordingClock(PracticeRecorder.maximumRecordingDuration)) · \(remaining) s kvar")
+                            .font(.subheadline.weight(.medium)).monospacedDigit()
+                        ProgressView(value: elapsed, total: PracticeRecorder.maximumRecordingDuration)
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Inspelning")
+                    .accessibilityValue("\(Int(elapsed)) sekunder inspelat, \(remaining) sekunder kvar")
+                }.padding(.top, 12)
+            }
             PrimaryButton(
                 title: recorder.isRecording ? "Avsluta inspelning" : (recorder.isRequestingPermission ? "Väntar på mikrofon …" : "Spela in min recitation"),
                 icon: recorder.isRecording ? "stop.fill" : "mic.fill"
@@ -354,5 +370,10 @@ struct PracticeView: View {
 
     private func canPause(_ reference: AyahReference) -> Bool {
         player.requestedReference == reference && (player.isPlaying || player.isBuffering)
+    }
+
+    private func recordingClock(_ interval: TimeInterval) -> String {
+        let seconds = max(0, Int(interval))
+        return String(format: "%02d:%02d", seconds / 60, seconds % 60)
     }
 }

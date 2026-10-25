@@ -41,12 +41,13 @@ def wav_bytes(duration: float = 0.5, *, silent: bool = False) -> bytes:
 
 class FakeEngine:
     """Only a deterministic transport-test double, not a simulated quality result."""
-    def __init__(self, *, ready=True, failure=False, invalid_range=False, empty_range=False, category="replace"):
+    def __init__(self, *, ready=True, failure=False, invalid_range=False, empty_range=False, category="replace", issues=None):
         self.ready = ready
         self.failure = failure
         self.invalid_range = invalid_range
         self.empty_range = empty_range
         self.category = category
+        self.issues = issues
         self.calls: list[str] = []
         self.durations: list[float] = []
         self.entered: Event | None = None
@@ -61,6 +62,8 @@ class FakeEngine:
             self.release.wait(timeout=5)
         if self.failure:
             raise RuntimeError("Injected contract-test failure")
+        if self.issues is not None:
+            return self.issues
         return [Issue(kind="normal", category=self.category, start_scalar=0,
                       end_scalar=len(reference_text) + 1 if self.invalid_range else (0 if self.empty_range else 1),
                       expected="TEST", observed="DOUBLE", message="Contract-test double")]
@@ -172,6 +175,50 @@ class APIContractTests(unittest.IsolatedAsyncioTestCase):
             else:
                 self.assertEqual(body["status"], "unavailable")
                 self.assertEqual(body["issues"], [])
+
+    async def test_no_op_and_empty_engine_differences_do_not_become_corrections(self):
+        for value in ("ب", ""):
+            issue = Issue(kind="normal", category="replace", start_scalar=0, end_scalar=1,
+                          expected=value, observed=value, message="Contract-test double")
+            body = (await self.post(client=self.make_client(engine=FakeEngine(issues=[issue])))).json()
+            self.assertEqual(body["status"], "unavailable")
+            self.assertEqual(body["issues"], [])
+
+    async def test_duplicate_client_identities_do_not_become_corrections(self):
+        first = Issue(kind="normal", category="replace", start_scalar=0, end_scalar=1,
+                      expected="أ", observed="ب", message="Contract-test double")
+        # Swift String identity also equates these differently encoded keys.
+        equivalent = first.model_copy(update={"expected": "ا\u0654", "message": "Another row"})
+        self.assertNotEqual(first.expected.encode(), equivalent.expected.encode())
+        for second in (first, equivalent):
+            body = (await self.post(client=self.make_client(engine=FakeEngine(issues=[first, second])))).json()
+            self.assertEqual(body["status"], "unavailable")
+            self.assertEqual(body["issues"], [])
+
+    async def test_distinct_scalar_spellings_are_preserved_in_a_single_issue(self):
+        # The no-op guard must not normalize or rewrite model/reference text.
+        issue = Issue(kind="normal", category="replace", start_scalar=0, end_scalar=1,
+                      expected="أ", observed="ا\u0654", message="Contract-test double")
+        body = (await self.post(client=self.make_client(engine=FakeEngine(issues=[issue])))).json()
+        self.assertEqual(body["status"], "assessed")
+        self.assertEqual(body["issues"][0]["expected"].encode(), issue.expected.encode())
+        self.assertEqual(body["issues"][0]["observed"].encode(), issue.observed.encode())
+
+    async def test_recorded_model_issue_contracts_remain_accepted(self):
+        root = Path(__file__).resolve().parents[2]
+        evidence = json.loads((root / "docs/evidence/model-smoke-2026-10-24.json").read_text())
+        assessed = [clip["assessment"] for clip in evidence["clips"] if clip["assessment"]["status"] == "assessed"]
+        self.assertEqual(len(assessed), 4)
+        # Saved output is replayed through a test double; no inference or
+        # acoustic-quality claim is made by this contract regression test.
+        for previous in assessed:
+            engine = FakeEngine(issues=[Issue(**issue) for issue in previous["issues"]])
+            client = self.make_client(settings=Settings(), engine=engine)
+            body = (await self.post(client=client, surah=previous["reference"]["surah_id"],
+                                    ayah=previous["reference"]["ayah_number"], include=previous["include_basmala"])).json()
+            self.assertEqual(body["status"], "assessed")
+            self.assertEqual(body["issues"], previous["issues"])
+            self.assertEqual(body["reference_text"].encode(), previous["reference_text"].encode())
 
     async def test_short_and_silent_audio_are_not_scored(self):
         for payload in [wav_bytes(0.1), wav_bytes(0.6, silent=True)]:

@@ -166,6 +166,20 @@ final class ReadingFlowTests: XCTestCase {
         let markRead = app.buttons["reader.markRead.1.1"]
         scrollTo(markRead)
         XCTAssertTrue(markRead.isEnabled)
+        XCTAssertEqual(markRead.label, "Markera vers 1 som läst")
+        XCTAssertGreaterThanOrEqual(markRead.frame.height, 44)
+        let bookmark = app.buttons["reader.bookmark.1.1"]
+        scrollFullyIntoView(bookmark)
+        XCTAssertEqual(bookmark.label, "Spara bokmärke")
+        XCTAssertGreaterThanOrEqual(bookmark.frame.height, 44)
+        bookmark.tap()
+        XCTAssertEqual(bookmark.label, "Ta bort bokmärke")
+        let tafsir = app.buttons["reader.tafsir.1.1"]
+        scrollFullyIntoView(tafsir)
+        XCTAssertGreaterThanOrEqual(tafsir.frame.height, 44)
+        XCTAssertGreaterThanOrEqual(tafsir.frame.minX, 0)
+        XCTAssertLessThanOrEqual(tafsir.frame.maxX, app.frame.width)
+        scrollFullyIntoView(markRead)
         attachScreenshot("Reader-large-accessibility-text")
         markRead.tap()
         XCTAssertFalse(markRead.isEnabled)
@@ -194,6 +208,84 @@ final class ReadingFlowTests: XCTestCase {
         app.tabBars.buttons["Koranen"].tap()
         scrollTo(markRead)
         XCTAssertFalse(markRead.isEnabled)
+    }
+
+    func testNextSurahSavesPositionWithoutReadingCreditAndEndsAtAnNas() {
+        app.tabBars.buttons["Koranen"].tap()
+        // An older position in the destination must not win over this explicit
+        // request to start the next sura at its first verse.
+        app.buttons["Välj sura"].tap()
+        var search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("114")
+        let nas = app.buttons["surah.select.114"]
+        XCTAssertTrue(nas.waitForExistence(timeout: 5))
+        nas.tap()
+        app.tabBars.buttons["Idag"].tap()
+        XCTAssertTrue(app.staticTexts["Sura 114 · vers 1"].waitForExistence(timeout: 5),
+                      "Before a first reading mark, the home card must describe the selected sura it will actually open")
+        app.buttons["home.continue"].tap()
+        app.buttons["Läsinställningar"].tap()
+        app.buttons["reader.jump.present"].tap()
+        let number = app.textFields["reader.jump.number"]
+        XCTAssertTrue(number.waitForExistence(timeout: 5))
+        number.tap()
+        number.typeText("5")
+        app.buttons["reader.jump.open"].tap()
+        XCTAssertTrue(waitUntilVerseStartsNearTop(app.staticTexts["reader.verse.114.5"]))
+        app.buttons["Välj sura"].tap()
+        search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("113")
+        let falaq = app.buttons["surah.select.113"]
+        XCTAssertTrue(falaq.waitForExistence(timeout: 5))
+        falaq.tap()
+        let next = app.buttons["reader.nextSurah.114"]
+        scrollTo(next)
+        next.tap()
+        let firstVerse = app.buttons["reader.markRead.114.1"]
+        XCTAssertTrue(firstVerse.waitForExistence(timeout: 5))
+        XCTAssertTrue(waitUntilVerseStartsNearTop(app.staticTexts["reader.verse.114.1"]))
+        XCTAssertTrue(firstVerse.isEnabled)
+        XCTAssertFalse(app.buttons["reader.markRead.113.1"].exists)
+        attachScreenshot("Reader-next-surah-An-Nas")
+        app.tabBars.buttons["Idag"].tap()
+        let progress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
+        XCTAssertEqual(progress.value as? String, "0 av 3 verser lästa")
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Koranen"].waitForExistence(timeout: 10))
+        app.tabBars.buttons["Koranen"].tap()
+        XCTAssertTrue(firstVerse.waitForExistence(timeout: 5))
+        XCTAssertTrue(waitUntilVerseStartsNearTop(app.staticTexts["reader.verse.114.1"]))
+        XCTAssertTrue(firstVerse.isEnabled)
+        let lastVerse = app.buttons["reader.markRead.114.6"]
+        scrollTo(lastVerse)
+        XCTAssertFalse(app.buttons["reader.nextSurah.115"].exists, "The final sura must not offer an invalid next chapter")
+        XCTAssertTrue(lastVerse.isEnabled)
+    }
+
+    func testDarkAppearanceKeepsReaderAndHomeUsable() {
+        app.terminate()
+        app.launchArguments += ["-AppleInterfaceStyle", "Dark"]
+        app.launch()
+        let continueReading = app.buttons["home.continue"]
+        XCTAssertTrue(continueReading.waitForExistence(timeout: 10))
+        XCTAssertTrue(continueReading.isHittable, "The main reading action should be easy to reach on the home screen")
+        attachScreenshot("Home-dark-appearance")
+        continueReading.tap()
+        let markRead = app.buttons["reader.markRead.1.1"]
+        XCTAssertTrue(markRead.waitForExistence(timeout: 5))
+        XCTAssertTrue(markRead.isEnabled)
+        app.buttons["reader.bookmark.1.1"].tap()
+        markRead.tap()
+        XCTAssertFalse(markRead.isEnabled)
+        attachScreenshot("Reader-dark-appearance")
+        app.tabBars.buttons["Idag"].tap()
+        let progress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
+        XCTAssertEqual(progress.value as? String, "1 av 3 verser lästa")
     }
 
     private func attachScreenshot(_ name: String) {

@@ -139,9 +139,12 @@ public actor RecitationAssessmentClient {
               result.status == .assessed || result.issues.isEmpty else { throw AssessmentError.invalidResponse }
 
         let count = result.referenceText.unicodeScalars.count
+        var issueIDs: Set<String> = []
         guard result.issues.allSatisfy({ issue in
             issue.startScalar >= 0 && issue.endScalar <= count && issue.startScalar <= issue.endScalar &&
-                (issue.category == .insert || issue.startScalar < issue.endScalar)
+                (issue.category == .insert || issue.startScalar < issue.endScalar) &&
+                !issue.expected.utf8.elementsEqual(issue.observed.utf8) &&
+                issueIDs.insert(issue.id).inserted
         }) else { throw AssessmentError.invalidResponse }
     }
 }

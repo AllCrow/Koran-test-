@@ -7,6 +7,7 @@ struct ReaderView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var player: RecitationPlayer
     @EnvironmentObject private var recorder: PracticeRecorder
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showSurahs = false
     @State private var showLegend = false
     @State private var tafsirReference: AyahReference?
@@ -88,7 +89,7 @@ struct ReaderView: View {
                     Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: { store.setTajweedEnabled($0) }))
                     Toggle("Visa färgförklaring", isOn: $showLegend)
                     Toggle("Fortsätt till nästa vers", isOn: $player.autoplay)
-                } label: { Label("Läsinställningar", systemImage: "textformat.size") }
+                } label: { Label("Läsinställningar", systemImage: "slider.horizontal.3") }
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -123,6 +124,9 @@ struct ReaderView: View {
                 ForEach(chapter.ayahs, id: \.readerScrollID) { ayah in
                     verseCard(ayah, chapter: chapter)
                         .modifier(ReaderRowStyle()).id(ayah.readerScrollID)
+                }
+                if let next = store.index?.surahs.first(where: { $0.id == chapter.surah.id + 1 }) {
+                    nextSurahCard(next).modifier(ReaderRowStyle())
                 }
                 Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
                     .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)
@@ -196,11 +200,32 @@ struct ReaderView: View {
         scrollRequest = ScrollRequest(targetID: targetID, anchor: anchor)
     }
 
+    private func nextSurahCard(_ surah: Surah) -> some View {
+        Card {
+            Text("Nästa sura").font(.subheadline).foregroundStyle(.secondary)
+            Text(surah.englishName).font(.system(.title2, design: .serif))
+                .foregroundStyle(Palette.green).padding(.top, 6)
+            PrimaryButton(title: "Fortsätt läsa", icon: "arrow.right") {
+                recorder.stopAll()
+                player.stop()
+                prefersLatestReadingPosition = true
+                Task { @MainActor in
+                    await store.openSurah(surah.id)
+                    guard store.chapter?.surah.id == surah.id,
+                          let reference = AyahReference(surahID: surah.id, ayahNumber: 1) else { return }
+                    // Navigation saves a position but never completes a verse.
+                    store.setLastRead(reference)
+                    requestScroll(to: reference.id, anchor: .top)
+                }
+            }
+            .padding(.top, 16)
+            .accessibilityIdentifier("reader.nextSurah.\(surah.id)")
+        }
+    }
+
     private func verseCard(_ ayah: Ayah, chapter: QuranChapter) -> some View {
         let reference = ayah.reference
         let active = reference != nil && player.activeReference == reference
-        let requested = reference != nil && player.requestedReference == reference
-        let canPause = requested && (player.isPlaying || player.isBuffering)
         let loading = reference != nil && player.requestedReference == reference && player.isBuffering
         return Card {
             HStack {
@@ -225,38 +250,86 @@ struct ReaderView: View {
             ArabicText(text: QuranPresentation.verseText(ayah), tajweed: ayah.tajweed, colored: store.tajweedEnabled)
                 .padding(.vertical, 18)
             if let reference {
-                HStack(spacing: 8) {
-                    Button {
-                        recorder.stopAll()
-                        if requested {
-                            if canPause { player.pause() } else { player.resume() }
-                        } else {
-                            player.play(reference: reference, chapterVerseCount: chapter.surah.numberOfAyahs)
-                        }
-                        store.setLastRead(reference)
-                    } label: {
-                        Image(systemName: canPause ? "pause.fill" : "play.fill")
-                            .frame(width: 44, height: 44)
-                    }.accessibilityLabel(canPause ? "Pausa versen" : "Lyssna på vers \(ayah.numberInSurah)")
-                    Button { store.toggleBookmark(reference) } label: {
-                        Image(systemName: store.bookmarks.contains(reference) ? "bookmark.fill" : "bookmark")
-                            .frame(width: 44, height: 44)
-                    }.accessibilityLabel(store.bookmarks.contains(reference) ? "Ta bort bokmärke" : "Spara bokmärke")
-                        .accessibilityIdentifier("reader.bookmark.\(reference.surahID).\(reference.ayahNumber)")
-                    Button { tafsirReference = reference } label: { Text("Tafsir").font(.subheadline).frame(minHeight: 44) }
-                    Spacer(minLength: 0)
-                    Button { store.markRead(reference) } label: {
-                        Image(systemName: store.isReadToday(reference) ? "checkmark.circle.fill" : "checkmark.circle")
-                            .frame(width: 44, height: 44)
-                    }.accessibilityLabel(store.isReadToday(reference) ? "Redan läst idag" : "Markera vers \(ayah.numberInSurah) som läst")
-                        .disabled(store.isReadToday(reference))
-                        .accessibilityIdentifier("reader.markRead.\(reference.surahID).\(reference.ayahNumber)")
-                }.buttonStyle(.plain).foregroundStyle(Palette.green)
+                verseActions(reference, verseCount: chapter.surah.numberOfAyahs)
             }
         }
         .overlay {
             RoundedRectangle(cornerRadius: 24).strokeBorder(active ? Palette.green : .clear, lineWidth: 2)
         }
+    }
+
+    @ViewBuilder
+    private func verseActions(_ reference: AyahReference, verseCount: Int) -> some View {
+        // At accessibility sizes each action gets its own growing row. Keep
+        // both the icon and label readable instead of clipping a scaled glyph
+        // into a fixed square or compressing four controls into a narrow card.
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                verseActionButtons(reference, verseCount: verseCount, expanded: true)
+            }
+            .buttonStyle(.plain).foregroundStyle(Palette.green)
+        } else {
+            HStack(spacing: 8) {
+                verseActionButtons(reference, verseCount: verseCount, expanded: false)
+            }
+            .buttonStyle(.plain).foregroundStyle(Palette.green)
+        }
+    }
+
+    @ViewBuilder
+    private func verseActionButtons(_ reference: AyahReference, verseCount: Int, expanded: Bool) -> some View {
+        let requested = player.requestedReference == reference
+        let canPause = requested && (player.isPlaying || player.isBuffering)
+        let bookmarked = store.bookmarks.contains(reference)
+        let readToday = store.isReadToday(reference)
+        Button {
+            recorder.stopAll()
+            if requested {
+                if canPause { player.pause() } else { player.resume() }
+            } else {
+                player.play(reference: reference, chapterVerseCount: verseCount)
+            }
+            store.setLastRead(reference)
+        } label: {
+            verseActionLabel(canPause ? "Pausa" : "Lyssna", icon: canPause ? "pause.fill" : "play.fill", expanded: expanded)
+        }
+        .accessibilityLabel(canPause ? "Pausa versen" : "Lyssna på vers \(reference.ayahNumber)")
+        .accessibilityIdentifier("reader.listen.\(reference.surahID).\(reference.ayahNumber)")
+        Button { store.toggleBookmark(reference) } label: {
+            verseActionLabel(bookmarked ? "Ta bort bokmärke" : "Spara bokmärke", icon: bookmarked ? "bookmark.fill" : "bookmark", expanded: expanded)
+        }
+        .accessibilityLabel(bookmarked ? "Ta bort bokmärke" : "Spara bokmärke")
+        .accessibilityIdentifier("reader.bookmark.\(reference.surahID).\(reference.ayahNumber)")
+        Button { tafsirReference = reference } label: {
+            if expanded {
+                verseActionLabel("Tafsir", icon: "text.book.closed", expanded: true)
+            } else {
+                Text("Tafsir").font(.subheadline).frame(minWidth: 44, minHeight: 44)
+            }
+        }
+        .accessibilityLabel("Tafsir för vers \(reference.ayahNumber)")
+        .accessibilityIdentifier("reader.tafsir.\(reference.surahID).\(reference.ayahNumber)")
+        if !expanded { Spacer(minLength: 0) }
+        Button { store.markRead(reference) } label: {
+            verseActionLabel(readToday ? "Läst idag" : "Markera som läst", icon: readToday ? "checkmark.circle.fill" : "checkmark.circle", expanded: expanded)
+        }
+        .accessibilityLabel(readToday ? "Redan läst idag" : "Markera vers \(reference.ayahNumber) som läst")
+        .disabled(readToday)
+        .accessibilityIdentifier("reader.markRead.\(reference.surahID).\(reference.ayahNumber)")
+    }
+
+    private func verseActionLabel(_ title: String, icon: String, expanded: Bool) -> some View {
+        Group {
+            if expanded {
+                Label(title, systemImage: icon)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Image(systemName: icon)
+            }
+        }
+        .frame(minWidth: 44, minHeight: 44)
+        .contentShape(Rectangle())
     }
 }
 
@@ -499,14 +572,14 @@ struct PlaybackBar: View {
                 .accessibilityLabel("Byt recitatör")
                 .accessibilityValue(player.selectedReciter.displayName)
                 Button { player.stop() } label: {
-                    Image(systemName: "xmark").frame(width: 44, height: 44)
+                    Image(systemName: "xmark").frame(minWidth: 44, minHeight: 44)
                         .contentShape(Rectangle())
                 }.accessibilityLabel("Stäng spelaren")
             }
             HStack(spacing: 28) {
                 Spacer(minLength: 0)
                 Button { recorder.stopAll(); player.previous() } label: {
-                    Image(systemName: "backward.end.fill").frame(width: 44, height: 44)
+                    Image(systemName: "backward.end.fill").frame(minWidth: 44, minHeight: 44)
                         .contentShape(Rectangle())
                 }.accessibilityLabel("Föregående vers")
                     .disabled((player.requestedReference?.ayahNumber ?? 1) <= 1)
@@ -517,11 +590,11 @@ struct PlaybackBar: View {
                     Group {
                         if player.isBuffering { ProgressView() }
                         else { Image(systemName: player.isPlaying ? "pause.fill" : "play.fill") }
-                    }.frame(width: 56, height: 44).contentShape(Rectangle())
+                    }.frame(minWidth: 56, minHeight: 44).contentShape(Rectangle())
                 }.accessibilityLabel(player.isPlaying || player.isBuffering ? "Pausa" : "Spela")
                     .accessibilityIdentifier("reader.playback.toggle")
                 Button { recorder.stopAll(); player.next() } label: {
-                    Image(systemName: "forward.end.fill").frame(width: 44, height: 44)
+                    Image(systemName: "forward.end.fill").frame(minWidth: 44, minHeight: 44)
                         .contentShape(Rectangle())
                 }.accessibilityLabel("Nästa vers")
                     .disabled(isLastVerse)

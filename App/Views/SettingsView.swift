@@ -74,8 +74,8 @@ struct SettingsView: View {
                 Text("Ingen prenumeration, inget konto och inga annonser i den här versionen.")
                     .font(.footnote).foregroundStyle(.secondary)
                 Text(assessment.isAvailable
-                     ? "Tafsir och frivillig analys behöver internet. Tajweedhjälpen är en experimentell testfunktion."
-                     : "Tafsir och nytt ljud behöver internet. Sparat ljud kan spelas offline. Automatisk tajweedbedömning ingår ännu inte.")
+                     ? "Ny tafsir och frivillig analys behöver internet. Tajweedhjälpen är en experimentell testfunktion."
+                     : "Ny tafsir och nytt ljud behöver internet. Sparad tafsir och sparat ljud kan användas offline. Automatisk tajweedbedömning ingår ännu inte.")
                     .font(.footnote).foregroundStyle(.secondary)
             }
         }
@@ -327,11 +327,12 @@ struct PrivacyView: View {
         List {
             Section("Sparas på din iPhone") {
                 Text("Läsposition, bokmärken, läsmål och streak sparas lokalt. Appen kräver inget konto och innehåller ingen användningsspårning eller annonser.")
+                Text("Tidigare öppnade tafsirförklaringar kan sparas på telefonen för läsning utan internet. De senaste förklaringarna prioriteras när utrymmet fylls.")
                 Text("Inspelningar kan raderas i övningsvyn och tas bort vid nästa appstart. Ingen röst laddas upp automatiskt.")
                 Text("Du kan själv exportera läsdata till en fil och lägga till dem igen efter en ominstallation. Appen gör ingen automatisk säkerhetskopiering till en server.")
             }
             Section("När du använder internet") {
-                Text("När du strömmar eller laddar ned recitationsljud kontaktar appen EveryAyah. Sparat ljud spelas från telefonen. När du öppnar tafsir kontaktar appen AlQuran Cloud. Tjänsterna får din IP-adress och vilken vers du begär, men ingen röstinspelning från appen.")
+                Text("När du strömmar eller laddar ned recitationsljud kontaktar appen EveryAyah. Sparat ljud spelas från telefonen. När en tafsirförklaring behöver hämtas kontaktar appen AlQuran Cloud. Tjänsterna får din IP-adress och vilken vers du begär, men ingen röstinspelning från appen.")
                 Text("Du kan läsa hela korantexten med tajweedfärger utan internet.")
                 Text("Ljud som du väljer att ladda ned sparas på telefonen tills du raderar det under Offline-lyssning.")
             }

@@ -4,6 +4,7 @@ import asyncio
 from contextlib import asynccontextmanager
 import hmac
 from typing import Annotated
+import unicodedata
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from starlette.responses import JSONResponse
@@ -107,10 +108,23 @@ def create_app(settings: Settings | None = None, engine: AssessmentEngine | None
         try:
             decoded = decode_audio(payload, settings)
             issues = active_engine.assess(decoded, reference.text)
+            seen_issue_ids: set[str] = set()
             for issue in issues:
                 if (not (0 <= issue.start_scalar <= issue.end_scalar <= len(reference.text))
-                        or issue.category != "insert" and issue.start_scalar == issue.end_scalar):
-                    raise ValueError("Invalid engine range")
+                        or issue.category != "insert" and issue.start_scalar == issue.end_scalar
+                        or issue.expected == issue.observed):
+                    raise ValueError("Invalid engine issue")
+                # Match the client identity, including Swift String's canonical
+                # equality. Normalize only this temporary key, never source or
+                # phoneme strings returned to the client. A duplicate identity
+                # cannot safely identify two SwiftUI feedback rows.
+                identity = unicodedata.normalize("NFC", (
+                    f"{issue.kind}:{issue.category}:{issue.start_scalar}:{issue.end_scalar}:"
+                    f"{issue.expected}:{issue.observed}"
+                ))
+                if identity in seen_issue_ids:
+                    raise ValueError("Duplicate engine issue")
+                seen_issue_ids.add(identity)
             return response(reference, status="assessed", issues=issues, message=(
                 "Experimentell analys klar. Gå igenom markeringarna med en kunnig lärare."
                 if issues else "Den fonetiska jämförelsen hittade inga skillnader. Resultatet är experimentellt och behöver lärarbedömning."

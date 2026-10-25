@@ -8,6 +8,17 @@ import UIKit
 final class AppStore: ObservableObject {
     static let maximumReadingBackupBytes = 4 * 1_024 * 1_024
 
+    struct ReadingDayProgress: Equatable, Identifiable {
+        let day: ReadingDay
+        /// Noon in UTC represents a civil label, not a completion instant.
+        /// Format in UTC so travel cannot move its weekday or date label.
+        let date: Date
+        let readCount: Int
+        let goalCompleted: Bool
+        let isToday: Bool
+        var id: String { day.id }
+    }
+
     enum ReadingBackupError: LocalizedError {
         case tooLarge, invalidFile, unsupportedVersion, cannotExport
 
@@ -37,6 +48,7 @@ final class AppStore: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var todayReadCount = 0
     @Published private(set) var dailyGoalMet = false
+    @Published private(set) var recentReadingDays: [ReadingDayProgress] = []
 
     private struct SavedState: Codable {
         let version: Int
@@ -71,6 +83,7 @@ final class AppStore: ObservableObject {
     private var summaryDate: Date
     private var summarizedDay: ReadingDay?
     private var summarizedHistory: StreakTracker?
+    private var completedDayLabels: Set<ReadingDay> = []
     private var chapterRequestID = UUID()
     private var dayChangeSubscription: AnyCancellable?
 
@@ -82,7 +95,7 @@ final class AppStore: ObservableObject {
         self.calendar = calendar
         summaryDate = now()
         currentDay = ReadingDay(date: summaryDate, calendar: calendar())
-        if let data = defaults.data(forKey: storageKey),
+        if let data = defaults.data(forKey: storageKey), data.count <= Self.maximumReadingBackupBytes,
            let saved = try? JSONDecoder().decode(SavedState.self, from: data), saved.version == 1 {
             selectedSurahID = (1...114).contains(saved.selectedSurahID) ? saved.selectedSurahID : 1
             lastRead = saved.lastRead
@@ -164,9 +177,14 @@ final class AppStore: ObservableObject {
     /// Only an explicit reading action counts; opening a screen does not.
     func markRead(_ reference: AyahReference) {
         refreshDay()
-        readAyahsByDay[currentDay.id, default: []].insert(reference)
-        lastRead = reference
-        updateDailyProgress()
+        let inserted = readAyahsByDay[currentDay.id, default: []].insert(reference).inserted
+        let moved = lastRead != reference
+        guard inserted || moved else { return }
+        if moved { lastRead = reference }
+        if inserted {
+            _ = pruneDetailedMarks()
+            updateDailyProgress()
+        }
         persist()
     }
 
@@ -175,7 +193,12 @@ final class AppStore: ObservableObject {
     }
 
     func setDailyGoal(_ goal: Int) {
-        dailyGoal = min(50, max(1, goal))
+        let boundedGoal = min(50, max(1, goal))
+        guard dailyGoal != boundedGoal else {
+            refreshDay()
+            return
+        }
+        dailyGoal = boundedGoal
         refreshDay()
         updateDailyProgress()
         persist()
@@ -236,11 +259,16 @@ final class AppStore: ObservableObject {
     }
 
     private static func isValidReadingDayKey(_ key: String) -> Bool {
+        readingDay(for: key) != nil
+    }
+
+    private static func readingDay(for key: String) -> ReadingDay? {
         let pieces = key.split(separator: "-", omittingEmptySubsequences: false)
         guard pieces.count == 3, let year = Int(pieces[0]),
               let month = Int(pieces[1]), let day = Int(pieces[2]),
-              let readingDay = ReadingDay(year: year, month: month, day: day) else { return false }
-        return readingDay.id == key
+              let readingDay = ReadingDay(year: year, month: month, day: day),
+              readingDay.id == key else { return nil }
+        return readingDay
     }
 
     /// Call when the app becomes active as well as at local midnight.
@@ -248,40 +276,78 @@ final class AppStore: ObservableObject {
         summaryDate = now()
         let currentCalendar = calendar()
         currentDay = ReadingDay(date: summaryDate, calendar: currentCalendar)
-        // Detailed verse marks are needed only for the current week. Completed
-        // civil days remain in StreakTracker, so pruning never erases a streak.
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = currentCalendar.timeZone
-        let retainedDays = Set((0..<7).compactMap { offset in
-            calendar.date(byAdding: .day, value: -offset, to: summaryDate)
-                .map { ReadingDay(date: $0, calendar: calendar).id }
-        })
+        // Keep at most seven detailed civil labels. A westward trip or clock
+        // correction must not erase a just-completed day that is now tomorrow.
+        // Completed history remains in StreakTracker regardless of pruning.
+        if pruneDetailedMarks() { persist() }
+        let count = readAyahsByDay[currentDay.id]?.count ?? 0
+        if todayReadCount != count { todayReadCount = count }
+        let completed = streak.isCompleted(on: summaryDate, calendar: currentCalendar)
+        if dailyGoalMet != completed { dailyGoalMet = completed }
+        updateReadingSummaries()
+    }
+
+    private func retainedDetailedDays() -> Set<String> {
+        var civil = Calendar(identifier: .gregorian)
+        civil.timeZone = TimeZone(secondsFromGMT: 0)!
+        guard let today = currentDay.date(in: civil),
+              let firstDate = civil.date(byAdding: .day, value: -6, to: today) else { return [] }
+        let firstDay = ReadingDay(date: firstDate, calendar: civil)
+        let candidates = readAyahsByDay.keys.compactMap { key -> (key: String, distance: Int)? in
+            guard let day = Self.readingDay(for: key), day >= firstDay,
+                  let date = day.date(in: civil),
+                  let distance = civil.dateComponents([.day], from: today, to: date).day else { return nil }
+            return (key, distance)
+        }
+        // The closest labels win after a merge or a larger clock jump. Always
+        // retain today before another day, and prefer the past on equal distance.
+        let nearest = candidates.sorted {
+            if abs($0.distance) != abs($1.distance) { return abs($0.distance) < abs($1.distance) }
+            return $0.distance < $1.distance
+        }
+        return Set(nearest.prefix(7).map(\.key))
+    }
+
+    private func pruneDetailedMarks() -> Bool {
+        let retainedDays = retainedDetailedDays()
         let previousCount = readAyahsByDay.count
         readAyahsByDay = readAyahsByDay.filter { retainedDays.contains($0.key) }
-        if readAyahsByDay.count != previousCount { persist() }
-        todayReadCount = readAyahsByDay[currentDay.id]?.count ?? 0
-        dailyGoalMet = streak.isCompleted(on: summaryDate, calendar: currentCalendar)
-        updateStreakSummary()
+        return readAyahsByDay.count != previousCount
     }
 
     private func updateDailyProgress() {
-        todayReadCount = readAyahsByDay[currentDay.id]?.count ?? 0
-        if todayReadCount >= dailyGoal {
+        let count = readAyahsByDay[currentDay.id]?.count ?? 0
+        if todayReadCount != count { todayReadCount = count }
+        if todayReadCount >= dailyGoal, !streak.isCompleted(on: summaryDate, calendar: calendar()) {
             streak.complete(on: summaryDate, calendar: calendar())
         }
         // Changing a goal never removes a reading day already completed.
-        dailyGoalMet = streak.isCompleted(on: summaryDate, calendar: calendar())
-        updateStreakSummary()
+        let completed = streak.isCompleted(on: summaryDate, calendar: calendar())
+        if dailyGoalMet != completed { dailyGoalMet = completed }
+        updateReadingSummaries()
     }
 
-    private func updateStreakSummary() {
+    private func updateReadingSummaries() {
         // Calendar arithmetic over years of history belongs to a day/history
         // change, not every Home/Settings render or playback state update.
-        guard summarizedDay != currentDay || summarizedHistory != streak else { return }
-        summarizedDay = currentDay
-        summarizedHistory = streak
-        let value = streak.summary(asOf: summaryDate, calendar: calendar())
-        if value != streakSummary { streakSummary = value }
+        if summarizedDay != currentDay || summarizedHistory != streak {
+            if summarizedHistory != streak { completedDayLabels = Set(streak.completionDays) }
+            summarizedDay = currentDay
+            summarizedHistory = streak
+            let value = streak.summary(asOf: summaryDate, calendar: calendar())
+            if value != streakSummary { streakSummary = value }
+        }
+        var civil = Calendar(identifier: .gregorian)
+        civil.timeZone = TimeZone(secondsFromGMT: 0)!
+        guard let today = currentDay.date(in: civil) else { return }
+        let recent = (0..<7).reversed().compactMap { offset -> ReadingDayProgress? in
+            guard let date = civil.date(byAdding: .day, value: -offset, to: today) else { return nil }
+            let day = ReadingDay(date: date, calendar: civil)
+            return ReadingDayProgress(day: day, date: date,
+                                      readCount: readAyahsByDay[day.id]?.count ?? 0,
+                                      goalCompleted: completedDayLabels.contains(day), isToday: day == currentDay)
+        }
+        if recent != recentReadingDays { recentReadingDays = recent }
     }
 
     private func persist() {

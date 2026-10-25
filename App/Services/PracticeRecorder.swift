@@ -7,6 +7,7 @@ import QuranCore
 @MainActor
 final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     typealias PermissionRequester = (@escaping @Sendable (Bool) -> Void) -> Void
+    static let maximumRecordingDuration: TimeInterval = 60
 
     @Published private(set) var isRecording = false
     @Published private(set) var isPlaying = false
@@ -16,6 +17,15 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     @Published private(set) var recordedIncludesBasmala = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var permissionDenied = false
+
+    /// Read by the recording-only timeline. The recorder's clock also handles
+    /// pauses/interruption correctly; no timer runs in this controller.
+    var elapsedRecordingTime: TimeInterval {
+        guard isRecording, let recorder else { return 0 }
+        let time = recorder.currentTime
+        guard time.isFinite else { return 0 }
+        return min(Self.maximumRecordingDuration, max(0, time))
+    }
 
     enum RecordingDataError: LocalizedError {
         case missingRecording
@@ -42,6 +52,7 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     private var ownedSessionCategory: AVAudioSession.Category?
     private var interruptionToken: NSObjectProtocol?
     private var routeToken: NSObjectProtocol?
+    private var mediaServiceTokens: [NSObjectProtocol] = []
 
     override convenience init() {
         self.init(
@@ -95,12 +106,22 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
                 }
             }
         }
+        for name in [AVAudioSession.mediaServicesWereLostNotification, AVAudioSession.mediaServicesWereResetNotification] {
+            mediaServiceTokens.append(notifications.addObserver(
+                forName: name, object: nil, queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.handleMediaServiceInterruption(didReset: name == AVAudioSession.mediaServicesWereResetNotification)
+                }
+            })
+        }
     }
 
     deinit {
         permissionTask?.cancel()
         if let interruptionToken { notifications.removeObserver(interruptionToken) }
         if let routeToken { notifications.removeObserver(routeToken) }
+        for token in mediaServiceTokens { notifications.removeObserver(token) }
         recorder?.stop()
         player?.stop()
         if let recordingURL { try? FileManager.default.removeItem(at: recordingURL) }
@@ -155,7 +176,7 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
             ]
             let nextRecorder = try AVAudioRecorder(url: url, settings: settings)
             nextRecorder.delegate = self
-            guard nextRecorder.prepareToRecord(), nextRecorder.record(forDuration: 60) else {
+            guard nextRecorder.prepareToRecord(), nextRecorder.record(forDuration: Self.maximumRecordingDuration) else {
                 throw CocoaError(.fileWriteUnknown)
             }
             if let recordingURL, FileManager.default.fileExists(atPath: recordingURL.path) {
@@ -272,7 +293,11 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
             self.isRecording = false
             self.hasRecording = flag && self.validFileExists()
             self.recorder = nil
-            if !flag { self.errorMessage = "Inspelningen avbröts. Försök igen med en ny tagning." }
+            if !self.hasRecording {
+                self.errorMessage = flag
+                    ? "Inspelningen blev för kort eller kunde inte sparas. Försök igen."
+                    : "Inspelningen avbröts. Försök igen med en ny tagning."
+            }
             self.deactivateSession()
         }
     }
@@ -313,6 +338,31 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
         guard (values.fileSize ?? 0) > 0,
               let audio = try? AVAudioPlayer(contentsOf: recordingURL) else { return false }
         return audio.duration >= 0.1
+    }
+
+    private func handleMediaServiceInterruption(didReset: Bool) {
+        let wasRecording = isRecording
+        let wasPlaying = isPlaying
+        // Objects from the previous media server cannot retain ownership of the
+        // replacement session. Invalidate permission and playback before any
+        // late delegate or permission reply can revive them.
+        ownedSessionCategory = nil
+        stopAll()
+        if didReset, recordedReference != nil, recordingURL != nil {
+            // While the server was lost, opening AVAudioPlayer to validate a
+            // finished file could fail. Recheck the retained local take only
+            // once services return, without restarting recording or playback.
+            let wasUnavailable = !hasRecording
+            hasRecording = validFileExists()
+            if wasUnavailable, hasRecording, !permissionDenied { errorMessage = nil }
+        }
+        if wasRecording {
+            errorMessage = hasRecording
+                ? "Inspelningen avslutades när ljudsystemet avbröts. Lyssna på tagningen eller spela in på nytt."
+                : "Ljudsystemet avbröts. Försök spela in på nytt."
+        } else if wasPlaying {
+            errorMessage = "Ljudsystemet avbröts. Tryck på Lyssna på mig för att försöka igen."
+        }
     }
 
     private func deactivateSession() {

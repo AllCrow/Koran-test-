@@ -158,6 +158,88 @@ final class RecitationPlayerTests: XCTestCase {
         XCTAssertNil(rig.service.errorMessage)
     }
 
+    func testMediaServicesResetKeepsSelectionAndRebuildsOnlyOnExplicitResume() async throws {
+        let source = try wave(seconds: 8)
+        let verse = try reference(4)
+        let original = AVPlayer()
+        original.isMuted = true
+        let replacement = AVPlayer()
+        replacement.isMuted = true
+        var requests: [AyahReference] = []
+        var replacementCount = 0
+        let service = RecitationPlayer(
+            player: original, audioURL: { reference, _ in requests.append(reference); return source },
+            defaults: try isolatedDefaults(), integratesWithSystemAudio: false,
+            makeReplacementPlayer: { replacementCount += 1; return replacement }
+        )
+        defer { service.stop() }
+        service.selectReciter(.minshawi)
+        service.autoplay = false
+        let began = expectation(description: "The original player starts the selected verse")
+        let beganSubscription = service.$activeReference.first(where: { $0 == verse }).sink { _ in began.fulfill() }
+        defer { beganSubscription.cancel() }
+        service.playOnce(reference: verse, chapterVerseCount: 7)
+        await fulfillment(of: [began], timeout: 12)
+        let oldItem = try XCTUnwrap(original.currentItem)
+
+        NotificationCenter.default.post(name: AVAudioSession.mediaServicesWereResetNotification,
+                                        object: AVAudioSession.sharedInstance())
+
+        XCTAssertEqual(replacementCount, 1)
+        XCTAssertNil(original.currentItem)
+        XCTAssertNil(replacement.currentItem, "Resetting audio must not silently reload or restart a recording")
+        XCTAssertEqual(requests, [verse])
+        XCTAssertEqual(service.requestedReference, verse)
+        XCTAssertEqual(service.selectedReciter, .minshawi)
+        XCTAssertFalse(service.autoplay)
+        XCTAssertNil(service.activeReference)
+        XCTAssertFalse(service.isPlaying)
+        XCTAssertFalse(service.isBuffering)
+        XCTAssertTrue(try XCTUnwrap(service.errorMessage).contains("ljudtjänst"))
+
+        let resumed = expectation(description: "An explicit play action starts the rebuilt player")
+        let resumedSubscription = service.$activeReference.first(where: { $0 == verse }).sink { _ in resumed.fulfill() }
+        defer { resumedSubscription.cancel() }
+        service.resume()
+        // Old callbacks cannot finish or fail the replacement item.
+        NotificationCenter.default.post(name: AVPlayerItem.didPlayToEndTimeNotification, object: oldItem)
+        NotificationCenter.default.post(name: AVPlayerItem.failedToPlayToEndTimeNotification, object: oldItem)
+        await fulfillment(of: [resumed], timeout: 12)
+
+        XCTAssertEqual(requests, [verse, verse])
+        XCTAssertEqual(service.requestedReference, verse)
+        XCTAssertEqual(service.activeReference, verse)
+        XCTAssertNotNil(replacement.currentItem)
+        XCTAssertNil(service.errorMessage)
+    }
+
+    func testMediaServicesResetWhileStoppedDoesNotRequestAudioOrInventAnError() throws {
+        let source = try wave(seconds: 1)
+        let original = AVPlayer()
+        let replacement = AVPlayer()
+        var requestCount = 0
+        var replacementCount = 0
+        let service = RecitationPlayer(
+            player: original, audioURL: { _, _ in requestCount += 1; return source },
+            defaults: try isolatedDefaults(), integratesWithSystemAudio: false,
+            makeReplacementPlayer: { replacementCount += 1; return replacement }
+        )
+        defer { service.stop() }
+
+        NotificationCenter.default.post(name: AVAudioSession.mediaServicesWereResetNotification,
+                                        object: AVAudioSession.sharedInstance())
+
+        XCTAssertEqual(replacementCount, 1)
+        XCTAssertEqual(requestCount, 0)
+        XCTAssertNil(original.currentItem)
+        XCTAssertNil(replacement.currentItem)
+        XCTAssertNil(service.requestedReference)
+        XCTAssertNil(service.activeReference)
+        XCTAssertNil(service.errorMessage)
+        XCTAssertFalse(service.isPlaying)
+        XCTAssertFalse(service.isBuffering)
+    }
+
     func testSavedAudioPreferencesRestoreWithoutCreatingAnAsset() throws {
         let defaults = try isolatedDefaults()
         let engine = AVPlayer()
