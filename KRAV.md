@@ -28,6 +28,12 @@ iPhone-test när användaren får tillgång till en dator. Datoråtkomst finns �
 inte nu. Källkod, krav och faktisk status ska fortsätta bevaras; signering och
 fysisk provning ska inte beskrivas som genomförda i förväg.
 
+Det senaste beskedet är att fortsätta ytterligare några timmar för en **rikligt
+stabil och välfungerande app med premiumkänsla** inför datoråtkomsten. Det
+innebär fortsatt granskning, verifierbara felrättningar, läskomfort och
+sammanhängande användarflöden. Premiumkänsla ska inte ersätta det ursprungliga
+kravet på korrekt korantext, verkligt bra recitationshjälp och låg belastning.
+
 ## Funktionella krav
 
 | ID | Krav | Avsedd kontroll |
@@ -47,6 +53,20 @@ Senare beslut 2026-10-25: användaren skapade [AllCrow/Koran-test-](https://gith
 
 Sparad läsposition, bokmärken och lokal inspelning/återlyssning ingår i den byggda appgrunden som stöd för läsning och övning. Lokal återlyssning uppfyller inte K08 och ska inte beskrivas som automatisk tajweedbedömning.
 
+Läskomforten omfattar nu fyra sparade arabiska textstorlekar med en
+förhandsvisning från den bundlade källtexten. Valet används i läsning, tafsir
+och övning tillsammans med iPhones Dynamic Type. Startvyn visar de senaste
+sju dagarnas uttryckliga läsmarkeringar och intjänade dagsmål. Saknade äldre
+versdetaljer får inte ersättas med påhittade antal. Stora tillgänglighetstexter,
+mörkt läge och en kompakt iPhone ingår i den nya verifieringsomgången; faktiska
+utfall ska hämtas från [statusen](STATUS.md).
+
+Tidigare öppnad al-Muyassar-tafsir kan nu sparas lokalt efter validering av
+vers, källa och utgåva. Cachen är begränsad till 64 poster, 4 MiB totalt och
+128 KiB per sparad post; nya förklaringar kräver internet. Källtrogen text och
+tydlig källa kvarstår som K04. Ingen fullständig offline-tafsir eller svensk
+förklaring har därmed lagts till som ett leveranslöfte.
+
 Läsdata kan exporteras till en separat fil och återimporteras med sammanfogning.
 Det stöder personlig ominstallation utan att kräva konto eller automatisk
 molnsynk. Exporten omfattar läsposition, bokmärken och läshistorik, inte röst,
@@ -55,13 +75,22 @@ raderar de lokala uppgifterna.
 
 Ljud kan nu uttryckligen laddas ned per sura och recitatör; spelaren föredrar den lokala filen när den finns. Ingen recitation är förpaketerad. Kontrollerad transport, lokal filhantering och riktig uppspelning av test-WAV har native-prov i simulatorn. Verklig nedladdning, imaminspelningar och ljudrutter återstår på fysisk iPhone. Amiri Quran är bundlad med originallicens och verifierad täckning av lästextens synliga tecken; faktisk återgivning på den fysiska telefonen återstår.
 
+Fem ytterligare transportprov från [PR #3](https://github.com/AllCrow/Koran-test-/pull/3)
+använder riktiga URLSession-download tasks över lokal HTTP, inklusive
+avbrutna svar och överstorlek före ett öppet svars slut. De ändrar inte
+produktionens HTTPS-policy och bevisar inte EveryAyah, externa TLS-förbindelser
+eller fysisk offlineuppspelning. Återhämtning efter en omstart av iOS
+ljudtjänst ska bevara recitationsvalet och kräva en uttrycklig återstart.
+Inspelningsvyn visar förloppet upp till en minut; verklig inspelningslängd,
+mikrofon och giltiga sparade tagningar behöver kontrolleras på telefonen.
+
 ## Prestanda och kostnad
 
 - Vanlig läsning och uppspelning ska använda så lite CPU och minne som rimligt möjligt. Läsning ska inte utlösa tung talanalys.
 - Låg värmeutveckling och rimlig batteriförbrukning är krav som måste mätas på riktiga iPhone-modeller. De är inte bevisade genom källkodsgranskning eller genom tester i Linux.
 - Jämför längre pass med läsning, uppspelning och framtida recitationsanalys. Följ energiförbrukning, termiskt tillstånd, minne och eventuell prestandasänkning. Konkreta gränsvärden behöver fastställas efter en baslinjemätning.
 - Inget obligatoriskt månadsabonnemang ska krävas av slutanvändaren. Drift, modellkörning, Apple-medlemskap och molnbyggen kan ändå medföra kostnader för projektet. Valet av affärsmodell och finansiering återstår.
-- Korantext och tajweeddata är paketerade för offlinebruk. Ljud ska kunna användas offline efter en uttrycklig nedladdning; hämtning och strömning kräver internet. Tafsir är fortfarande online. Ljudnedladdningens native-funktion och rättigheter behöver verifieras före release.
+- Korantext och tajweeddata är paketerade för offlinebruk. Ljud ska kunna användas offline efter en uttrycklig nedladdning; hämtning och strömning kräver internet. Ny tafsir behöver internet, medan nyligen öppnade och lokalt sparade förklaringar kan läsas offline. Cachefilerna utesluts från systemets säkerhetskopiering. Ljudnedladdningens native-funktion och rättigheter behöver verifieras före release.
 
 ## Automatisk recitationshjälp
 
@@ -82,6 +111,7 @@ REA har nu faktiskt undersökt Muaalems viktfil och verifierat dess fullfilshash
 ## Krav före offentlig release
 
 - Verkligt Xcode-bygge, simulatorprov och fysiska iPhone-tester av läsning, arabisk återgivning, ljud, nedladdning, inspelning och återkoppling.
+- Samlat utfall för den aktuella källan på CI:s tre simulatorvarianter: iOS 18.5 med iPhone 16 Pro och kompakt iPhone SE (3:e generationen), samt iOS 26.2 med iPhone 16e. iPhone-paketet byggs med Xcode 26.2/iOS 26.2 SDK; minsta körversion är fortfarande iOS 17. Ett osignerat bygge godkänner inte en faktisk App Store Connect-uppladdning.
 - Uppmätt värme-, energi- och minnesbeteende på representativa iPhone-modeller.
 - Sakkunnigt kontrollerad recitationshjälp och jämförelse som styrker kvalitetsanspråk. **Kravet om Tarteels betalnivå är inte uppfyllt.**
 - Färdigställd innehålls-/ljudrättighetskontroll, korrekt användarinformation och validerad hantering av eventuell skickad röst.

@@ -32,6 +32,20 @@ final class AppStore: ObservableObject {
         }
     }
 
+    enum Appearance: String, CaseIterable, Identifiable {
+        case system, light, dark
+
+        var id: String { rawValue }
+
+        var displayName: String {
+            switch self {
+            case .system: return "Följ iPhone"
+            case .light: return "Ljust"
+            case .dark: return "Mörkt"
+            }
+        }
+    }
+
     struct ReadingDayProgress: Equatable, Identifiable {
         let day: ReadingDay
         /// Noon in UTC represents a civil label, not a completion instant.
@@ -66,6 +80,7 @@ final class AppStore: ObservableObject {
     @Published private(set) var bookmarks: Set<AyahReference> = []
     @Published private(set) var tajweedEnabled = true
     @Published private(set) var arabicTextSize: ArabicTextSize = .standard
+    @Published private(set) var appearance: Appearance = .system
     @Published private(set) var dailyGoal = 3
     @Published private(set) var streak = StreakTracker()
     @Published private(set) var streakSummary = StreakSummary(current: 0, best: 0, completedToday: false)
@@ -84,6 +99,7 @@ final class AppStore: ObservableObject {
         /// Optional so earlier v1 reading states continue to decode unchanged.
         /// A future unknown choice falls back without discarding reading data.
         let arabicTextSize: String?
+        let appearance: String?
         let dailyGoal: Int
         let streak: StreakTracker
         let readAyahsByDay: [String: Set<AyahReference>]
@@ -130,6 +146,7 @@ final class AppStore: ObservableObject {
             bookmarks = saved.bookmarks
             tajweedEnabled = saved.tajweedEnabled
             arabicTextSize = saved.arabicTextSize.flatMap(ArabicTextSize.init(rawValue:)) ?? .standard
+            appearance = saved.appearance.flatMap(Appearance.init(rawValue:)) ?? .system
             dailyGoal = min(50, max(1, saved.dailyGoal))
             streak = saved.streak
             readAyahsByDay = saved.readAyahsByDay
@@ -242,6 +259,12 @@ final class AppStore: ObservableObject {
     func setArabicTextSize(_ size: ArabicTextSize) {
         guard arabicTextSize != size else { return }
         arabicTextSize = size
+        persist()
+    }
+
+    func setAppearance(_ choice: Appearance) {
+        guard appearance != choice else { return }
+        appearance = choice
         persist()
     }
 
@@ -393,6 +416,7 @@ final class AppStore: ObservableObject {
             bookmarks: bookmarks,
             tajweedEnabled: tajweedEnabled,
             arabicTextSize: arabicTextSize.rawValue,
+            appearance: appearance.rawValue,
             dailyGoal: dailyGoal,
             streak: streak,
             readAyahsByDay: readAyahsByDay

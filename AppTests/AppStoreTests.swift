@@ -387,7 +387,7 @@ final class AppStoreTests: XCTestCase {
         XCTAssertEqual(historyChanges, 0)
     }
 
-    func testLegacySavedReadingStateWithoutTextSizeKeepsProgressAndPreferences() throws {
+    func testLegacySavedReadingStateWithoutDisplayChoicesKeepsProgressAndPreferences() throws {
         let storage = try defaults()
         let today = date(24)
         let original = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
@@ -396,14 +396,17 @@ final class AppStoreTests: XCTestCase {
         original.markRead(first)
         original.toggleBookmark(first)
         original.setTajweedEnabled(false)
+        original.setAppearance(.dark)
         let data = try XCTUnwrap(storage.data(forKey: "sakina.reading-state.v1"))
         var legacy = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         legacy.removeValue(forKey: "arabicTextSize")
+        legacy.removeValue(forKey: "appearance")
         storage.set(try JSONSerialization.data(withJSONObject: legacy), forKey: "sakina.reading-state.v1")
 
         let restored = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
         XCTAssertEqual(restored.arabicTextSize, .standard)
         XCTAssertEqual(restored.arabicTextSize.pointSize, 30)
+        XCTAssertEqual(restored.appearance, .system)
         XCTAssertEqual(restored.bookmarks, [first])
         XCTAssertEqual(restored.lastRead, first)
         XCTAssertEqual(restored.todayReadCount, 1)
@@ -412,7 +415,7 @@ final class AppStoreTests: XCTestCase {
         XCTAssertFalse(restored.tajweedEnabled)
     }
 
-    func testUnknownSavedTextSizeFallsBackWithoutLosingReadingState() throws {
+    func testUnknownSavedDisplayChoicesFallBackWithoutLosingReadingState() throws {
         let storage = try defaults()
         let today = date(24)
         let original = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
@@ -422,13 +425,16 @@ final class AppStoreTests: XCTestCase {
         original.setDailyGoal(7)
         original.setTajweedEnabled(false)
         original.setArabicTextSize(.extraLarge)
+        original.setAppearance(.dark)
         let data = try XCTUnwrap(storage.data(forKey: "sakina.reading-state.v1"))
         var future = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         future["arabicTextSize"] = "a-future-size"
+        future["appearance"] = "a-future-appearance"
         storage.set(try JSONSerialization.data(withJSONObject: future), forKey: "sakina.reading-state.v1")
 
         let restored = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
         XCTAssertEqual(restored.arabicTextSize, .standard)
+        XCTAssertEqual(restored.appearance, .system)
         XCTAssertEqual(restored.bookmarks, [verse])
         XCTAssertEqual(restored.lastRead, verse)
         XCTAssertEqual(restored.todayReadCount, 1)
@@ -464,20 +470,56 @@ final class AppStoreTests: XCTestCase {
         XCTAssertEqual(relaunched.bookmarks, [verse])
     }
 
-    func testRepeatedTextSizeChoiceDoesNotRepublishOrChangeReadingBackup() throws {
+    func testRepeatedDisplayChoicesDoNotRepublishOrChangeReadingBackup() throws {
         let today = date(24)
         let store = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
         store.markRead(try reference(1))
         let readingData = try store.readingBackupData()
         var changes = 0
+        var appearanceChanges = 0
         let subscription = store.$arabicTextSize.dropFirst().sink { _ in changes += 1 }
-        defer { subscription.cancel() }
+        let appearanceSubscription = store.$appearance.dropFirst().sink { _ in appearanceChanges += 1 }
+        defer { subscription.cancel(); appearanceSubscription.cancel() }
         store.setArabicTextSize(.standard)
         XCTAssertEqual(changes, 0)
         store.setArabicTextSize(.large)
         XCTAssertEqual(changes, 1)
         store.setArabicTextSize(.large)
         XCTAssertEqual(changes, 1)
+        store.setAppearance(.system)
+        XCTAssertEqual(appearanceChanges, 0)
+        store.setAppearance(.dark)
+        XCTAssertEqual(appearanceChanges, 1)
+        store.setAppearance(.dark)
+        XCTAssertEqual(appearanceChanges, 1)
         XCTAssertEqual(try store.readingBackupData(), readingData)
+    }
+
+    func testAppearanceSurvivesRelaunchAndReadingImportPreservesCurrentChoice() throws {
+        let today = date(24)
+        let source = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        let verse = try reference(1, surah: 112)
+        source.markRead(verse)
+        source.toggleBookmark(verse)
+        source.setAppearance(.dark)
+        let backup = try source.readingBackupData()
+        let envelope = try XCTUnwrap(JSONSerialization.jsonObject(with: backup) as? [String: Any])
+        XCTAssertNil(envelope["appearance"], "A reading backup must not replace the destination's appearance")
+        let storage = try defaults()
+        let target = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        for choice in AppStore.Appearance.allCases {
+            target.setAppearance(choice)
+            let restored = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+            XCTAssertEqual(restored.appearance, choice)
+            XCTAssertEqual(restored.todayReadCount, 0, "Changing appearance must not award reading credit")
+        }
+        target.setAppearance(.light)
+        try target.mergeReadingBackup(backup)
+        XCTAssertEqual(target.appearance, .light)
+        XCTAssertEqual(target.bookmarks, [verse])
+        XCTAssertEqual(target.todayReadCount, 1)
+        let relaunched = AppStore(defaults: storage, now: { today }, calendar: { self.calendar() })
+        XCTAssertEqual(relaunched.appearance, .light)
+        XCTAssertEqual(relaunched.bookmarks, [verse])
     }
 }

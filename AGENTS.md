@@ -58,17 +58,24 @@ project whenever App Swift files or resource groups change. Local package produc
 are wired by `scripts/generate_project.py`; no external Swift dependencies.
 The scheme also contains hosted `AppTests` and `AppUITests`; use an actual
 available iPhone simulator destination with `xcodebuild test`. See `STATUS.md`
-for the exact latest tested source, run and counts. Mac CI uses Xcode16.4 and
-an iOS18.5 simulator. Native suites cover AppStore, AudioLibrary, PracticeRecorder,
+for the exact latest tested source, run and counts. Mac CI now selects Xcode16.4/
+iOS18.5 on iPhone16Pro and compact iPhoneSE3, plus Xcode26.2/iOS26.2 on iPhone16e.
+The physical unsigned package uses Xcode26.2. Configuration is not a passing run;
+read the actual jobs/results before claiming compatibility. Native suites cover AppStore, AudioLibrary, PracticeRecorder,
 RecitationPlayer and text/search/navigation. Audio validation uses synthetic MPEG
 frames; PCM player tests perform real muted playback of generated local WAVs.
 OfflineMP3PlaybackTests also decode and play a generated quiet MP3 through
 AudioLibrary with the system session enabled. Both use generated test content,
-not reciter recordings. Combined main run 40165021106 passed 56 hosted tests
+not reciter recordings. Historical main run 40165021106 passed 56 hosted tests
 and five UI flows, including the four stronger near-top position assertions.
 The resulting 2:255 image was inspected. See STATUS.md for the exact source.
-Controlled download responses and permission callbacks do not establish real
-network transfer, physical microphone behavior, audio routes or device energy.
+The five AudioDownloadTransportTests exercise actual URLSessionDownloadTask over
+loopback HTTP, including advertised/chunked over-limit bodies that remain open.
+Keep the delegate bridge, lock order and temporary-file ownership: the earlier
+async per-task delegate did not receive live progress and failed both size tests.
+Loopback HTTP does not establish external TLS/EveryAyah content or physical-device
+network behavior. Permission callbacks do not establish physical microphone
+behavior, audio routes or device energy.
 The parent accessibility identifier had masked child buttons; do not put an
 identifier on the entire verse Card again. Verse scroll IDs must include sura
 and ayah, and the verse group must refresh when its sura changes. See
@@ -96,6 +103,24 @@ is recorded in STATUS.md; do not describe an unrun change as verified.
 Apple requirements checked 2026-10-25 require Xcode26+/iOS26 SDK for App Store
 Connect uploads since 2026-04-28. The verified Xcode16.4/iOS18.5 build is not
 upload acceptance proof. Personal signing remains the current priority.
+
+ArabicText's selectable base size comes from EnvironmentValues.quranTextSize;
+retain Dynamic Type scaling. Persist a raw optional size string so old reading
+states and unknown future choices do not discard progress. Reading-data imports
+must preserve the current text size. Tajweed display hues have cached variants
+for light/dark and Increased Contrast; do not edit the source colorHex values.
+
+Tafsir caches only recently opened, validated explanations: 64 entries, 4MiB
+total, 128KiB per versioned file. Revalidate source/edition/global/reference on
+disk reads, preserve raw UTF-8, keep IO off the UI actor, and exclude this cache
+from backups. Never follow cache symlinks, including metadata/recency writes.
+This does not make the full tafsir available offline. New explanations need
+internet. Cache failure must not suppress a valid online explanation.
+
+Detailed reading marks retain at most seven civil labels, with today taking
+priority and nearby future labels retained through backward clock/timezone
+corrections. Future labels never count toward today's goal. Recent history uses
+earned completion and known unique marks, not today's goal applied to the past.
 
 Reading backup import is additive and validated before mutation. Keep its
 bounded file read, security-scoped/coordinated access and stale-request guard.

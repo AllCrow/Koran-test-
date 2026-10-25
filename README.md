@@ -2,23 +2,25 @@
 
 Pågående native-app i SwiftUI för **iOS 17 eller senare**. Sakina är arbetsnamnet. Målet är en lugn koranapp med låg värme- och batteribelastning, uppmuntrande läsning och utan obligatorisk månadsprenumeration.
 
-Utvecklingen fortsätter självständigt enligt användarens senaste instruktion. Koden, kraven och verifieringsläget bevaras i projektet. Appen är ännu inte en signerad, fysiskt enhetstestad eller publicerad produkt.
+Utvecklingen fortsätter självständigt enligt användarens senaste instruktion om ytterligare stabilisering och en genomarbetad premiumkänsla inför det första dator-/iPhone-provet. Koden, kraven och verifieringsläget bevaras i projektet. Appen är ännu inte en signerad, fysiskt enhetstestad eller publicerad produkt.
 
 ## Nuvarande funktioner
 
 - Alla **114 suror och 6 236 ayat** lokalt, uppdelade per sura, med valbar tajweedvisning.
 - Bundlad **Amiri Quran**-font med ursprunglig OFL-licens och verifierade filhashar.
+- Fyra sparade arabiska textstorlekar, med förhandsvisning från den bundlade korantexten. Valet gäller läsning, tafsir och övning tillsammans med iPhones Dynamic Type.
 - Tre recitatörer: Mishary Rashid al-Afasy, Mahmoud Khalil al-Husary och Muhammad Siddiq al-Minshawi.
 - En ljudfil per vers. Versmarkering och versbyte följer AVPlayer-händelser; låsskärmskontroller och sparade ljudval är implementerade.
 - Uttryckliga ljudnedladdningar per sura och recitatör; spelaren föredrar sparat lokalt ljud. Inget recitationsljud är förpaketerat.
-- Tafsir al-Muyassar på arabiska, hämtad online med källangivelse.
-- Lokala bokmärken, läsposition, dagligt läsmål och en uppmuntrande streak.
+- Tafsir al-Muyassar på arabiska med källangivelse. Tidigare öppnade förklaringar kan sparas lokalt för senare offlinebruk i en begränsad och validerad cache.
+- Lokala bokmärken, läsposition, dagligt läsmål, en uppmuntrande streak och en översikt över de senaste sju läsdagarna.
 - Surasökning med arabiska siffror och vanliga latinska stavningar samt direkt **Gå till vers** i läsmenyn.
 - Export och återställning av lokal läsdata via Filer, med sammanfogning av bokmärken och läsdagar.
-- Lokal inspelning och återlyssning för övning, med bevarad tagning och tydliga val före ersättning/radering.
+- Lokal inspelning och återlyssning för övning, med bevarad tagning, synlig inspelningstid upp till en minut och tydliga val före ersättning/radering.
+- Återhämtning när iOS ljudtjänst startas om: recitationsvalet behålls och uppspelning återupptas först efter en uttrycklig åtgärd.
 - En integrerad **experimentell analysväg** med separat Muaalem-backend, typad iOS-klient och återkopplingsvy. Den är **avstängd som standard** och har ingen konfigurerad serveradress.
 
-Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline; tafsir kräver nät. Kontrollerad nedladdning och uppspelning provas i simulatorn; verkligt nät, mikrofon och ljudrutter behöver fortfarande provas på fysisk iPhone.
+Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline. Ny tafsir kräver nät; lokalt sparade förklaringar kan öppnas även efter appstart utan nät. Cachen prioriterar nyligen öppnade förklaringar och omfattar högst 64 poster, 4 MiB totalt och 128 KiB per sparad post. Hela tafsiren är inte paketerad för offlinebruk. Ljudproven omfattar kontrollerad transport och riktiga URLSession-överföringar över lokal HTTP; nät och ljud på fysisk iPhone återstår.
 
 **Tarteel-kvalitetsmålet är inte uppnått eller verifierat.** Analysvägen ger inga övergripande uttalsbetyg och laddar inte automatiskt upp inspelningar. Ingen publik analystjänst är driftsatt. Verklig CPU-inferens har körts genom API:t, senast med 35 indata: 33 referensklipp från al-Fatiha och al-Ikhlas med tre recitatörer samt annan-vers- och tystnadskontroller. 32 referensklipp gav inga indikationer; en indikation i al-Afasys 112:2 behöver sakkunnig källklippsgranskning och är inte klassificerad som rätt eller fel. Detta är funktionsprov utan uppmätt generell träffsäkerhet. Se [resultaten](docs/MODEL_SMOKE_RESULTS.md).
 
@@ -34,7 +36,7 @@ Användaren har uttryckligen valt att behålla iPhone-appen och avstått från S
 
 ## Bygga och kontrollera
 
-På en Mac med Xcode 16 eller senare: öppna `Sakina.xcodeproj`, välj schemat `Sakina` och en iPhone-simulator. Det lokala Swift-paketet innehåller biblioteken `QuranCore`, `QuranData` och `QuranPractice`. För en fysisk iPhone behövs eget team, bundle-ID och signering.
+På en Mac med **Xcode 26.2**: öppna `Sakina.xcodeproj`, välj schemat `Sakina` och en tillgänglig iPhone-simulator. En separat kompatibilitetskontroll använder Xcode 16.4. Det lokala Swift-paketet innehåller biblioteken `QuranCore`, `QuranData` och `QuranPractice`. För en fysisk iPhone behövs eget team, bundle-ID och signering.
 
 ```sh
 swift test
@@ -49,18 +51,26 @@ Efter tillägg av Swift-filer eller resurser: kör `python3 scripts/generate_pro
 
 Apples [aktuella uppladdningskrav](https://developer.apple.com/news/upcoming-requirements/),
 kontrollerade 2026-10-25, kräver sedan 28 april 2026 **Xcode 26+ och iOS 26 SDK**
-för App Store Connect. CI-proven med Xcode16.4/iOS18.5 bevisar därför inte
-att en TestFlight-/App Store-uppladdning accepteras. Den vägen kräver ett nytt
-bygge och verifiering samt distributionens signering. Minsta körversion iOS17
-är en annan inställning än bygg-SDK:n. Den personliga installationsvägen
+för App Store Connect. Det aktuella CI-flödet bygger den personliga IPA:n med
+Xcode 26.2 och iOS 26.2 SDK. Det kör också tre simulatorvarianter: iOS 18.5 på
+iPhone 16 Pro och iPhone SE (3:e generationen), samt iOS 26.2 på iPhone 16e.
+Konfigurerade jobb eller ett lyckat osignerat bygge bevisar inte att en
+TestFlight-/App Store-uppladdning accepteras. Signering och faktisk uppladdning
+behöver fortfarande verifieras. Minsta körversion iOS17 är en annan
+inställning än bygg-SDK:n. Den personliga installationsvägen
 beskrivs i [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
-[Den samlade Mac-körningen](https://github.com/AllCrow/Koran-test-/actions/runs/40165021106)
+**Historisk baslinje:** [Mac-körningen 40165021106](https://github.com/AllCrow/Koran-test-/actions/runs/40165021106)
 passerar **67 portabla Swift-tester, 32 backendtester och 61 native-prov**:
 56 hostade iOS-prov och alla fem UI-flöden. Sju nya MP3-prov använder riktig
 avkodning och AVPlayer med en genererad ton. Native-listläsaren visar versens
 början nära toppen efter långt hopp, återstart, upprepning och senare läsning.
 Femsekunderskraven och skärmbilden är kontrollerade; navigation ger ingen läskredit.
+Den körningen föregår förbättringarna av textstorlek, veckohistorik, sparad
+tafsir och ljudåterhämtning. Källan innehåller nu även fem riktiga HTTP-prov
+från [PR #3](https://github.com/AllCrow/Koran-test-/pull/3), med storleksavbrott
+före ett öppet svars slut. **Det aktuella samlade native-utfallet inväntar ny
+CI-verifiering**; den historiska baslinjens antal gäller inte dagens källkod.
 
 Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, personlig signering och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
 
@@ -87,7 +97,7 @@ Standardinställningarna i `App/Info.plist` är `SAKINA_ENABLE_EXPERIMENTAL_ANAL
 
 Återkopplingen använder en separat, verifierad övningsutgåva på cirka **2,01 MB**. Backend och app validerar samma text. Dess Unicode-positioner flyttas inte till läsvyns andra koranutgåva. Referensernas fonemkompatibilitet är kontrollerad för alla 6 236 ayat; det bevisar inte att modellen rättar människors uttal korrekt.
 
-Läsdata och lokala övningsinspelningar sparas på telefonen. EveryAyah och AlQuran Cloud ser de förfrågningar som behövs för ljud respektive tafsir. Appen har inga konton, betalflöden, annonser eller analys-SDK:er.
+Läsdata och lokala övningsinspelningar sparas på telefonen. Tidigare öppnad tafsir kan också sparas i appens privata lagring; den begränsade cachen utesluts från systemets säkerhetskopiering. EveryAyah och AlQuran Cloud ser de förfrågningar som behövs för nytt ljud respektive ny tafsir. Appen har inga konton, betalflöden, annonser eller analys-SDK:er.
 
 ## Källor, REA och bevarande
 

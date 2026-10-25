@@ -7,6 +7,23 @@ import XCTest
 
 @MainActor
 final class ArabicTextPreparationTests: XCTestCase {
+    func testPrimaryActionTextRemainsReadableAgainstItsFillInEveryAppearance() throws {
+        for style in [UIUserInterfaceStyle.light, .dark] {
+            for contrast in [UIAccessibilityContrast.normal, .high] {
+                let traits = UITraitCollection(traitsFrom: [UITraitCollection(userInterfaceStyle: style),
+                                                           UITraitCollection(accessibilityContrast: contrast)])
+                var foreground = UIColor.clear
+                var background = UIColor.clear
+                traits.performAsCurrent {
+                    foreground = UIColor(Palette.onGreen).resolvedColor(with: traits)
+                    background = UIColor(Palette.green).resolvedColor(with: traits)
+                }
+                XCTAssertGreaterThanOrEqual(try contrastRatio(foreground, background), 4.5,
+                                            "Primary text and icons must retain contrast in style \(style.rawValue), contrast \(contrast.rawValue)")
+            }
+        }
+    }
+
     func testTajweedLettersRemainReadableOnLightAndDarkPaper() throws {
         for style in [UIUserInterfaceStyle.light, .dark] {
             let traits = UITraitCollection(traitsFrom: [UITraitCollection(userInterfaceStyle: style),

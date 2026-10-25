@@ -33,6 +33,11 @@ struct SettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section("Läsning och ljud") {
+                Picker("Utseende", selection: Binding(get: { store.appearance }, set: { store.setAppearance($0) })) {
+                    ForEach(AppStore.Appearance.allCases) { Text($0.displayName).tag($0) }
+                }
+                .pickerStyle(.menu)
+                .accessibilityIdentifier("settings.appearance")
                 NavigationLink("Ljud för offline-lyssning") { AudioDownloadsView() }
                 Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: { store.setTajweedEnabled($0) }))
                     .accessibilityIdentifier("settings.tajweed")

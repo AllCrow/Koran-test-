@@ -8,6 +8,10 @@ enum Palette {
     static let paper = Color(uiColor: .secondarySystemGroupedBackground)
     static let green = Color(light: UIColor(red: 0.12, green: 0.34, blue: 0.27, alpha: 1),
                              dark: UIColor(red: 0.51, green: 0.80, blue: 0.65, alpha: 1))
+    // The dark appearance uses a light mint fill. An explicit dark foreground
+    // keeps primary actions readable instead of relying on white button text.
+    static let onGreen = Color(light: .white,
+                               dark: UIColor(red: 0.04, green: 0.12, blue: 0.09, alpha: 1))
     static let gold = Color(light: UIColor(red: 0.52, green: 0.36, blue: 0.08, alpha: 1),
                             dark: UIColor(red: 0.91, green: 0.75, blue: 0.39, alpha: 1))
 
@@ -170,6 +174,7 @@ struct PrimaryButton: View {
     var body: some View {
         Button(action: action) {
             Label(title, systemImage: icon).font(.headline)
+                .foregroundStyle(Palette.onGreen)
                 .frame(maxWidth: .infinity).padding(.vertical, 15)
         }
         .buttonStyle(.borderedProminent).buttonBorderShape(.roundedRectangle(radius: 16))

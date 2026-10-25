@@ -233,7 +233,10 @@ final class ReadingFlowTests: XCTestCase {
         number.tap()
         number.typeText("5")
         app.buttons["reader.jump.open"].tap()
-        XCTAssertTrue(waitUntilVerseStartsNearTop(app.staticTexts["reader.verse.114.5"]))
+        // At the end of a short sura, List clamps to its natural content edge.
+        // Verify this seed position is actually visible; the explicit next-sura
+        // destination below must still align at the top and replace this seed.
+        XCTAssertTrue(waitUntilControlIsFullyVisible(app.buttons["reader.markRead.114.5"]))
         app.buttons["Välj sura"].tap()
         search = app.searchFields.firstMatch
         XCTAssertTrue(search.waitForExistence(timeout: 5))
@@ -268,9 +271,14 @@ final class ReadingFlowTests: XCTestCase {
     }
 
     func testDarkAppearanceKeepsReaderAndHomeUsable() {
-        app.terminate()
-        app.launchArguments += ["-AppleInterfaceStyle", "Dark"]
-        app.launch()
+        app.tabBars.buttons["Mitt"].tap()
+        let appearance = app.buttons["settings.appearance"]
+        scrollFullyIntoView(appearance)
+        appearance.tap()
+        let dark = app.buttons["Mörkt"]
+        XCTAssertTrue(dark.waitForExistence(timeout: 5))
+        dark.tap()
+        app.tabBars.buttons["Idag"].tap()
         let continueReading = app.buttons["home.continue"]
         XCTAssertTrue(continueReading.waitForExistence(timeout: 10))
         XCTAssertTrue(continueReading.isHittable, "The main reading action should be easy to reach on the home screen")
@@ -286,6 +294,13 @@ final class ReadingFlowTests: XCTestCase {
         app.tabBars.buttons["Idag"].tap()
         let progress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
         XCTAssertEqual(progress.value as? String, "1 av 3 verser lästa")
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Mitt"].waitForExistence(timeout: 10))
+        app.tabBars.buttons["Mitt"].tap()
+        scrollFullyIntoView(appearance)
+        XCTAssertTrue(appearance.label.contains("Mörkt") || (appearance.value as? String)?.contains("Mörkt") == true,
+                      "The selected night appearance must survive a real relaunch")
     }
 
     func testArabicTextSizeSelectionPersistsWithoutReadingCredit() {
@@ -332,12 +347,14 @@ final class ReadingFlowTests: XCTestCase {
         let visible = NSPredicate { candidate, _ in
             guard let candidate = candidate as? XCUIElement,
                   readerBar.exists, tabBar.exists,
-                  candidate.exists, candidate.isHittable else { return false }
+                  candidate.exists else { return false }
             let top = readerBar.frame.maxY
             let bottom = tabBar.frame.minY
             let upperLimit = top + min(150, (bottom - top) / 4)
             let frame = candidate.frame
-            return frame.minY >= top && frame.maxY <= upperLimit
+            guard !frame.isEmpty, frame.minY.isFinite, frame.maxY.isFinite,
+                  frame.minY >= top, frame.maxY <= upperLimit else { return false }
+            return candidate.isHittable
         }
         let expectation = XCTNSPredicateExpectation(predicate: visible, object: element)
         let ready = XCTWaiter.wait(for: [expectation], timeout: 5) == .completed
@@ -358,6 +375,19 @@ final class ReadingFlowTests: XCTestCase {
             add(diagnostic)
         }
         return ready
+    }
+
+    private func waitUntilControlIsFullyVisible(_ element: XCUIElement) -> Bool {
+        let visible = NSPredicate { candidate, _ in
+            guard let candidate = candidate as? XCUIElement, candidate.exists,
+                  self.app.navigationBars.firstMatch.exists, self.app.tabBars.firstMatch.exists else { return false }
+            let frame = candidate.frame
+            guard !frame.isEmpty, frame.minY.isFinite, frame.maxY.isFinite,
+                  frame.minY >= self.app.navigationBars.firstMatch.frame.maxY,
+                  frame.maxY <= self.app.tabBars.firstMatch.frame.minY else { return false }
+            return candidate.isHittable
+        }
+        return XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: visible, object: element)], timeout: 5) == .completed
     }
 
     private func scrollTo(_ element: XCUIElement) {

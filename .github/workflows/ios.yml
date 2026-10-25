@@ -43,7 +43,7 @@ jobs:
       SAKINA_TEST_RUNTIME: ${{ matrix.runtime }}
       SAKINA_TEST_DEVICE: ${{ matrix.device }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Select and report the verification SDK
         run: |
           sudo xcode-select -s '${{ matrix.xcode }}'
@@ -81,7 +81,7 @@ jobs:
             -configuration Debug -destination "platform=iOS Simulator,id=$simulator_id" \
             -derivedDataPath DerivedData -resultBundlePath TestResults.xcresult \
             -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: Sakina-native-test-results-${{ matrix.label }}
@@ -95,14 +95,14 @@ jobs:
           if [ -d TestResults.xcresult ]; then
             xcrun xcresulttool export attachments --path TestResults.xcresult --output-path SimulatorAttachments
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: Sakina-simulator-screenshots-${{ matrix.label }}
           path: SimulatorAttachments
           if-no-files-found: ignore
           retention-days: 7
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Sakina-simulator-${{ matrix.label }}
           path: DerivedData/Build/Products/Debug-iphonesimulator/Sakina.app
@@ -111,8 +111,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install audio decoder and lightweight test dependencies
@@ -126,7 +126,7 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Select and report the personal-build SDK
         run: |
           sudo xcode-select -s /Applications/Xcode_26.2.app
@@ -143,7 +143,7 @@ jobs:
           python3 scripts/package_iphone.py
           --app DerivedData/Build/Products/Release-iphoneos/Sakina.app
           --output Sakina-iPhone-unsigned.ipa --report iPhone-build-info.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Sakina-iPhone-personal-unsigned
           path: |
@@ -160,7 +160,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: Sakina-iPhone-personal-unsigned
       - name: Verify the tested artifact and prepare installation notes
