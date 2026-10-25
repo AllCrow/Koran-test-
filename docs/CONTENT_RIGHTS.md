@@ -95,3 +95,22 @@ kunnig kontroll av recitatör, versinnehåll, Basmala och klippgränser.
 Samla rättighetsbekräftelser separat; en tekniskt fungerande ljudfil
 avslutar inte den kontrollen. Inga Tarteel- eller tajweedkvalitetsanspråk
 ändras av denna leverans.
+
+## Förberett underlag för det oavgjorda 112:2-fallet
+
+Ett [granskningspaket utan ljud](evidence/recitation-review-112-2.json)
+binder den befintliga modellrapportens exakta klippindex, M4A-uppladdningshash,
+motor-/modellrevision, antaganden och `normal/delete`-indikation till den
+exakta övningsutgåvan. Referenstexten har jämförts ordagrant. Indikationen
+gäller ett möjligt initialt fonem; den är inte klassificerad som ett
+sakkunnigt tajweedfel.
+
+Den senare hela MP3:n har samma käll-URL och en egen verifierad hash, men
+den gamla rapporten sparade bara den konverterade insignalens hash. Samma
+URL bevisar därför inte byteidentitet mellan körningarna. För att bedöma
+det gamla resultatet behöver dess exakta lokala insignal återfinnas och
+hashmatchas, eller ett nytt prov märkas som ett nytt fall. Paketet anger
+frågorna om ljudstart, wasl/waqf, klippgräns, tillåten variation och
+referens-/fonemkoppling för två oberoende sakkunniga. Mänsklig bedömning,
+noggrannhetsmått och Tarteel-jämförelse står uttryckligen som saknade.
+Ingen modelltröskel, återkoppling eller standardinställning har ändrats.
