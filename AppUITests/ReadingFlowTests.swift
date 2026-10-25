@@ -45,14 +45,14 @@ final class ReadingFlowTests: XCTestCase {
         scrollFullyIntoView(today)
         XCTAssertEqual(today.value as? String, "1 vers markerad")
         attachScreenshot("Home-seven-reading-days")
-        app.terminate()
-        app.launch()
+        relaunchApp()
         let restored = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
         XCTAssertTrue(restored.waitForExistence(timeout: 10))
         XCTAssertEqual(restored.value as? String, "1 av 3 verser lästa")
         app.tabBars.buttons["Koranen"].tap()
-        XCTAssertTrue(markRead.waitForExistence(timeout: 5))
-        XCTAssertFalse(markRead.isEnabled)
+        let restoredMarkRead = app.buttons["reader.markRead.1.1"]
+        XCTAssertTrue(restoredMarkRead.waitForExistence(timeout: 5))
+        XCTAssertFalse(restoredMarkRead.isEnabled)
     }
 
     func testBookmarkSurvivesRelaunchAndOpensItsVerse() {
@@ -61,15 +61,15 @@ final class ReadingFlowTests: XCTestCase {
         XCTAssertTrue(bookmark.waitForExistence(timeout: 5))
         bookmark.tap()
         XCTAssertEqual(bookmark.label, "Ta bort bokmärke")
-        app.terminate()
-        app.launch()
+        relaunchApp()
         XCTAssertTrue(app.tabBars.buttons["Mitt"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Mitt"].tap()
         let saved = app.buttons["settings.bookmark.1.1"]
         scrollTo(saved)
         saved.tap()
-        XCTAssertTrue(bookmark.waitForExistence(timeout: 5))
-        XCTAssertEqual(bookmark.label, "Ta bort bokmärke")
+        let restoredBookmark = app.buttons["reader.bookmark.1.1"]
+        XCTAssertTrue(restoredBookmark.waitForExistence(timeout: 5))
+        XCTAssertEqual(restoredBookmark.label, "Ta bort bokmärke")
     }
 
     func testSurahSearchSupportsArabicIndicNumbersAndEmptyResults() {
@@ -138,35 +138,36 @@ final class ReadingFlowTests: XCTestCase {
         app.tabBars.buttons["Idag"].tap()
         let progress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
         XCTAssertEqual(progress.value as? String, "0 av 3 verser lästa", "Navigation must not award reading credit")
-        app.terminate()
-        app.launch()
+        relaunchApp()
         XCTAssertTrue(app.tabBars.buttons["Koranen"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Koranen"].tap()
-        XCTAssertTrue(waitUntilVerseStartsNearTop(verse), "The saved verse beginning must appear near the top after relaunch")
+        let restoredVerse = app.staticTexts["reader.verse.2.255"]
+        XCTAssertTrue(waitUntilVerseStartsNearTop(restoredVerse), "The saved verse beginning must appear near the top after relaunch")
         // Selecting the same saved position must still execute a jump, and a
         // later explicit reading action must replace that position on return.
         app.buttons["Läsinställningar"].tap()
         app.buttons["reader.jump.present"].tap()
-        XCTAssertTrue(number.waitForExistence(timeout: 5))
-        number.tap()
-        number.typeText("255")
-        open.tap()
-        XCTAssertTrue(waitUntilVerseStartsNearTop(verse))
+        let restoredNumber = app.textFields["reader.jump.number"]
+        let restoredOpen = app.buttons["reader.jump.open"]
+        XCTAssertTrue(restoredNumber.waitForExistence(timeout: 5))
+        restoredNumber.tap()
+        restoredNumber.typeText("255")
+        restoredOpen.tap()
+        XCTAssertTrue(waitUntilVerseStartsNearTop(restoredVerse))
         let markRead = app.buttons["reader.markRead.2.256"]
         scrollTo(markRead)
         XCTAssertTrue(markRead.isEnabled)
         markRead.tap()
         app.tabBars.buttons["Idag"].tap()
-        XCTAssertEqual(progress.value as? String, "1 av 3 verser lästa")
+        let restoredProgress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
+        XCTAssertEqual(restoredProgress.value as? String, "1 av 3 verser lästa")
         app.tabBars.buttons["Koranen"].tap()
         let laterVerse = app.staticTexts["reader.verse.2.256"]
         XCTAssertTrue(waitUntilVerseStartsNearTop(laterVerse), "A later read must replace the previous jump position near the top on tab return")
     }
 
     func testLargeTextReadingAndLocalPreferencesRemainUsable() {
-        app.terminate()
-        app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
-        app.launch()
+        relaunchApp(additionalArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
         XCTAssertTrue(app.tabBars.buttons["Koranen"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Koranen"].tap()
         let markRead = app.buttons["reader.markRead.1.1"]
@@ -205,15 +206,16 @@ final class ReadingFlowTests: XCTestCase {
         scrollTo(importBackup)
         XCTAssertTrue(importBackup.isEnabled)
         attachScreenshot("Settings-local-reading-backup")
-        app.terminate()
-        app.launch()
+        relaunchApp()
         XCTAssertTrue(app.tabBars.buttons["Mitt"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Mitt"].tap()
-        scrollFullyIntoView(tajweed)
-        XCTAssertEqual(tajweed.value as? String, "0", "The reading preference must survive a real app relaunch")
+        let restoredTajweed = app.switches["settings.tajweed"]
+        scrollFullyIntoView(restoredTajweed)
+        XCTAssertEqual(restoredTajweed.value as? String, "0", "The reading preference must survive a real app relaunch")
         app.tabBars.buttons["Koranen"].tap()
-        scrollTo(markRead)
-        XCTAssertFalse(markRead.isEnabled)
+        let restoredMarkRead = app.buttons["reader.markRead.1.1"]
+        scrollTo(restoredMarkRead)
+        XCTAssertFalse(restoredMarkRead.isEnabled)
     }
 
     func testNextSurahSavesPositionWithoutReadingCreditAndEndsAtAnNas() {
@@ -263,13 +265,13 @@ final class ReadingFlowTests: XCTestCase {
         app.tabBars.buttons["Idag"].tap()
         let progress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
         XCTAssertEqual(progress.value as? String, "0 av 3 verser lästa")
-        app.terminate()
-        app.launch()
+        relaunchApp()
         XCTAssertTrue(app.tabBars.buttons["Koranen"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Koranen"].tap()
-        XCTAssertTrue(firstVerse.waitForExistence(timeout: 5))
+        let restoredFirstVerse = app.buttons["reader.markRead.114.1"]
+        XCTAssertTrue(restoredFirstVerse.waitForExistence(timeout: 5))
         XCTAssertTrue(waitUntilVerseStartsNearTop(app.staticTexts["reader.verse.114.1"]))
-        XCTAssertTrue(firstVerse.isEnabled)
+        XCTAssertTrue(restoredFirstVerse.isEnabled)
         let lastVerse = app.buttons["reader.markRead.114.6"]
         scrollTo(lastVerse)
         XCTAssertFalse(app.buttons["reader.nextSurah.115"].exists, "The final sura must not offer an invalid next chapter")
@@ -300,12 +302,12 @@ final class ReadingFlowTests: XCTestCase {
         app.tabBars.buttons["Idag"].tap()
         let progress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
         XCTAssertEqual(progress.value as? String, "1 av 3 verser lästa")
-        app.terminate()
-        app.launch()
+        relaunchApp()
         XCTAssertTrue(app.tabBars.buttons["Mitt"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Mitt"].tap()
-        scrollFullyIntoView(appearance)
-        XCTAssertTrue(appearance.label.contains("Mörkt") || (appearance.value as? String)?.contains("Mörkt") == true,
+        let restoredAppearance = app.buttons["settings.appearance"]
+        scrollFullyIntoView(restoredAppearance)
+        XCTAssertTrue(restoredAppearance.label.contains("Mörkt") || (restoredAppearance.value as? String)?.contains("Mörkt") == true,
                       "The selected night appearance must survive a real relaunch")
     }
 
@@ -328,16 +330,33 @@ final class ReadingFlowTests: XCTestCase {
         scrollFullyIntoView(markRead)
         XCTAssertTrue(markRead.isEnabled)
         attachScreenshot("Reader-extra-large-Arabic-size")
-        app.terminate()
-        app.launch()
+        relaunchApp()
         XCTAssertTrue(app.tabBars.buttons["Mitt"].waitForExistence(timeout: 10))
         let progress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
         XCTAssertEqual(progress.value as? String, "0 av 3 verser lästa")
         app.tabBars.buttons["Mitt"].tap()
-        scrollTo(openSizes)
-        openSizes.tap()
-        XCTAssertTrue(extraLarge.waitForExistence(timeout: 5))
-        XCTAssertEqual(extraLarge.value as? String, "Vald", "The chosen base size must survive a real relaunch")
+        let restoredOpenSizes = app.buttons["settings.arabicTextSize.present"]
+        scrollTo(restoredOpenSizes)
+        restoredOpenSizes.tap()
+        let restoredExtraLarge = app.buttons["settings.arabicTextSize.extraLarge"]
+        XCTAssertTrue(restoredExtraLarge.waitForExistence(timeout: 5))
+        XCTAssertEqual(restoredExtraLarge.value as? String, "Vald", "The chosen base size must survive a real relaunch")
+    }
+
+    private func relaunchApp(additionalArguments: [String] = []) {
+        let arguments = app.launchArguments + additionalArguments
+        let environment = app.launchEnvironment
+        app.terminate()
+        // A run48 compact attachment retained the terminated PID38019 in an
+        // application snapshot after relaunch; the live reader used PID39656.
+        // Bind fresh queries to the new process while preserving the exact
+        // isolated suite and launch configuration. Never reuse old handles.
+        app = XCUIApplication()
+        app.launchArguments = arguments
+        app.launchEnvironment = environment
+        app.launch()
+        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10),
+                      "The relaunched app must reach the foreground before querying its new process")
     }
 
     private func attachScreenshot(_ name: String) {

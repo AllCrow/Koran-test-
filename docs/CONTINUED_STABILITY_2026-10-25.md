@@ -27,7 +27,7 @@ bygget 46. Det paketet och dess fullständiga historik/backup bevaras.
 ## Prov och status före Mac-körningen
 
 Elva nya hostade regressioner tillförs: två för ljudtjänstförlust, två för
-importgränser och sex för laddning/cancellation. De två sena laddningsproven
+importgränser och sju för laddning/cancellation. De två sena laddningsproven
 provar både framgång och fel från den gamla laddningen. Förväntad native-svit
 är nu **91 hostade + åtta UI-fall per simulator**. Det är ett förväntat antal,
 inte ett godkänt Mac-utfall.
@@ -51,3 +51,20 @@ katalogsvar kunde tappas när ett nyare suraval redan hade börjat. Katalogen
 lagras nu efter cancellation-kontroll men före kapitelgenerationens kontroll.
 Det sjunde laddningsprovet täcker både nyare färdigt och pågående kapitel.
 Den ersatta körningen räknas inte som godkännande för denna rättade källa.
+
+## Rättning av UI-provens processbindning
+
+Körning 48 passerade alla 91 hostade prov på samtliga tre varianter och alla
+åtta UI-flöden på två. Det kompakta UI-provet för 114:1 efter återstart
+misslyckades. Skärmbilden och senare diagnostik visar rätt versbörjan och
+hela badgen på `(40,92,55,26.5)`, inom det krävda intervallet y64–202.5.
+Den tidiga arkiverade accessibility-roten pekar samtidigt på den avslutade
+processen 38019, medan den senare riktiga läsaren använder 39656.
+
+Testerna skapar därför ett nytt XCUIApplication-objekt vid varje verklig
+omstart, bevarar exakt samma startargument, miljö och isolerade läsdata,
+väntar på förgrunden och hämtar nya kontrollreferenser. Alla åtta flöden,
+tryck och persistenskontroller är kvar. Själva femsekunderspredikatet för
+position, hela geometrin, exakt referens och förgrund är byteidentiskt.
+Den senare korrekta bilden räknas inte som ett godkänt ursprungligt tidsprov;
+den rättade harnessen behöver sitt eget kompletta Mac-utfall.
