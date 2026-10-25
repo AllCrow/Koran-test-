@@ -13,8 +13,6 @@ struct ReaderView: View {
     @State private var showVerseJump = false
     @State private var prefersLatestReadingPosition = false
     @State private var pendingJumpReference: AyahReference?
-    @State private var scrollPosition: String?
-    @State private var scrollAnchor: UnitPoint = .top
     @State private var scrollRequest: ScrollRequest?
 
     private struct ScrollRequest {
@@ -24,18 +22,12 @@ struct ReaderView: View {
     }
 
     var body: some View {
-        Group {
-            ScrollView {
-                readerContent
-            }
-            .scrollPosition(id: $scrollPosition, anchor: scrollAnchor)
-            .onChange(of: scrollPosition) { previous, next in
-                #if DEBUG
-                if CommandLine.arguments.contains("--ui-test-suite") {
-                    print("Reader scroll position \(previous ?? "nil") -> \(next ?? "nil"); requested \(scrollRequest?.targetID ?? "nil")")
-                }
-                #endif
-            }
+        ScrollViewReader { proxy in
+            readerList
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .contentMargins(.vertical, 12, for: .scrollContent)
+            .id(store.chapter?.surah.id)
             .task(id: store.chapter?.surah.id) {
                 guard store.chapter != nil else { return }
                 await Task.yield()
@@ -44,13 +36,11 @@ struct ReaderView: View {
             }
             .task(id: scrollRequest?.id) {
                 guard let request = scrollRequest else { return }
-                // Clearing the binding makes a repeated explicit jump work
-                // even when its verse is already the currently tracked row.
-                scrollPosition = nil
-                scrollAnchor = request.anchor
+                // Each command has its own identity, including a repeat jump
+                // to the same verse. Native cells resolve the target by row.
                 await Task.yield()
                 guard !Task.isCancelled else { return }
-                scrollPosition = request.targetID
+                proxy.scrollTo(request.targetID, anchor: request.anchor)
             }
             .onAppear {
                 if let reference = preferredReference {
@@ -66,8 +56,8 @@ struct ReaderView: View {
                 guard let reference = pendingJumpReference else { return }
                 pendingJumpReference = nil
                 guard reference.surahID == store.chapter?.surah.id else { return }
-                // Wait for the keyboard/sheet viewport to be restored. The
-                // semantic target then survives lazy row-height corrections.
+                // Resolve the native row after the keyboard/sheet viewport
+                // has been restored, using the same path as reading recovery.
                 requestScroll(to: reference.id, anchor: .top)
             }) {
                 if let chapter = store.chapter {
@@ -115,42 +105,48 @@ struct ReaderView: View {
     }
 
     @ViewBuilder
-    private var readerContent: some View {
-        // Bind the chapter before creating the lazy target layout. Its
-        // ForEach exposes each verse directly at the target layout's root,
-        // alongside the heading, instead of through a whole-chapter group.
+    private var readerList: some View {
+        // Keep the chapter's individually identified rows directly in List.
+        // Native cell reuse preserves continuous reading, while navigation
+        // identifies a row instead of calculating its offset in Arabic text.
         if let chapter = store.chapter {
-            LazyVStack(spacing: 16) {
-                chapterHeading(chapter).id("chapter-heading")
+            List {
+                chapterHeading(chapter).modifier(ReaderRowStyle()).id("chapter-heading")
                 if let basmala = QuranPresentation.basmala(for: chapter) {
                     ArabicText(text: basmala, tajweed: nil, colored: false)
                         .padding(.vertical, 12).padding(.horizontal, 8)
+                        .modifier(ReaderRowStyle())
                 }
-                if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
+                if showLegend && store.tajweedEnabled {
+                    Card { TajweedLegend() }.modifier(ReaderRowStyle())
+                }
                 ForEach(chapter.ayahs, id: \.readerScrollID) { ayah in
-                    verseCard(ayah, chapter: chapter).id(ayah.readerScrollID)
+                    verseCard(ayah, chapter: chapter)
+                        .modifier(ReaderRowStyle()).id(ayah.readerScrollID)
                 }
                 Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
                     .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)
+                    .modifier(ReaderRowStyle())
                 readerError
             }
-            .scrollTargetLayout()
-            .padding(20)
         } else {
-            VStack(spacing: 16) {
-                if store.isLoading { ProgressView("Öppnar Koranen …").padding(50) }
+            List {
+                if store.isLoading {
+                    ProgressView("Öppnar Koranen …").padding(50).modifier(ReaderRowStyle())
+                }
                 readerError
-            }.padding(20)
+            }
         }
     }
 
     @ViewBuilder
     private var readerError: some View {
         if let error = store.errorMessage {
-            ErrorBanner(message: error)
+            ErrorBanner(message: error).modifier(ReaderRowStyle())
             Button("Försök igen") { Task { await store.load() } }
                 .frame(minHeight: 44)
                 .accessibilityIdentifier("reader.retry")
+                .modifier(ReaderRowStyle())
         }
     }
 
@@ -261,6 +257,15 @@ struct ReaderView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 24).strokeBorder(active ? Palette.green : .clear, lineWidth: 2)
         }
+    }
+}
+
+private struct ReaderRowStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
     }
 }
 

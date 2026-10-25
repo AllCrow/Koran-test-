@@ -126,8 +126,8 @@ final class ReadingFlowTests: XCTestCase {
         XCTAssertTrue(open.isEnabled)
         open.tap()
         let verse = app.staticTexts["reader.verse.2.255"]
-        let targetIsVisible = waitUntilHittable(verse)
-        XCTAssertTrue(targetIsVisible, "A jump must reveal the target's global verse identity")
+        let targetIsVisible = waitUntilVerseStartsNearTop(verse)
+        XCTAssertTrue(targetIsVisible, "A jump must reveal the verse's beginning near the top of the reader")
         attachScreenshot("Reader-Baqara-255")
         app.tabBars.buttons["Idag"].tap()
         let progress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
@@ -136,7 +136,7 @@ final class ReadingFlowTests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.tabBars.buttons["Koranen"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Koranen"].tap()
-        XCTAssertTrue(waitUntilHittable(verse), "The saved verse position must survive relaunch")
+        XCTAssertTrue(waitUntilVerseStartsNearTop(verse), "The saved verse beginning must appear near the top after relaunch")
         // Selecting the same saved position must still execute a jump, and a
         // later explicit reading action must replace that position on return.
         app.buttons["Läsinställningar"].tap()
@@ -145,7 +145,7 @@ final class ReadingFlowTests: XCTestCase {
         number.tap()
         number.typeText("255")
         open.tap()
-        XCTAssertTrue(waitUntilHittable(verse))
+        XCTAssertTrue(waitUntilVerseStartsNearTop(verse))
         let markRead = app.buttons["reader.markRead.2.256"]
         scrollTo(markRead)
         XCTAssertTrue(markRead.isEnabled)
@@ -154,7 +154,7 @@ final class ReadingFlowTests: XCTestCase {
         XCTAssertEqual(progress.value as? String, "1 av 3 verser lästa")
         app.tabBars.buttons["Koranen"].tap()
         let laterVerse = app.staticTexts["reader.verse.2.256"]
-        XCTAssertTrue(waitUntilHittable(laterVerse), "A later read must replace the previous jump position on tab return")
+        XCTAssertTrue(waitUntilVerseStartsNearTop(laterVerse), "A later read must replace the previous jump position near the top on tab return")
     }
 
     func testLargeTextReadingAndLocalPreferencesRemainUsable() {
@@ -203,14 +203,33 @@ final class ReadingFlowTests: XCTestCase {
         add(attachment)
     }
 
-    private func waitUntilHittable(_ element: XCUIElement) -> Bool {
-        let visible = NSPredicate(format: "exists == true AND hittable == true")
+    private func waitUntilVerseStartsNearTop(_ element: XCUIElement) -> Bool {
+        let readerBar = app.navigationBars["Koranen"]
+        let tabBar = app.tabBars.firstMatch
+        let visible = NSPredicate { candidate, _ in
+            guard let candidate = candidate as? XCUIElement,
+                  readerBar.exists, tabBar.exists,
+                  candidate.exists, candidate.isHittable else { return false }
+            let top = readerBar.frame.maxY
+            let bottom = tabBar.frame.minY
+            let upperLimit = top + min(150, (bottom - top) / 4)
+            let frame = candidate.frame
+            return frame.minY >= top && frame.maxY <= upperLimit
+        }
         let expectation = XCTNSPredicateExpectation(predicate: visible, object: element)
         let ready = XCTWaiter.wait(for: [expectation], timeout: 5) == .completed
         if !ready {
             attachScreenshot("Reader-position-not-visible")
             let target = element.exists ? "Target frame: \(element.frame)\n\(element.debugDescription)" : "Target does not exist"
-            let diagnostic = XCTAttachment(string: "\(target)\n\(app.debugDescription)")
+            let bounds: String
+            if readerBar.exists && tabBar.exists {
+                let top = readerBar.frame.maxY
+                let upperLimit = top + min(150, (tabBar.frame.minY - top) / 4)
+                bounds = "Expected entire badge between y=\(top) and y=\(upperLimit)."
+            } else {
+                bounds = "Reader navigation bar or tab bar is missing."
+            }
+            let diagnostic = XCTAttachment(string: "\(bounds)\n\(target)\n\(app.debugDescription)")
             diagnostic.name = "Reader-target-frame-and-hierarchy"
             diagnostic.lifetime = .keepAlways
             add(diagnostic)

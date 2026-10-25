@@ -38,10 +38,15 @@ enhetsprov. Äldre modell-/REA-rapporter och Git-historik har bevarats.
   AX-rapporten 2:238–243 med 2:240 nära toppen; 2:255 saknades. Alltså kvarstod
   ett verkligt fel i långt hopp. Byggen, paket och backend passerade.
 - [Direkta versmål 40163850515](https://github.com/AllCrow/Koran-test-/actions/runs/40163850515),
-  källversion `7657e3ad31c58a49f99d19b0db8f37913d249ee2`: slutresultat inväntas.
+  källversion `7657e3ad31c58a49f99d19b0db8f37913d249ee2`: **success**.
   Kapitelbindningen ligger nu utanför LazyVStack, så versernas ForEach är
   direkta barn i target-layouten. Lazy-rendering, globala ID:n och samma
-  femsekunderskontroller är bevarade.
+  femsekunderskontroller är bevarade. **49 hostade och fem UI-flöden passerade**,
+  liksom 67 Mac-pakettester, 32 backendtester och båda Applebyggena.
+  Ett ägaråtkomligt releaseutkast skapades. Bildgranskningen upptäckte dock
+  att 2:255-badgen ligger nära nederkanten medan 2:254 fyller skärmen.
+  Hittability-kravet räckte därför inte för ett bra läsläge. Nästa rättning
+  använder native-listceller och skärper kravet till versnumret nära toppen.
 - Lokalt: **65 Swift-tester på Linux och 32 backendtester passerade**.
   Swift 6.0.3 använder paketets Swift 5-språkläge. Backendproven kördes med
   `ResourceWarning` som fel och riktig ffmpeg-avkodning av M4A/AAC/WAV.
@@ -51,7 +56,8 @@ enhetsprov. Äldre modell-/REA-rapporter och Git-historik har bevarats.
 ## Oberoende kontroll av den hämtade iPhone-filen
 
 Från artefakt **12586829932**, körning **40163850515**, hämtades byggnummer **23**.
-Paketkontrollerna är godkända; native-körningens slutresultat inväntas:
+Paketkontroller och den automatiska sviten är godkända. Den fortsatta
+positionsförbättringen ovan återstår innan paketet rekommenderas som senaste:
 
 | Fält | Observerat |
 | --- | --- |

@@ -77,11 +77,16 @@ control, retaining the value-change and relaunch assertions. Do not replace a
 failing interaction with a defaults injection. Direct verse jumps use global
 references, change reading position only, and must never award reading credit.
 After a jump, later explicit reading/listening must win over the old bookmark.
-Long variable-height suras need semantic `scrollPosition`/`scrollTargetLayout`,
-with the actual ForEach data IDs matching the global String row IDs. A single
-imperative `scrollTo` landed at 2:203 for a requested 2:255 in the real simulator.
-Keep the long-jump, relaunch, repeated-jump and later-position UI assertions.
-Manual jumps execute after sheet dismissal; keep the reader lazy.
+Long variable-height suras exposed inaccurate prefix estimates in LazyVStack:
+the real simulator landed at 2:203/240 for requested 2:255. Semantic targets
+eventually exposed the right badge at the bottom while the previous verse
+filled the screen. The reader now uses reusable native List rows with matching
+global String data/row IDs and ScrollViewReader commands after dismissal.
+Keep continuous reading and cell reuse. The four long-jump/relaunch/repeat/later
+position assertions require the entire target badge near the viewport's top
+within five seconds; mere existence or hittability is insufficient. Inspect
+the resulting screenshots as well as test results. Actual latest verification
+is recorded in STATUS.md; do not describe an unrun change as verified.
 
 Reading backup import is additive and validated before mutation. Keep its
 bounded file read, security-scoped/coordinated access and stale-request guard.
