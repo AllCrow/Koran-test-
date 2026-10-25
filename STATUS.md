@@ -12,6 +12,30 @@ analysserver är konfigurerad och Tarteel-kvalitetsmålet är inte uppfyllt.**
 
 ## Aktuell verifiering
 
+**Nyare integrerad appkod:** [CI50](https://github.com/AllCrow/Koran-test-/actions/runs/40184479157)
+är avslutad med **success** på `0d85b19426980c8f2c3c5ae46ac6a71458c11162`.
+De faktiskt lästa loggarna visar **91 hostade + åtta UI-prov per variant**,
+**82 unika portabla Swift-fall per Mac**, 36 backendprov och båda byggena.
+Alla tre tidigare simulator-/SDK-kombinationer passerade. Det är 99 olika
+native-/UI-fall utförda tre gånger, inte 297 olika fall. De tre nya
+[opt-in-proven med riktiga recitationer](docs/LIVE_RECITATION_AUDIT.md)
+är separata från dessa antal.
+
+Integrationen är `c907121e59eab81ae8848e2ca0311ab54f2aa6ec`; dess hela
+filträd matchar den hämtade faktiska Apple-checkouten
+`7d29ca28190cb24171c6ebaf61c7a8d203d55a3b`, tree
+`188fe37ce0dfb1d2eaee63e78427f68482e8480d`. Källgranskningens tidigare
+mainfiler ingår i detta träd. Paus-/positionstesterna behåller sina
+två-/femsekunderskrav. Bilderna av 2:255 från alla tre varianter är hämtade,
+hashkontrollerade och visuellt granskade.
+
+[Efterföljande main51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)
+på `c907121` är **fortfarande pågående** vid denna uppdatering. Den är
+inte ett godkänt huvudgrensresultat ännu och inget nytt beständigt
+ägarutkast påstås. Bygge46 nedan är senast verifierade ägarnedladdning.
+
+## Tidigare godkänd verifiering och ägarnedladdning46
+
 [PR #6:s körning 44](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
 har passerat alla tre simulatorvarianter, backendjobbet och det osignerade
 iPhone-bygget. Källkandidaten är
@@ -149,6 +173,15 @@ imaminspelningarna. Katalogtäckning bevisar inte korrekt ljud i samtliga
 6 236 filer. Det tidigare al-Afasy-fallet 112:2 är fortfarande inte
 sakkunnigt avgjort. EveryAyah-/tafsirvillkor och Tarteel-kvalitet är öppna.
 Denna källgranskning ändrar inte det godkända appbygget 46.
+
+Ett senare **separat native-källprov** har passerat på
+iPhone16e/iOS26.2/Xcode26.2: tolv riktiga EveryAyah-filer hämtades och
+avkodades via appens standardnedladdare och `AVAudioFile`. Hashkontrollerad
+112:2 spelades från återöppnad lokal lagring till faktiskt native-EOF för
+alla tre recitatörer, utan fallback. [Lästa loggar och resultatbilagor](docs/LIVE_RECITATION_AUDIT.md).
+Det är tre ytterligare opt-in-fall, skilda från ordinarie host-/UI-matris.
+Fysisk radio/offlineväxling, hörsel-/klippgränsgranskning och ljudrättigheter
+är fortfarande oprövade eller öppna; tajweedindikationen för112:2 är inte avgjord.
 
 ## Automatisk tajweedhjälp och REA
 

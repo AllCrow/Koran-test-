@@ -89,8 +89,13 @@ Inga ordtider, fysisk ljudrutt, energi-/värmemätningar eller nya
 modellanrop ingår. 112:2 har en hel avkodningsbar fil, men den tidigare
 tajweedindikationen för al-Afasy är fortfarande inte sakkunnigt avgjord.
 
-Nästa acceptanssteg är iOS-prov med de exakta filhasharna, följt av
-fysiskt prov enligt [telefonprotokollet](FIRST_IPHONE_TEST.md), samt
+Ett senare [separat native-iOS-prov](LIVE_RECITATION_AUDIT.md) har nu
+passerat: tolv riktiga al-Ikhlas-filer hämtades och avkodades, och exakt
+hashkontrollerad 112:2 spelades lokalt till native-EOF för alla tre
+recitatörer på iPhone16e/iOS26.2-simulator. Detta tillför iOS-bevis för den
+begränsade källmängden; det gör inte Linux-provet till ett iPhone-prov.
+Nästa acceptanssteg är fysiskt prov enligt
+[telefonprotokollet](FIRST_IPHONE_TEST.md), samt
 kunnig kontroll av recitatör, versinnehåll, Basmala och klippgränser.
 Samla rättighetsbekräftelser separat; en tekniskt fungerande ljudfil
 avslutar inte den kontrollen. Inga Tarteel- eller tajweedkvalitetsanspråk
