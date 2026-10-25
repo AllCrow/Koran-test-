@@ -8,6 +8,30 @@ import UIKit
 final class AppStore: ObservableObject {
     static let maximumReadingBackupBytes = 4 * 1_024 * 1_024
 
+    enum ArabicTextSize: String, CaseIterable, Identifiable {
+        case small, standard, large, extraLarge
+
+        var id: String { rawValue }
+
+        var displayName: String {
+            switch self {
+            case .small: return "Liten"
+            case .standard: return "Standard"
+            case .large: return "Stor"
+            case .extraLarge: return "Mycket stor"
+            }
+        }
+
+        var pointSize: Double {
+            switch self {
+            case .small: return 26
+            case .standard: return 30
+            case .large: return 36
+            case .extraLarge: return 42
+            }
+        }
+    }
+
     struct ReadingDayProgress: Equatable, Identifiable {
         let day: ReadingDay
         /// Noon in UTC represents a civil label, not a completion instant.
@@ -41,6 +65,7 @@ final class AppStore: ObservableObject {
     @Published private(set) var lastRead: AyahReference?
     @Published private(set) var bookmarks: Set<AyahReference> = []
     @Published private(set) var tajweedEnabled = true
+    @Published private(set) var arabicTextSize: ArabicTextSize = .standard
     @Published private(set) var dailyGoal = 3
     @Published private(set) var streak = StreakTracker()
     @Published private(set) var streakSummary = StreakSummary(current: 0, best: 0, completedToday: false)
@@ -56,6 +81,9 @@ final class AppStore: ObservableObject {
         let lastRead: AyahReference?
         let bookmarks: Set<AyahReference>
         let tajweedEnabled: Bool
+        /// Optional so earlier v1 reading states continue to decode unchanged.
+        /// A future unknown choice falls back without discarding reading data.
+        let arabicTextSize: String?
         let dailyGoal: Int
         let streak: StreakTracker
         let readAyahsByDay: [String: Set<AyahReference>]
@@ -101,6 +129,7 @@ final class AppStore: ObservableObject {
             lastRead = saved.lastRead
             bookmarks = saved.bookmarks
             tajweedEnabled = saved.tajweedEnabled
+            arabicTextSize = saved.arabicTextSize.flatMap(ArabicTextSize.init(rawValue:)) ?? .standard
             dailyGoal = min(50, max(1, saved.dailyGoal))
             streak = saved.streak
             readAyahsByDay = saved.readAyahsByDay
@@ -207,6 +236,12 @@ final class AppStore: ObservableObject {
     func setTajweedEnabled(_ enabled: Bool) {
         guard tajweedEnabled != enabled else { return }
         tajweedEnabled = enabled
+        persist()
+    }
+
+    func setArabicTextSize(_ size: ArabicTextSize) {
+        guard arabicTextSize != size else { return }
+        arabicTextSize = size
         persist()
     }
 
@@ -357,6 +392,7 @@ final class AppStore: ObservableObject {
             lastRead: lastRead,
             bookmarks: bookmarks,
             tajweedEnabled: tajweedEnabled,
+            arabicTextSize: arabicTextSize.rawValue,
             dailyGoal: dailyGoal,
             streak: streak,
             readAyahsByDay: readAyahsByDay

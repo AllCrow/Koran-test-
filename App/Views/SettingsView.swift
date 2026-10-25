@@ -1,6 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import QuranCore
+import QuranData
 
 @MainActor
 struct SettingsView: View {
@@ -35,6 +36,12 @@ struct SettingsView: View {
                 NavigationLink("Ljud för offline-lyssning") { AudioDownloadsView() }
                 Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: { store.setTajweedEnabled($0) }))
                     .accessibilityIdentifier("settings.tajweed")
+                NavigationLink {
+                    ArabicTextSizeView()
+                } label: {
+                    LabeledContent("Arabisk textstorlek", value: store.arabicTextSize.displayName)
+                }
+                .accessibilityIdentifier("settings.arabicTextSize.present")
                 Picker("Recitatör", selection: Binding(get: { player.selectedReciter }, set: {
                     recorder.stopAll()
                     player.selectReciter($0)
@@ -213,6 +220,49 @@ struct SettingsView: View {
     private func daysLabel(_ count: Int) -> String { count == 1 ? "1 dag" : "\(count) dagar" }
     private func surahName(_ reference: AyahReference) -> String {
         store.index?.surahs.first { $0.id == reference.surahID }?.englishName ?? "Sura \(reference.surahID)"
+    }
+}
+
+@MainActor
+private struct ArabicTextSizeView: View {
+    @EnvironmentObject private var store: AppStore
+    @State private var previewText: String?
+
+    var body: some View {
+        List {
+            Section {
+                ForEach(AppStore.ArabicTextSize.allCases) { size in
+                    Button { store.setArabicTextSize(size) } label: {
+                        HStack {
+                            Text(size.displayName).foregroundStyle(.primary)
+                            Spacer(minLength: 12)
+                            if store.arabicTextSize == size {
+                                Image(systemName: "checkmark").foregroundStyle(Palette.green)
+                                    .accessibilityHidden(true)
+                            }
+                        }.frame(minHeight: 44).contentShape(Rectangle())
+                    }
+                    .accessibilityValue(store.arabicTextSize == size ? "Vald" : "")
+                    .accessibilityAddTraits(store.arabicTextSize == size ? .isSelected : [])
+                    .accessibilityIdentifier("settings.arabicTextSize.\(size.rawValue)")
+                }
+            } footer: {
+                Text("Gäller arabisk text i läsning, tafsir och övning. Din iPhones inställning för textstorlek gäller också.")
+            }
+            if let previewText {
+                Section("Förhandsvisning · 1:1") {
+                    ArabicText(text: previewText, tajweed: nil, colored: false).padding(.vertical, 12)
+                }
+            }
+        }
+        .navigationTitle("Arabisk textstorlek")
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            // Use the bundled, validated source for the preview as well.
+            let chapter = try? await QuranRepository().loadChapter(id: 1)
+            guard !Task.isCancelled else { return }
+            previewText = chapter?.ayahs.first.map { QuranPresentation.verseText($0) }
+        }
     }
 }
 

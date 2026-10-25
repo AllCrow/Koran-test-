@@ -128,6 +128,19 @@ extension Color {
     }
 }
 
+private struct QuranTextSizeKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 30
+}
+
+extension EnvironmentValues {
+    /// The reader's chosen base size. ArabicText still scales this value with
+    /// Dynamic Type; changing a reading preference never caps accessibility.
+    var quranTextSize: CGFloat {
+        get { self[QuranTextSizeKey.self] }
+        set { self[QuranTextSizeKey.self] = newValue }
+    }
+}
+
 @MainActor
 struct Card<Content: View>: View {
     let content: Content
@@ -226,6 +239,7 @@ final class ArabicTextPreparationCache {
 
 @MainActor
 struct ArabicText: View {
+    @Environment(\.quranTextSize) private var textSize
     let text: String
     let tajweed: String?
     let colored: Bool
@@ -236,7 +250,7 @@ struct ArabicText: View {
         let spokenText = prepared?.plainText ?? text
         VStack(alignment: .trailing, spacing: 10) {
             rendered(safeSpans)
-            .font(.custom("AmiriQuran-Regular", size: 30, relativeTo: .title))
+            .font(.custom("AmiriQuran-Regular", size: textSize, relativeTo: .title))
             .lineSpacing(15)
             // In an explicit RTL environment, semantic leading is the right edge.
             .multilineTextAlignment(.leading)

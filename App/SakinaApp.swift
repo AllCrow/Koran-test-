@@ -32,6 +32,7 @@ struct SakinaApp: App {
                 .environmentObject(recorder)
                 .environmentObject(audioLibrary)
                 .environmentObject(assessment)
+                .environment(\.quranTextSize, CGFloat(store.arabicTextSize.pointSize))
                 .tint(Palette.green)
                 .task { await store.load() }
                 .onChange(of: scenePhase) { _, phase in

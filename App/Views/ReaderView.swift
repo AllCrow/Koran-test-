@@ -86,6 +86,11 @@ struct ReaderView: View {
                     }
                     .disabled(store.chapter == nil)
                     .accessibilityIdentifier("reader.jump.present")
+                    Picker("Arabisk textstorlek", selection: Binding(get: { store.arabicTextSize }, set: { store.setArabicTextSize($0) })) {
+                        ForEach(AppStore.ArabicTextSize.allCases) { size in
+                            Text(size.displayName).tag(size)
+                        }
+                    }
                     Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: { store.setTajweedEnabled($0) }))
                     Toggle("Visa färgförklaring", isOn: $showLegend)
                     Toggle("Fortsätt till nästa vers", isOn: $player.autoplay)

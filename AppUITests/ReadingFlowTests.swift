@@ -288,6 +288,37 @@ final class ReadingFlowTests: XCTestCase {
         XCTAssertEqual(progress.value as? String, "1 av 3 verser lästa")
     }
 
+    func testArabicTextSizeSelectionPersistsWithoutReadingCredit() {
+        app.tabBars.buttons["Mitt"].tap()
+        let openSizes = app.buttons["settings.arabicTextSize.present"]
+        scrollTo(openSizes)
+        openSizes.tap()
+        let standard = app.buttons["settings.arabicTextSize.standard"]
+        let extraLarge = app.buttons["settings.arabicTextSize.extraLarge"]
+        XCTAssertTrue(standard.waitForExistence(timeout: 5))
+        XCTAssertEqual(standard.value as? String, "Vald")
+        XCTAssertTrue(extraLarge.isHittable)
+        extraLarge.tap()
+        XCTAssertEqual(extraLarge.value as? String, "Vald")
+        XCTAssertEqual(standard.value as? String ?? "", "")
+        attachScreenshot("Settings-Arabic-size-preview")
+        app.tabBars.buttons["Koranen"].tap()
+        let markRead = app.buttons["reader.markRead.1.1"]
+        scrollFullyIntoView(markRead)
+        XCTAssertTrue(markRead.isEnabled)
+        attachScreenshot("Reader-extra-large-Arabic-size")
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Mitt"].waitForExistence(timeout: 10))
+        let progress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
+        XCTAssertEqual(progress.value as? String, "0 av 3 verser lästa")
+        app.tabBars.buttons["Mitt"].tap()
+        scrollTo(openSizes)
+        openSizes.tap()
+        XCTAssertTrue(extraLarge.waitForExistence(timeout: 5))
+        XCTAssertEqual(extraLarge.value as? String, "Vald", "The chosen base size must survive a real relaunch")
+    }
+
     private func attachScreenshot(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name
