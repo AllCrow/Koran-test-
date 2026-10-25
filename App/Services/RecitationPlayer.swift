@@ -46,7 +46,8 @@ final class RecitationPlayer: ObservableObject {
     private var itemNotifications: [NSObjectProtocol] = []
     private var interruptionNotification: NSObjectProtocol?
     private var routeNotification: NSObjectProtocol?
-    private var mediaServicesResetNotification: NSObjectProtocol?
+    private var mediaServiceNotifications: [NSObjectProtocol] = []
+    private var mediaServicesAvailable = true
     private var ownsAudioSession = false
     private var remoteCommandTargets: [(MPRemoteCommand, Any)] = []
 
@@ -72,12 +73,18 @@ final class RecitationPlayer: ObservableObject {
         player.automaticallyWaitsToMinimizeStalling = true
         // AVPlayer's media objects must be rebuilt if iOS restarts its audio
         // services, including when a controlled player does not own the session.
-        mediaServicesResetNotification = NotificationCenter.default.addObserver(
-            forName: AVAudioSession.mediaServicesWereResetNotification,
-            object: audioSession,
-            queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.recoverAfterMediaServicesReset() }
+        for name in [AVAudioSession.mediaServicesWereLostNotification, AVAudioSession.mediaServicesWereResetNotification] {
+            mediaServiceNotifications.append(NotificationCenter.default.addObserver(
+                forName: name, object: audioSession, queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    if name == AVAudioSession.mediaServicesWereLostNotification {
+                        self?.handleMediaServicesLoss()
+                    } else {
+                        self?.recoverAfterMediaServicesReset()
+                    }
+                }
+            })
         }
         guard integratesWithSystemAudio else { return }
         configureRemoteCommands()
@@ -132,7 +139,7 @@ final class RecitationPlayer: ObservableObject {
         if let token = routeNotification {
             NotificationCenter.default.removeObserver(token)
         }
-        if let token = mediaServicesResetNotification {
+        for token in mediaServiceNotifications {
             NotificationCenter.default.removeObserver(token)
         }
         player.pause()
@@ -171,6 +178,10 @@ final class RecitationPlayer: ObservableObject {
 
     func resume() {
         guard let reference = requestedReference else { return }
+        guard mediaServicesAvailable else {
+            errorMessage = Self.mediaServicesUnavailableMessage
+            return
+        }
         if hasReachedEnd || errorMessage != nil || player.currentItem?.status == .failed || player.currentItem == nil {
             load(reference: reference, shouldPlay: true)
             return
@@ -249,6 +260,13 @@ final class RecitationPlayer: ObservableObject {
         isPlaying = false
         isBuffering = shouldPlay
         errorMessage = nil
+        guard mediaServicesAvailable else {
+            wantsToPlay = false
+            isBuffering = false
+            errorMessage = Self.mediaServicesUnavailableMessage
+            updateNowPlaying()
+            return
+        }
         updateNowPlaying()
 
         guard shouldPlay else {
@@ -343,10 +361,34 @@ final class RecitationPlayer: ObservableObject {
         }
     }
 
+    private static let mediaServicesUnavailableMessage =
+        "Telefonens ljudtjänst är tillfälligt otillgänglig. Vänta tills den har startats om och tryck sedan på spela."
+
+    private func handleMediaServicesLoss() {
+        guard mediaServicesAvailable else { return }
+        mediaServicesAvailable = false
+        // The lost service can leave old media state and callbacks behind.
+        // Quiesce immediately, keep the user's selection, and wait for reset
+        // before constructing or activating replacement audio objects.
+        generation = UUID()
+        removeItemObservers()
+        wantsToPlay = false
+        ownsAudioSession = false
+        player.pause()
+        player.replaceCurrentItem(with: nil)
+        hasReachedEnd = false
+        activeReference = nil
+        isPlaying = false
+        isBuffering = false
+        errorMessage = requestedReference == nil ? nil : Self.mediaServicesUnavailableMessage
+        updateNowPlaying()
+    }
+
     private func recoverAfterMediaServicesReset() {
         // Audio services invalidated the old player and session. Invalidate
         // queued item callbacks before discarding either, retain the user's
         // exact selection, and require an explicit play action to resume.
+        mediaServicesAvailable = true
         generation = UUID()
         removeItemObservers()
         wantsToPlay = false

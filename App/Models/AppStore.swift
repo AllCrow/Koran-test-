@@ -6,7 +6,9 @@ import UIKit
 
 @MainActor
 final class AppStore: ObservableObject {
-    static let maximumReadingBackupBytes = 4 * 1_024 * 1_024
+    nonisolated static let maximumReadingBackupBytes = 4 * 1_024 * 1_024
+    typealias ChapterLoader = @MainActor @Sendable (Int) async throws -> QuranChapter
+    typealias IndexLoader = @MainActor @Sendable () async throws -> ContentIndex
 
     enum ArabicTextSize: String, CaseIterable, Identifiable {
         case small, standard, large, extraLarge
@@ -58,12 +60,14 @@ final class AppStore: ObservableObject {
     }
 
     enum ReadingBackupError: LocalizedError {
-        case tooLarge, invalidFile, unsupportedVersion, cannotExport
+        case tooLarge, combinedDataTooLarge, invalidFile, unsupportedVersion, cannotExport
 
         var errorDescription: String? {
             switch self {
             case .tooLarge:
                 return "Filen är för stor för en läskopia. Välj en kopia som har skapats av Sakina."
+            case .combinedDataTooLarge:
+                return "Den sammanlagda läsdatan blir för stor. Dina befintliga läsdata har inte ändrats."
             case .invalidFile:
                 return "Filen är ingen giltig läskopia från Sakina. Dina befintliga läsdata har inte ändrats."
             case .unsupportedVersion:
@@ -118,9 +122,12 @@ final class AppStore: ObservableObject {
     }
 
     private let repository: QuranRepository
+    private let chapterLoader: ChapterLoader
+    private let indexLoader: IndexLoader
     private let defaults: UserDefaults
     private let now: () -> Date
     private let calendar: () -> Calendar
+    private let readingDataByteLimit: Int
     private let storageKey = "sakina.reading-state.v1"
     private var readAyahsByDay: [String: Set<AyahReference>] = [:]
     private var currentDay: ReadingDay
@@ -132,14 +139,19 @@ final class AppStore: ObservableObject {
     private var dayChangeSubscription: AnyCancellable?
 
     init(repository: QuranRepository = QuranRepository(), defaults: UserDefaults = .standard,
-         now: @escaping () -> Date = Date.init, calendar: @escaping () -> Calendar = { .current }) {
+         now: @escaping () -> Date = Date.init, calendar: @escaping () -> Calendar = { .current },
+         readingDataByteLimit: Int = AppStore.maximumReadingBackupBytes,
+         chapterLoader: ChapterLoader? = nil, indexLoader: IndexLoader? = nil) {
         self.repository = repository
+        self.chapterLoader = chapterLoader ?? { id in try await repository.loadChapter(id: id) }
+        self.indexLoader = indexLoader ?? { try await repository.loadIndex() }
         self.defaults = defaults
         self.now = now
         self.calendar = calendar
+        self.readingDataByteLimit = min(Self.maximumReadingBackupBytes, max(1, readingDataByteLimit))
         summaryDate = now()
         currentDay = ReadingDay(date: summaryDate, calendar: calendar())
-        if let data = defaults.data(forKey: storageKey), data.count <= Self.maximumReadingBackupBytes,
+        if let data = defaults.data(forKey: storageKey), data.count <= self.readingDataByteLimit,
            let saved = try? JSONDecoder().decode(SavedState.self, from: data), saved.version == 1 {
             selectedSurahID = (1...114).contains(saved.selectedSurahID) ? saved.selectedSurahID : 1
             lastRead = saved.lastRead
@@ -162,47 +174,107 @@ final class AppStore: ObservableObject {
     }
 
     func load() async {
+        guard !Task.isCancelled else { return }
         if index == nil {
+            let requestID = UUID()
+            chapterRequestID = requestID
             isLoading = true
-            errorMessage = nil
-            do {
-                index = try await repository.loadIndex()
-            } catch {
-                isLoading = false
-                errorMessage = error.localizedDescription
+            let loaded = await withTaskCancellationHandler {
+                do {
+                    let loadedIndex = try await indexLoader()
+                    guard !Task.isCancelled else {
+                        cancelChapterRequest(requestID)
+                        return false
+                    }
+                    // The immutable catalogue remains useful even when a
+                    // newer explicit chapter request supersedes cold start.
+                    // Publish it without settling that newer request's state.
+                    if index == nil { index = loadedIndex }
+                    guard chapterRequestID == requestID else { return false }
+                    return true
+                } catch {
+                    guard chapterRequestID == requestID else { return false }
+                    guard !Task.isCancelled, !(error is CancellationError) else {
+                        cancelChapterRequest(requestID)
+                        return false
+                    }
+                    isLoading = false
+                    errorMessage = error.localizedDescription
+                    return false
+                }
+            } onCancel: { [weak self] in
+                Task { @MainActor [weak self] in self?.cancelChapterRequest(requestID) }
+            }
+            guard loaded, chapterRequestID == requestID else { return }
+            guard !Task.isCancelled else {
+                cancelChapterRequest(requestID)
                 return
             }
+            // Index loading has settled. A cancellation between this point
+            // and openSurah's entry must not leave its progress flag behind.
+            isLoading = false
         }
         await openSurah(selectedSurahID)
     }
 
-    /// A slow earlier request must never replace the chapter selected afterward.
+    /// Loading is transactional: leaving a screen preserves the last settled
+    /// chapter, selection and error. An obsolete result cannot replace a newer
+    /// request, including when the repository does not cooperate with cancellation.
     func openSurah(_ id: Int) async {
-        guard (1...AyahReference.ayahCounts.count).contains(id) else { return }
+        guard !Task.isCancelled, (1...AyahReference.ayahCounts.count).contains(id) else { return }
         let requestID = UUID()
         chapterRequestID = requestID
-        if selectedSurahID != id {
-            selectedSurahID = id
-            persist()
-        }
         if chapter?.surah.id == id {
             isLoading = false
             errorMessage = nil
             return
         }
-        chapter = nil
         isLoading = true
-        errorMessage = nil
-        do {
-            let loadedChapter = try await repository.loadChapter(id: id)
-            guard chapterRequestID == requestID else { return }
-            chapter = loadedChapter
-            isLoading = false
-        } catch {
-            guard chapterRequestID == requestID else { return }
-            isLoading = false
-            errorMessage = error.localizedDescription
+        await withTaskCancellationHandler {
+            guard !Task.isCancelled else {
+                cancelChapterRequest(requestID)
+                return
+            }
+            do {
+                let loadedChapter = try await chapterLoader(id)
+                guard chapterRequestID == requestID else { return }
+                guard !Task.isCancelled else {
+                    cancelChapterRequest(requestID)
+                    return
+                }
+                let selectionChanged = selectedSurahID != id
+                if selectionChanged { selectedSurahID = id }
+                chapter = loadedChapter
+                errorMessage = nil
+                isLoading = false
+                if selectionChanged { persist() }
+            } catch {
+                guard chapterRequestID == requestID else { return }
+                guard !Task.isCancelled, !(error is CancellationError) else {
+                    cancelChapterRequest(requestID)
+                    return
+                }
+                // Keep the failed target for the existing explicit retry action.
+                // Only a genuine failure changes the settled selection and error.
+                let selectionChanged = selectedSurahID != id
+                if selectionChanged { selectedSurahID = id }
+                chapter = nil
+                isLoading = false
+                errorMessage = error.localizedDescription
+                if selectionChanged { persist() }
+            }
+        } onCancel: { [weak self] in
+            // A decoder may finish after the user has left. Clear only this
+            // request's progress promptly, without retaining the store or
+            // cancelling/reverting a later reader selection.
+            Task { @MainActor [weak self] in self?.cancelChapterRequest(requestID) }
         }
+    }
+
+    private func cancelChapterRequest(_ requestID: UUID) {
+        guard chapterRequestID == requestID else { return }
+        chapterRequestID = UUID()
+        isLoading = false
     }
 
     func setLastRead(_ reference: AyahReference) {
@@ -270,25 +342,16 @@ final class AppStore: ObservableObject {
 
     func readingBackupData() throws -> Data {
         refreshDay()
-        let backup = ReadingBackup(
-            format: "sakina-reading-backup", version: 1, exportedAt: now(),
-            bookmarks: bookmarks, lastRead: lastRead,
-            completedDays: streak.completionDays, readAyahsByDay: readAyahsByDay
-        )
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = [.sortedKeys]
-        let data: Data
-        do { data = try encoder.encode(backup) }
-        catch { throw ReadingBackupError.cannotExport }
-        guard data.count <= Self.maximumReadingBackupBytes else { throw ReadingBackupError.tooLarge }
+        let data = try encodedReadingBackup(bookmarks: bookmarks, lastRead: lastRead,
+                                           streak: streak, marks: readAyahsByDay, exportedAt: now())
+        guard data.count <= readingDataByteLimit else { throw ReadingBackupError.tooLarge }
         return data
     }
 
     /// Validate everything before changing any state. Import is additive and
     /// idempotent; current preferences and an existing reading position remain.
     func mergeReadingBackup(_ data: Data) throws {
-        guard data.count <= Self.maximumReadingBackupBytes else { throw ReadingBackupError.tooLarge }
+        guard data.count <= readingDataByteLimit else { throw ReadingBackupError.tooLarge }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let backup: ReadingBackup
@@ -306,14 +369,41 @@ final class AppStore: ObservableObject {
         for (day, references) in backup.readAyahsByDay {
             mergedMarks[day, default: []].formUnion(references)
         }
-        let mergedStreak = StreakTracker(completionDays: streak.completionDays + backup.completedDays)
-        bookmarks.formUnion(backup.bookmarks)
-        if lastRead == nil { lastRead = backup.lastRead }
+        let mergeDate = now()
+        let mergeCalendar = calendar()
+        let mergeDay = ReadingDay(date: mergeDate, calendar: mergeCalendar)
+        let retained = Self.retainedDetailedDays(in: mergedMarks, currentDay: mergeDay)
+        mergedMarks = mergedMarks.filter { retained.contains($0.key) }
+        var mergedStreak = StreakTracker(completionDays: streak.completionDays + backup.completedDays)
+        let mergedCount = mergedMarks[mergeDay.id]?.count ?? 0
+        if mergedCount >= dailyGoal, !mergedStreak.isCompleted(on: mergeDate, calendar: mergeCalendar) {
+            mergedStreak.complete(on: mergeDate, calendar: mergeCalendar)
+        }
+        let mergedBookmarks = bookmarks.union(backup.bookmarks)
+        let mergedLastRead = lastRead ?? backup.lastRead
+        guard let savedData = encodedReadingState(bookmarks: mergedBookmarks, lastRead: mergedLastRead,
+                                                 streak: mergedStreak, marks: mergedMarks) else {
+            throw ReadingBackupError.invalidFile
+        }
+        let exportData = try encodedReadingBackup(bookmarks: mergedBookmarks, lastRead: mergedLastRead,
+                                                 streak: mergedStreak, marks: mergedMarks, exportedAt: mergeDate)
+        // Individually valid files can have a union larger than the launch
+        // reader accepts. Reject before publishing or replacing any saved data.
+        guard savedData.count <= readingDataByteLimit, exportData.count <= readingDataByteLimit else {
+            throw ReadingBackupError.combinedDataTooLarge
+        }
+
+        if bookmarks != mergedBookmarks { bookmarks = mergedBookmarks }
+        if lastRead != mergedLastRead { lastRead = mergedLastRead }
         readAyahsByDay = mergedMarks
-        streak = mergedStreak
-        refreshDay()
-        updateDailyProgress()
-        persist()
+        if streak != mergedStreak { streak = mergedStreak }
+        summaryDate = mergeDate
+        currentDay = mergeDay
+        if todayReadCount != mergedCount { todayReadCount = mergedCount }
+        let completed = mergedStreak.isCompleted(on: mergeDate, calendar: mergeCalendar)
+        if dailyGoalMet != completed { dailyGoalMet = completed }
+        updateReadingSummaries()
+        defaults.set(savedData, forKey: storageKey)
     }
 
     private static func isValidReadingDayKey(_ key: String) -> Bool {
@@ -345,13 +435,14 @@ final class AppStore: ObservableObject {
         updateReadingSummaries()
     }
 
-    private func retainedDetailedDays() -> Set<String> {
+    private static func retainedDetailedDays(in marks: [String: Set<AyahReference>],
+                                            currentDay: ReadingDay) -> Set<String> {
         var civil = Calendar(identifier: .gregorian)
         civil.timeZone = TimeZone(secondsFromGMT: 0)!
         guard let today = currentDay.date(in: civil),
               let firstDate = civil.date(byAdding: .day, value: -6, to: today) else { return [] }
         let firstDay = ReadingDay(date: firstDate, calendar: civil)
-        let candidates = readAyahsByDay.keys.compactMap { key -> (key: String, distance: Int)? in
+        let candidates = marks.keys.compactMap { key -> (key: String, distance: Int)? in
             guard let day = Self.readingDay(for: key), day >= firstDay,
                   let date = day.date(in: civil),
                   let distance = civil.dateComponents([.day], from: today, to: date).day else { return nil }
@@ -367,7 +458,7 @@ final class AppStore: ObservableObject {
     }
 
     private func pruneDetailedMarks() -> Bool {
-        let retainedDays = retainedDetailedDays()
+        let retainedDays = Self.retainedDetailedDays(in: readAyahsByDay, currentDay: currentDay)
         let previousCount = readAyahsByDay.count
         readAyahsByDay = readAyahsByDay.filter { retainedDays.contains($0.key) }
         return readAyahsByDay.count != previousCount
@@ -409,6 +500,14 @@ final class AppStore: ObservableObject {
     }
 
     private func persist() {
+        guard let data = encodedReadingState(bookmarks: bookmarks, lastRead: lastRead,
+                                            streak: streak, marks: readAyahsByDay),
+              data.count <= readingDataByteLimit else { return }
+        defaults.set(data, forKey: storageKey)
+    }
+
+    private func encodedReadingState(bookmarks: Set<AyahReference>, lastRead: AyahReference?,
+                                     streak: StreakTracker, marks: [String: Set<AyahReference>]) -> Data? {
         let state = SavedState(
             version: 1,
             selectedSurahID: selectedSurahID,
@@ -419,9 +518,21 @@ final class AppStore: ObservableObject {
             appearance: appearance.rawValue,
             dailyGoal: dailyGoal,
             streak: streak,
-            readAyahsByDay: readAyahsByDay
+            readAyahsByDay: marks
         )
-        guard let data = try? JSONEncoder().encode(state) else { return }
-        defaults.set(data, forKey: storageKey)
+        return try? JSONEncoder().encode(state)
+    }
+
+    private func encodedReadingBackup(bookmarks: Set<AyahReference>, lastRead: AyahReference?,
+                                      streak: StreakTracker, marks: [String: Set<AyahReference>],
+                                      exportedAt: Date) throws -> Data {
+        let backup = ReadingBackup(format: "sakina-reading-backup", version: 1, exportedAt: exportedAt,
+                                   bookmarks: bookmarks, lastRead: lastRead,
+                                   completedDays: streak.completionDays, readAyahsByDay: marks)
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.sortedKeys]
+        do { return try encoder.encode(backup) }
+        catch { throw ReadingBackupError.cannotExport }
     }
 }

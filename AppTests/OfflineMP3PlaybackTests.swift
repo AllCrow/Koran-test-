@@ -42,8 +42,8 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         player.playOnce(reference: verse, chapterVerseCount: 7)
         await waitFor(player.$activeReference, matching: { $0 == verse })
 
-        player.pause()
-        await waitForNativePause(context)
+        await waitForNativePlayback(context)
+        await waitForNativePause(context) { player.pause() }
         XCTAssertFalse(player.isPlaying)
         XCTAssertFalse(player.isBuffering)
         XCTAssertEqual(player.activeReference, verse)
@@ -120,20 +120,33 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         context.player.playOnce(reference: verse, chapterVerseCount: 7)
         await waitFor(context.player.$activeReference, matching: { $0 == verse })
         let session = AVAudioSession.sharedInstance()
-        NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: session,
-            userInfo: [AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.began.rawValue])
-        await waitForNativePause(context)
+        let originalItem = try XCTUnwrap(context.engine.currentItem)
+        let originalURL = try XCTUnwrap(assetURL(context.engine))
+        await waitForNativePlayback(context)
+        await waitForNativePause(context) {
+            NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: session,
+                userInfo: [AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.began.rawValue])
+        }
         XCTAssertEqual(context.player.activeReference, verse)
         XCTAssertEqual(context.engine.rate, 0)
+        XCTAssertTrue(context.engine.currentItem === originalItem)
+        XCTAssertEqual(assetURL(context.engine), originalURL)
 
-        context.player.resume()
-        await waitFor(context.player.$isPlaying, matching: { $0 })
-        NotificationCenter.default.post(name: AVAudioSession.routeChangeNotification, object: session,
-            userInfo: [AVAudioSessionRouteChangeReasonKey: AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue])
-        await waitForNativePause(context)
+        // A UI flag alone cannot prove that the native resume has settled.
+        // Observe before the command, then require positive rate and .playing
+        // on the same engine before simulating headphone removal.
+        await waitForNativePlayback(context) { context.player.resume() }
+        XCTAssertTrue(context.engine.currentItem === originalItem)
+        XCTAssertEqual(assetURL(context.engine), originalURL)
+        await waitForNativePause(context) {
+            NotificationCenter.default.post(name: AVAudioSession.routeChangeNotification, object: session,
+                userInfo: [AVAudioSessionRouteChangeReasonKey: AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue])
+        }
         XCTAssertEqual(context.player.requestedReference, verse)
         XCTAssertEqual(context.player.activeReference, verse)
         XCTAssertEqual(context.engine.rate, 0)
+        XCTAssertTrue(context.engine.currentItem === originalItem)
+        XCTAssertEqual(assetURL(context.engine), originalURL)
         XCTAssertNil(context.player.errorMessage)
         XCTAssertTrue(context.fallbacks.references.isEmpty)
     }
@@ -174,21 +187,14 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         XCTAssertFalse(context.player.isBuffering)
     }
 
-    private func waitForNativePause(_ context: Fixture) async {
-        // isPlaying can also become false while buffering. Observe the native
-        // engine instead of assuming that a published UI flag settles its rate.
-        let paused = expectation(description: "AVPlayer acknowledges the pause before the tone ends")
-        let token = context.engine.publisher(for: \.rate, options: [.initial, .new])
-            .combineLatest(context.engine.publisher(for: \.timeControlStatus, options: [.initial, .new]))
-            // Native KVO values can already be stale when an async waiter
-            // resumes. Check the current engine on the same queue as intent
-            // enforcement, after its setter/actor callbacks can return.
-            .receive(on: DispatchQueue.main)
-            .first(where: { $0.0 == 0 && $0.1 == .paused
-                && context.engine.rate == 0 && context.engine.timeControlStatus == .paused })
-            .sink { _ in paused.fulfill() }
-        defer { token.cancel() }
-        await fulfillment(of: [paused], timeout: 2)
+    private func waitForNativePlayback(_ context: Fixture, action: () -> Void = {}) async {
+        await waitForNativeState(context, playing: true, action: action)
+        XCTAssertGreaterThan(context.engine.rate, 0)
+        XCTAssertEqual(context.engine.timeControlStatus, .playing)
+    }
+
+    private func waitForNativePause(_ context: Fixture, action: () -> Void) async {
+        await waitForNativeState(context, playing: false, action: action)
         XCTAssertEqual(context.engine.rate, 0)
         XCTAssertEqual(context.engine.timeControlStatus, .paused)
         XCTAssertFalse(context.player.isPlaying)
@@ -196,6 +202,63 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         XCTAssertFalse(context.player.hasFinishedVerse, "Natural completion must not satisfy a pause probe")
         XCTAssertLessThan(context.engine.currentTime().seconds, 2.5,
                           "The generated three-second tone must still have audio left after a pause")
+    }
+
+    private func waitForNativeState(_ context: Fixture, playing: Bool, action: () -> Void) async {
+        let reached = expectation(description: playing
+            ? "AVPlayer acknowledges actual playback"
+            : "AVPlayer acknowledges the requested pause before the tone ends")
+        let started = Date()
+        var trace: [String] = []
+        var actionRequested = false
+        var observing = true
+        var fulfilled = false
+        let recordSnapshot: @MainActor (String) -> Void = { trigger in
+            if trace.count == 64 { trace.removeFirst() }
+            trace.append("\(Date().timeIntervalSince(started))s \(trigger): rate=\(context.engine.rate) " +
+                         "status=\(context.engine.timeControlStatus.rawValue) clock=\(context.engine.currentTime().seconds) " +
+                         "UIplaying=\(context.player.isPlaying) buffering=\(context.player.isBuffering) " +
+                         "ended=\(context.player.hasFinishedVerse)")
+        }
+        let inspectCurrentState: @MainActor (String) -> Void = { trigger in
+            guard observing, actionRequested else { return }
+            // KVO only wakes the probe. Its independently buffered property
+            // values are not a coherent acknowledgement of the current engine.
+            let rate = context.engine.rate
+            let status = context.engine.timeControlStatus
+            recordSnapshot(trigger)
+            let matches = playing ? rate > 0 && status == .playing : rate == 0 && status == .paused
+            if !fulfilled && matches {
+                fulfilled = true
+                reached.fulfill()
+            }
+        }
+        // Register before pause/notification/resume, without .initial. This
+        // prevents an initial residual paused state acknowledging a later action.
+        let token = context.engine.publisher(for: \.rate, options: [.new]).map { _ in "rate" }
+            .merge(with: context.engine.publisher(for: \.timeControlStatus, options: [.new]).map { _ in "timeControl" })
+            .sink { trigger in
+                Task { @MainActor in inspectCurrentState(trigger) }
+            }
+        defer { observing = false; token.cancel() }
+        recordSnapshot("before-command")
+        action()
+        actionRequested = true
+        Task { @MainActor in inspectCurrentState("after-command") }
+        await fulfillment(of: [reached], timeout: 2)
+        recordSnapshot("final")
+        let matches = playing
+            ? context.engine.rate > 0 && context.engine.timeControlStatus == .playing
+            : context.engine.rate == 0 && context.engine.timeControlStatus == .paused
+        let invalidPause = !playing && (context.player.isPlaying || context.player.isBuffering
+            || context.player.hasFinishedVerse || !(context.engine.currentTime().seconds < 2.5))
+        if !matches || !fulfilled || invalidPause {
+            XCTContext.runActivity(named: playing ? "Native playback state trace" : "Native pause state trace") { activity in
+                let attachment = XCTAttachment(string: trace.joined(separator: "\n"))
+                attachment.lifetime = .keepAlways
+                activity.add(attachment)
+            }
+        }
     }
 
     private func waitFor<Value>(_ publisher: Published<Value>.Publisher,

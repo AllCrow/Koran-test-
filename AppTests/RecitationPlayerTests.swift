@@ -219,6 +219,137 @@ final class RecitationPlayerTests: XCTestCase {
         XCTAssertNil(rig.service.errorMessage)
     }
 
+    func testMediaServicesLossStopsTheActualEngineAndWaitsForResetAndExplicitResume() async throws {
+        let source = try wave(seconds: 8)
+        let verse = try reference(4)
+        let original = AVPlayer()
+        original.isMuted = true
+        let replacement = AVPlayer()
+        replacement.isMuted = true
+        var requests: [AyahReference] = []
+        var replacementCount = 0
+        let service = RecitationPlayer(
+            player: original, audioURL: { reference, _ in requests.append(reference); return source },
+            defaults: try isolatedDefaults(), integratesWithSystemAudio: false,
+            makeReplacementPlayer: { replacementCount += 1; return replacement }
+        )
+        defer { service.stop() }
+        service.selectReciter(.minshawi)
+        service.autoplay = false
+        let began = expectation(description: "The original engine starts before simulated service loss")
+        let beganToken = service.$activeReference.first(where: { $0 == verse }).sink { _ in began.fulfill() }
+        defer { beganToken.cancel() }
+        service.playOnce(reference: verse, chapterVerseCount: 7)
+        await fulfillment(of: [began], timeout: 12)
+        let oldItem = try XCTUnwrap(original.currentItem)
+        XCTAssertGreaterThan(original.rate, 0)
+        XCTAssertEqual(original.timeControlStatus, .playing)
+        XCTAssertLessThan(original.currentTime().seconds, 6, "The eight-second file must still have audio before loss")
+
+        let paused = expectation(description: "Service loss stops the real engine before natural EOF")
+        let pauseToken = original.publisher(for: \.rate, options: [.initial, .new])
+            .combineLatest(original.publisher(for: \.timeControlStatus, options: [.initial, .new]))
+            .receive(on: DispatchQueue.main)
+            .first(where: { $0.0 == 0 && $0.1 == .paused
+                && original.rate == 0 && original.timeControlStatus == .paused })
+            .sink { _ in paused.fulfill() }
+        defer { pauseToken.cancel() }
+        // Queue old item events before loss: their actor tasks must not alter
+        // the retained selection or turn the service interruption into EOF.
+        NotificationCenter.default.post(name: AVPlayerItem.didPlayToEndTimeNotification, object: oldItem)
+        NotificationCenter.default.post(name: AVPlayerItem.failedToPlayToEndTimeNotification, object: oldItem)
+        NotificationCenter.default.post(name: AVAudioSession.mediaServicesWereLostNotification,
+                                        object: AVAudioSession.sharedInstance())
+        await fulfillment(of: [paused], timeout: 2)
+
+        XCTAssertEqual(original.rate, 0)
+        XCTAssertEqual(original.timeControlStatus, .paused)
+        XCTAssertNil(original.currentItem)
+        XCTAssertEqual(replacementCount, 0, "A replacement must wait for the reset notification")
+        XCTAssertEqual(requests, [verse])
+        XCTAssertEqual(service.requestedReference, verse)
+        XCTAssertEqual(service.selectedReciter, .minshawi)
+        XCTAssertFalse(service.autoplay)
+        XCTAssertNil(service.activeReference)
+        XCTAssertFalse(service.isPlaying)
+        XCTAssertFalse(service.isBuffering)
+        XCTAssertFalse(service.hasFinishedVerse)
+        XCTAssertTrue(try XCTUnwrap(service.errorMessage).contains("otillgänglig"))
+
+        service.resume()
+        XCTAssertEqual(requests, [verse], "An explicit retry must not use the unavailable service")
+        XCTAssertNil(original.currentItem)
+        XCTAssertEqual(replacementCount, 0)
+
+        NotificationCenter.default.post(name: AVAudioSession.mediaServicesWereResetNotification,
+                                        object: AVAudioSession.sharedInstance())
+        XCTAssertEqual(replacementCount, 1)
+        XCTAssertNil(replacement.currentItem, "Reset alone must not resume recitation")
+        XCTAssertEqual(requests, [verse])
+        XCTAssertEqual(service.requestedReference, verse)
+        XCTAssertEqual(service.selectedReciter, .minshawi)
+        XCTAssertFalse(service.autoplay)
+        XCTAssertFalse(service.isPlaying)
+        XCTAssertFalse(service.isBuffering)
+
+        let resumed = expectation(description: "An explicit action after reset starts the replacement engine")
+        let resumedToken = service.$activeReference.first(where: { $0 == verse }).sink { _ in resumed.fulfill() }
+        defer { resumedToken.cancel() }
+        service.resume()
+        NotificationCenter.default.post(name: AVPlayerItem.didPlayToEndTimeNotification, object: oldItem)
+        NotificationCenter.default.post(name: AVPlayerItem.failedToPlayToEndTimeNotification, object: oldItem)
+        await fulfillment(of: [resumed], timeout: 12)
+        XCTAssertGreaterThan(replacement.rate, 0)
+        XCTAssertEqual(replacement.timeControlStatus, .playing)
+        XCTAssertEqual(requests, [verse, verse])
+        XCTAssertEqual(service.requestedReference, verse)
+        XCTAssertEqual(service.activeReference, verse)
+        XCTAssertNil(service.errorMessage)
+    }
+
+    func testMediaServicesLossWhileStoppedDefersNewSelectionsUntilReset() throws {
+        let source = try wave(seconds: 8)
+        let verse = try reference(2)
+        let original = AVPlayer()
+        let replacement = AVPlayer()
+        var requestCount = 0
+        var replacementCount = 0
+        let service = RecitationPlayer(
+            player: original, audioURL: { _, _ in requestCount += 1; return source },
+            defaults: try isolatedDefaults(), integratesWithSystemAudio: false,
+            makeReplacementPlayer: { replacementCount += 1; return replacement }
+        )
+        defer { service.stop() }
+        NotificationCenter.default.post(name: AVAudioSession.mediaServicesWereLostNotification,
+                                        object: AVAudioSession.sharedInstance())
+        XCTAssertNil(service.requestedReference)
+        XCTAssertNil(service.errorMessage, "An idle service must not invent a playback error")
+        XCTAssertEqual(replacementCount, 0)
+
+        service.play(reference: verse, chapterVerseCount: 7)
+        service.selectReciter(.husary)
+        service.resume()
+        XCTAssertEqual(requestCount, 0, "New selections must not load media during service loss")
+        XCTAssertEqual(replacementCount, 0)
+        XCTAssertNil(original.currentItem)
+        XCTAssertEqual(service.requestedReference, verse)
+        XCTAssertEqual(service.selectedReciter, .husary)
+        XCTAssertFalse(service.isPlaying)
+        XCTAssertFalse(service.isBuffering)
+        XCTAssertTrue(try XCTUnwrap(service.errorMessage).contains("otillgänglig"))
+
+        service.stop()
+        NotificationCenter.default.post(name: AVAudioSession.mediaServicesWereResetNotification,
+                                        object: AVAudioSession.sharedInstance())
+        XCTAssertEqual(replacementCount, 1)
+        XCTAssertEqual(requestCount, 0)
+        XCTAssertNil(replacement.currentItem)
+        XCTAssertNil(service.requestedReference)
+        XCTAssertNil(service.errorMessage)
+        XCTAssertFalse(service.isPlaying)
+        XCTAssertFalse(service.isBuffering)
+    }
+
     func testMediaServicesResetKeepsSelectionAndRebuildsOnlyOnExplicitResume() async throws {
         let source = try wave(seconds: 8)
         let verse = try reference(4)
