@@ -178,9 +178,7 @@ final class FeatureFlowTests: XCTestCase {
     func testSavedAudioLibraryShowsExactUsageAndDeletionPersistsAcrossRelaunch() {
         app.tabBars.buttons["Mitt"].tap()
         openSettingsLink("settings.audioLibrary")
-        let bytes = element("downloads.inventory.bytes")
-        scrollFullyIntoView(bytes)
-        XCTAssertTrue(waitForValue("2502 byte", on: bytes))
+        XCTAssertTrue(scrollLibraryMetadataIntoView("downloads.inventory.bytes", expectedValue: "2502 byte"))
         let fatiha = app.buttons["downloads.saved.1.alafasy"]
         scrollFullyIntoView(fatiha)
         XCTAssertEqual(ungroupedAccessibilityValue(fatiha.value), "2 av 7 verser, 1668 byte")
@@ -195,9 +193,7 @@ final class FeatureFlowTests: XCTestCase {
         let selectedReciter = app.buttons["downloads.reciter"]
         XCTAssertTrue(selectedReciter.label.contains("Mahmoud al-Husary")
             || (selectedReciter.value as? String)?.contains("Mahmoud al-Husary") == true)
-        let selectedCount = element("downloads.selection.count")
-        scrollFullyIntoView(selectedCount)
-        XCTAssertEqual(selectedCount.value as? String, "1 av 4 verser")
+        XCTAssertTrue(scrollLibraryMetadataIntoView("downloads.selection.count", expectedValue: "1 av 4 verser"))
         tapContent(app.buttons["downloads.saved.play"])
         XCTAssertTrue(element("reader.verse.112.1").waitForExistence(timeout: 5))
         XCTAssertTrue(waitUntilReadableBadgeIsInsideReader("reader.verse.112.1"),
@@ -232,8 +228,7 @@ final class FeatureFlowTests: XCTestCase {
             return
         }
         confirm.tap()
-        scrollFullyIntoView(element("downloads.inventory.bytes"))
-        XCTAssertTrue(waitForValue("1668 byte", on: element("downloads.inventory.bytes")))
+        XCTAssertTrue(scrollLibraryMetadataIntoView("downloads.inventory.bytes", expectedValue: "1668 byte"))
         scrollFullyIntoView(app.buttons["downloads.saved.1.alafasy"])
         XCTAssertFalse(app.buttons["downloads.saved.112.husary"].exists)
         XCTAssertEqual(ungroupedAccessibilityValue(app.buttons["downloads.saved.1.alafasy"].value),
@@ -242,8 +237,7 @@ final class FeatureFlowTests: XCTestCase {
         relaunch()
         app.tabBars.buttons["Mitt"].tap()
         openSettingsLink("settings.audioLibrary")
-        scrollFullyIntoView(element("downloads.inventory.bytes"))
-        XCTAssertTrue(waitForValue("1668 byte", on: element("downloads.inventory.bytes")))
+        XCTAssertTrue(scrollLibraryMetadataIntoView("downloads.inventory.bytes", expectedValue: "1668 byte"))
         scrollFullyIntoView(app.buttons["downloads.saved.1.alafasy"])
         XCTAssertFalse(app.buttons["downloads.saved.112.husary"].exists,
                        "A relaunch must not recreate files deleted through the actual confirmation")
@@ -381,6 +375,99 @@ final class FeatureFlowTests: XCTestCase {
     private func tapContent(_ element: XCUIElement) {
         scrollFullyIntoView(element)
         element.tap()
+    }
+
+    private struct LibraryMetadataObservation {
+        var frame: CGRect?
+        var viewport: CGRect?
+        var ready = false
+        var detail: String
+    }
+
+    private func observeLibraryMetadata(_ identifier: String, expectedValue: String) -> LibraryMetadataObservation {
+        guard let snapshot = try? app.snapshot() else {
+            return LibraryMetadataObservation(detail: "A current native app snapshot was unavailable.")
+        }
+        var pending: [(node: any XCUIElementSnapshot, window: (any XCUIElementSnapshot)?)] = [(snapshot, nil)]
+        var globalMatches = 0
+        var libraryBars: [(node: any XCUIElementSnapshot, window: (any XCUIElementSnapshot)?)] = []
+        while let item = pending.popLast() {
+            let window = item.node.elementType == .window ? item.node : item.window
+            if item.node.identifier == identifier { globalMatches += 1 }
+            if item.node.elementType == .navigationBar && item.node.identifier == "Ljud offline" {
+                libraryBars.append((item.node, window))
+            }
+            pending.append(contentsOf: item.node.children.map { ($0, window) })
+        }
+        var observation = LibraryMetadataObservation(detail: "Exact ID \(identifier): \(globalMatches) global matches; \(libraryBars.count) library navigation bars.")
+        guard libraryBars.count == 1, let bar = libraryBars.first, let window = bar.window else { return observation }
+        var nodes: [any XCUIElementSnapshot] = [window]
+        var targets: [any XCUIElementSnapshot] = []
+        var tabs: [any XCUIElementSnapshot] = []
+        while let node = nodes.popLast() {
+            if node.identifier == identifier { targets.append(node) }
+            if node.elementType == .tabBar { tabs.append(node) }
+            nodes.append(contentsOf: node.children)
+        }
+        guard tabs.count == 1, let tab = tabs.first else {
+            observation.detail += " Library window has \(tabs.count) tab bars."
+            return observation
+        }
+        let windowFrame = window.frame, navigationFrame = bar.node.frame, tabFrame = tab.frame
+        func finite(_ frame: CGRect) -> Bool {
+            !frame.isEmpty && frame.minX.isFinite && frame.maxX.isFinite && frame.minY.isFinite && frame.maxY.isFinite
+        }
+        observation.detail += " Window \(windowFrame); navigation \(navigationFrame); tab \(tabFrame); \(targets.count) window matches."
+        guard finite(windowFrame), finite(navigationFrame), finite(tabFrame),
+              windowFrame.contains(navigationFrame), windowFrame.contains(tabFrame),
+              tabFrame.minY > navigationFrame.maxY else { return observation }
+        let viewport = CGRect(x: windowFrame.minX, y: navigationFrame.maxY,
+                              width: windowFrame.width, height: tabFrame.minY - navigationFrame.maxY)
+        observation.viewport = viewport
+        guard globalMatches == 1, targets.count == 1, let target = targets.first else { return observation }
+        let frame = target.frame
+        let value = ungroupedAccessibilityValue(target.value)
+        observation.detail += " Target frame \(frame); value \(String(describing: value)); expected \(expectedValue)."
+        guard finite(frame) else { return observation }
+        observation.frame = frame
+        observation.ready = viewport.contains(frame) && value == expectedValue && app.state == .runningForeground
+        return observation
+    }
+
+    private func scrollLibraryMetadataIntoView(_ identifier: String, expectedValue: String) -> Bool {
+        var direction: CGFloat = 1
+        var observation = LibraryMetadataObservation(detail: "No library metadata observation yet.")
+        for _ in 0..<12 {
+            observation = observeLibraryMetadata(identifier, expectedValue: expectedValue)
+            guard let viewport = observation.viewport else { break }
+            if let frame = observation.frame, viewport.contains(frame) { break }
+            let maximumDrag = viewport.height * 0.4
+            var drag = direction * maximumDrag
+            if let frame = observation.frame {
+                let overflow = frame.minY < viewport.minY ? frame.minY - viewport.minY - 8 : frame.maxY - viewport.maxY + 8
+                direction = overflow < 0 ? -1 : 1
+                drag = direction * min(maximumDrag, max(24, abs(overflow)))
+            }
+            let origin = app.coordinate(withNormalizedOffset: .zero)
+            let start = origin.withOffset(CGVector(dx: viewport.midX, dy: viewport.midY + drag / 2))
+            let end = origin.withOffset(CGVector(dx: viewport.midX, dy: viewport.midY - drag / 2))
+            start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.1)
+        }
+        // These are read-only labels. A single current snapshot binds their
+        // exact value and full viewport geometry without an activation point.
+        let visible = NSPredicate { _, _ in
+            observation = self.observeLibraryMetadata(identifier, expectedValue: expectedValue)
+            return observation.ready
+        }
+        let ready = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: visible, object: nil)], timeout: 5) == .completed
+        if !ready {
+            attachScreenshot("Audio-library-read-only-metadata-not-visible")
+            let diagnostic = XCTAttachment(string: "\(observation.detail)\n\(String(app.debugDescription.prefix(24_000)))")
+            diagnostic.name = "Audio-library-read-only-metadata-frame-value-and-hierarchy"
+            diagnostic.lifetime = .keepAlways
+            add(diagnostic)
+        }
+        return ready
     }
 
     private func waitForOperableDeletionConfirmation() -> XCUIElement? {

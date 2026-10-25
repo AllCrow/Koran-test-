@@ -224,3 +224,29 @@ och deras slutliga beteendekrav behålls. Produktionskod, prioritet,
 ljudspelarens tvåsekunderskrav och UI-provens femsekunderskrav är oförändrade.
 Den här uttryckliga ändringen av provens uppstartsbudget kräver ny native-
 verifiering; den gör inte huvudkörning60 godkänd i efterhand.
+
+[PR-körning61](https://github.com/AllCrow/Koran-test-/actions/runs/40213854041)
+på `f701ab0fe8e6c4af4ed98c469e277a641997846d` passerade alla139 hostade
+fall och89 portabla Mac-fall på tre varianter, inklusive de rättade
+registreringsvillkoren. iOS18 och den mindre telefonen passerade12 av12 UI;
+iOS26 passerade11 av12. Alla24 exekveringar av de åtta äldre UI-fallen
+passerade. Hela körningen är ändå underkänd och ägarutkastgrinden hoppades över.
+
+I iOS26:s biblioteksfall utfördes det riktiga raderingstrycket. Felbild och
+AX-diagnostik visar därefter korrekt borttagen112/Husary, kvarvarande
+al-Fatiha och exakt `1 668 byte`. Den unika lagringsetikettens hela ram
+`{{16,469},{358,52}}` ligger mellan navigationens underkant101 och
+flikfältets överkant761 i fönstret390×844. Testet hade skickat denna rent
+läsbara etikett till den interaktiva hjälpfunktionen; en tidigare beredskaps-
+avläsning misslyckades, men underlaget fastställer inte den tillfälliga orsaken.
+De senare kontrollerna efter denna punkt utfördes inte på iOS26 i61.
+
+De läsbara biblioteksuppgifterna får därför en separat kontroll med en färsk,
+sammanhängande native-ögonblicksbild: exakt en identifierare, exakt normaliserat
+värde, hela ändliga gränser i aktuell läsyta och appen i förgrunden inom samma
+fem sekunder. Geometrisk bläddring för att visa uppgiften förblir avgränsad.
+Ingen aktiveringspunkt krävs för en etikett som inte är en knapp. Samtliga
+riktiga knappar, väljare, stegknappar och raderingsbekräftelsen behåller
+nåbarhetskrav och verkliga tryck. Exakt borttagen rad, omstart och ingen
+läskredit måste fortfarande verifieras. Inga äldre UI-fall eller testantal
+ändras, och rättningen kräver nya faktiska native-resultat.
