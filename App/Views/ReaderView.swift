@@ -24,7 +24,6 @@ struct ReaderView: View {
                         if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
                         ForEach(chapter.ayahs) { ayah in
                             verseCard(ayah, chapter: chapter).id(ayah.numberInSurah)
-                                .accessibilityIdentifier("reader.verse.\(chapter.surah.id).\(ayah.numberInSurah)")
                         }
                         Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
                             .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)
@@ -139,6 +138,9 @@ struct ReaderView: View {
                     .font(.caption.monospacedDigit().weight(.medium))
                     .padding(.horizontal, 10).padding(.vertical, 6)
                     .background(Palette.green.opacity(0.08), in: Capsule())
+                    // A container identifier propagates to SwiftUI children
+                    // and masks the action buttons' individual identifiers.
+                    .accessibilityIdentifier("reader.verse.\(chapter.surah.id).\(ayah.numberInSurah)")
                 if active {
                     Label(player.isPlaying ? "Spelas nu" : "Pausad", systemImage: "speaker.wave.2")
                         .font(.caption).foregroundStyle(Palette.green)
