@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "corpus_id": "alafasy-112-2-pending",
+  "purpose": "expert_review",
+  "reference_source": "quran-transcript-0.6.4",
+  "cases": [
+    {
+      "case_id": "alafasy-112-2-onset",
+      "audio_sha256": "35b7b49e10fb3c295c7ec076403e241714c8cc75a72c2d909f145a62b47a2f6d",
+      "audio_bytes": 21619,
+      "reference": {
+        "surah_id": 112,
+        "ayah_number": 2,
+        "include_basmala": false,
+        "text_sha256": "a30b680c0f56ff9a29c1384eac94f728f9cfd0e8f1d3798a2e4916d91e57f57e"
+      },
+      "review": {
+        "status": "pending",
+        "reviewer_ids": [],
+        "blinded": false,
+        "complete": false,
+        "errors": [],
+        "notes": "No expert ground truth. The exact original converted upload was recovered locally and rechecked against its saved SHA256 and length on 2026-10-25; it remains outside Git. Provenance: docs/evidence/model-baseline-2026-10-24.json clip 8 and docs/evidence/recitation-review-112-2.json. The indication is unadjudicated; model output must not supply teacher labels."
+      }
+    }
+  ]
+}

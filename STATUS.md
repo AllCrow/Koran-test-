@@ -7,6 +7,13 @@ analysserver är konfigurerad och Tarteel-kvalitetsmålet är inte uppfyllt.**
 
 ## Senaste fortsättningsrunda
 
+**Ny kandidat under verifiering:** offlineåterhämtning för ljudlagring och
+tafsircache, fem ytterligare hostade nät-/filregressioner samt ett separat
+[utvärderingsverktyg för tajweed](docs/TAJWEED_EVALUATION.md). Linux-Swiftens
+83 fall och innehållskontrollerna passerar; native-körningen återstår.
+[Omgångens omfattning](docs/OFFLINE_QUALITY_2026-10-25.md).
+Bygge51 nedan är fortfarande den senast fullständigt godkända nedladdningen.
+
 Fortsättningsrundan är **godkänd i huvudkörning 51**: **91 hostade + åtta UI-prov på var och en av tre simulatorer**, samt **82 portabla Swift-prov per Mac-variant och 36 backendprov**. **Personligt bygge 51** är sparat som ägaråtkomligt releaseutkast. Personlig signering och fysisk iPhone-provning återstår.
 
 - Förlorad iOS-ljudtjänst stoppar motorn direkt; återställning kräver uttrycklig uppspelning.

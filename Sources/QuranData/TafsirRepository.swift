@@ -72,7 +72,6 @@ public actor TafsirRepository {
     private var recentReferences: [AyahReference] = []
     private let session: URLSession
     private let cacheDirectory: URL?
-    private var hasPreparedDiskCache = false
     private var diskCacheReady = false
     private var diskAccessTimes: [AyahReference: Date] = [:]
 
@@ -219,17 +218,17 @@ public actor TafsirRepository {
     /// All filesystem work is isolated to this actor, away from SwiftUI's main
     /// actor. Cache failures are never a reason to suppress a valid online text.
     private func prepareDiskCacheIfNeeded() {
-        guard !hasPreparedDiskCache else { return }
-        guard var directory = cacheDirectory else {
-            hasPreparedDiskCache = true
-            return
+        guard var directory = cacheDirectory else { return }
+        // The cache may disappear during a long app session. A replacement
+        // symlink must never inherit the trust of the original directory.
+        if diskCacheReady {
+            if cacheDirectoryIsSafe() { return }
+            diskCacheReady = false
+            diskAccessTimes.removeAll()
         }
-        // A transient storage/protection failure can recover on the next open.
-        defer { hasPreparedDiskCache = diskCacheReady }
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            let values = try directory.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
-            guard values.isDirectory == true, values.isSymbolicLink != true else { return }
+            guard cacheDirectoryIsSafe() else { return }
             #if canImport(Darwin)
             var backupValues = URLResourceValues()
             backupValues.isExcludedFromBackup = true
@@ -246,8 +245,17 @@ public actor TafsirRepository {
         }
     }
 
+    /// Inspect the current path rather than trusting a prior setup or URL
+    /// metadata. FileManager reports the link itself, without following it.
+    private func cacheDirectoryIsSafe() -> Bool {
+        guard let directory = cacheDirectory,
+              let attributes = try? FileManager.default.attributesOfItem(atPath: directory.path),
+              attributes[.type] as? FileAttributeType == .typeDirectory else { return false }
+        return true
+    }
+
     private func readDiskEntry(for reference: AyahReference) -> TafsirEntry? {
-        guard diskCacheReady, let url = cacheURL(for: reference),
+        guard diskCacheReady, cacheDirectoryIsSafe(), let url = cacheURL(for: reference),
               let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey]),
               values.isRegularFile == true, values.isSymbolicLink != true else { return nil }
         do {
@@ -276,7 +284,10 @@ public actor TafsirRepository {
     }
 
     private func writeDiskEntry(_ response: Data, for reference: AyahReference) {
-        guard diskCacheReady, let url = cacheURL(for: reference),
+        // A network request suspends this actor; storage may have changed while
+        // it was in flight, even if setup succeeded when the request began.
+        prepareDiskCacheIfNeeded()
+        guard diskCacheReady, cacheDirectoryIsSafe(), let url = cacheURL(for: reference),
               let encoded = try? JSONEncoder().encode(CachedResponse(version: 1, source: Self.cacheSource, response: response)),
               encoded.count <= Self.maximumCachedEntryBytes else { return }
         if FileManager.default.fileExists(atPath: url.path) {
@@ -297,7 +308,7 @@ public actor TafsirRepository {
     }
 
     private func touchDiskEntry(_ reference: AyahReference) {
-        guard diskCacheReady, let url = cacheURL(for: reference) else { return }
+        guard diskCacheReady, cacheDirectoryIsSafe(), let url = cacheURL(for: reference) else { return }
         let date = Date()
         // Repeated openings from RAM need no repeated filesystem writes. Keep
         // recency reasonably fresh during long sessions, at most once a minute.
@@ -311,7 +322,7 @@ public actor TafsirRepository {
     }
 
     private func pruneDiskCache() {
-        guard diskCacheReady, let directory = cacheDirectory,
+        guard diskCacheReady, cacheDirectoryIsSafe(), let directory = cacheDirectory,
               let urls = try? FileManager.default.contentsOfDirectory(at: directory,
                   includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey, .contentModificationDateKey],
                   options: [.skipsHiddenFiles]) else { return }
