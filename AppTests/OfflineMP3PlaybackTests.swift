@@ -43,6 +43,7 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         await waitFor(player.$activeReference, matching: { $0 == verse })
 
         player.pause()
+        await waitForNativePause(context)
         XCTAssertFalse(player.isPlaying)
         XCTAssertFalse(player.isBuffering)
         XCTAssertEqual(player.activeReference, verse)
@@ -121,7 +122,7 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         let session = AVAudioSession.sharedInstance()
         NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: session,
             userInfo: [AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.began.rawValue])
-        await waitFor(context.player.$isPlaying, matching: { !$0 })
+        await waitForNativePause(context)
         XCTAssertEqual(context.player.activeReference, verse)
         XCTAssertEqual(context.engine.rate, 0)
 
@@ -129,7 +130,7 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         await waitFor(context.player.$isPlaying, matching: { $0 })
         NotificationCenter.default.post(name: AVAudioSession.routeChangeNotification, object: session,
             userInfo: [AVAudioSessionRouteChangeReasonKey: AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue])
-        await waitFor(context.player.$isPlaying, matching: { !$0 })
+        await waitForNativePause(context)
         XCTAssertEqual(context.player.requestedReference, verse)
         XCTAssertEqual(context.player.activeReference, verse)
         XCTAssertEqual(context.engine.rate, 0)
@@ -171,6 +172,21 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         XCTAssertNil(context.player.activeReference)
         XCTAssertFalse(context.player.isPlaying)
         XCTAssertFalse(context.player.isBuffering)
+    }
+
+    private func waitForNativePause(_ context: Fixture) async {
+        // isPlaying can also become false while buffering. Observe the native
+        // engine instead of assuming that a published UI flag settles its rate.
+        let paused = expectation(description: "AVPlayer acknowledges the pause before the tone ends")
+        let token = context.engine.publisher(for: \.rate, options: [.initial, .new])
+            .first(where: { $0 == 0 }).sink { _ in paused.fulfill() }
+        defer { token.cancel() }
+        await fulfillment(of: [paused], timeout: 2)
+        XCTAssertEqual(context.engine.rate, 0)
+        XCTAssertFalse(context.player.isPlaying)
+        XCTAssertFalse(context.player.hasFinishedVerse, "Natural completion must not satisfy a pause probe")
+        XCTAssertLessThan(context.engine.currentTime().seconds, 2.5,
+                          "The generated three-second tone must still have audio left after a pause")
     }
 
     private func waitFor<Value>(_ publisher: Published<Value>.Publisher,

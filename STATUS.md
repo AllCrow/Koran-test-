@@ -6,6 +6,40 @@ Direkt vershopp och säkerhetskopiering av läsdata är tillagda.
 **Native-listläsaren, skärpta positionstester och samtliga 61 native-prov har passerat.** Personlig signering,
 fysisk installation och en offentlig apprelease är inte verifierade.
 
+## Pågående verifiering av faktisk nativepaus
+
+Den integrerade PR-körningen
+[40169525111](https://github.com/AllCrow/Koran-test-/actions/runs/40169525111)
+på `8519f74303025bdc9f5a8549e6969566b617d652` är inte godkänd. iOS26-loggen
+visar bland annat att MP3-provet för hörlursnotis såg AVPlayer-rate 1 efter
+appens publicerade pausflagga. Flaggan kan också bli falsk vid buffring och
+räcker inte som kvitto på att ljudmotorn har pausat.
+
+Branch `codex/native-pause-event-verification` låter därför befintliga pausprov
+invänta AVPlayers riktiga rate-KVO med en tvåsekundersgräns. Rate måste bli
+noll och appen måste visa paus innan den tre sekunder långa tonen har tagit
+slut; naturligt versslut får inte godkänna pausen. Ingen sömn, längre
+tolvsekundersväntan, ljudersättning eller produktionsändring införs.
+**Det skärpta provet inväntar native CI.** Det avgör ännu inte om den
+observerade avvikelsen var en tidig avläsning eller ett produktionsfel.
+Huvudgrenens senare läsar-/utseendeändringar och samtliga fyra strikta
+kontroller av lång versposition bevaras.
+
+Huvudgrenens [körning 40170146847](https://github.com/AllCrow/Koran-test-/actions/runs/40170146847)
+på `f9c77d2889c01e7608d8b59d96235c1b0d5aaa64` passerar 79 hostade och åtta
+UI-prov på iPhone16Pro/iOS18.5 och iPhone16e/iOS26.2. Den kompakta iPhoneSE3
+passerar alla 79 hostade men faller i ett av åtta UI-prov: svephjälparen
+passerar första versens läsknapp vid största tillgänglighetstext och tappar
+sedan riktningen när List återanvänder cellen. Skärminspelningen har granskats:
+knappen syns först delvis under tabbraden och nästa hela svep hamnar på vers2.
+Den samlade körningen är därför **failure**, inte godkänd leverans.
+
+Samma verifieringsbranch begränsar nu kontrollsökningens drag till det
+återstående avståndet och högst 40 procent av läsytan. Riktningen bevaras
+medan målcellen är återanvänd. Kraven på helt synlig, nåbar kontroll,
+44-punkters mål och verkligt ändrat/sparat värde behålls. Ingen läsarkod eller
+strikt verspositionskontroll ändras. De båda skärpta proven inväntar ny CI.
+
 ## Pågående verifiering av HTTP-nedladdning
 
 Branch `codex/native-download-transport-verification` tillför fem hostade
