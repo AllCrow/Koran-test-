@@ -131,6 +131,25 @@ Minsta körversion iOS 17 är en annan inställning än bygg-SDK:n. Inget betalt
 Developer-medlemskap krävs för den personliga vägen; TestFlight kräver en
 signerande utgivare.
 
+## Spårbar kontroll av riktiga recitationer
+
+Den 25 oktober kontrollerades EveryAyahs egna kataloger mot appens exakta
+recitatörsmappar och versindex: alla **6 236 kanoniska filnamn** listas
+för var och en av de tre recitatörerna. **15 hela MP3-filer** (1:1,
+2:255, 9:1, 112:2 och 114:6 för alla tre) hade HTTP 200, korrekt
+Content-Length, matchande utgivar-MD5 och lyckad helfilsavkodning med
+ffmpeg till PCM. Separata SHA256 binder svar, ljud och avkodningsresultat.
+Inga ljudfiler lades i Git och inga nya modellanrop gjordes.
+
+[Käll-/villkorsrapporten](docs/CONTENT_RIGHTS.md) och dess två JSON-underlag
+anger faktiska resultat och kvarvarande rättighetsglapp. Ett nytt manuellt
+kontrollverktyg körs inte av appen eller normal CI. Detta är Linux-/HTTPS-/
+ffmpeg-bevis, inte URLSession/AVPlayer eller fysisk iPhone-verifiering av
+imaminspelningarna. Katalogtäckning bevisar inte korrekt ljud i samtliga
+6 236 filer. Det tidigare al-Afasy-fallet 112:2 är fortfarande inte
+sakkunnigt avgjort. EveryAyah-/tafsirvillkor och Tarteel-kvalitet är öppna.
+Denna källgranskning ändrar inte det godkända appbygget 46.
+
 ## Automatisk tajweedhjälp och REA
 
 Standardbygget har `SAKINA_ENABLE_EXPERIMENTAL_ANALYSIS=false` och tom
