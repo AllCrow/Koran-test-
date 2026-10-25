@@ -24,7 +24,7 @@ Se [kraven](KRAV.md), [aktuell status](STATUS.md), [modellundersökningen](docs/
 
 ## Provköra med bara iPhone
 
-Du behöver inte äga en Mac, men appen behöver byggas och signeras i en macOS-miljö. [GitHub Actions har nu byggt appen och godkänt alla elva native-tester](https://github.com/AllCrow/Koran-test-/actions/runs/40154343011): åtta hostade tester och tre UI-flöden på iPhone 16 Pro-simulator med iOS 18.5. Inget fysiskt iPhone-prov är utfört. En simulatorartefakt kan **inte** installeras på en fysisk iPhone.
+Du behöver inte äga en Mac, men appen behöver byggas och signeras i en macOS-miljö. [GitHub Actions har nu byggt appen och godkänt alla 18 native-tester](https://github.com/AllCrow/Koran-test-/actions/runs/40154414555): 15 hostade tester och tre UI-flöden på iPhone 16 Pro-simulator med iOS 18.5. Inget fysiskt iPhone-prov är utfört. En simulatorartefakt kan **inte** installeras på en fysisk iPhone.
 
 Distributionsvägen är en betrodd molnbaserad Mac, Apple Developer-medlemskap, App Store Connect och korrekt signering, därefter TestFlight. Dessa delar är ännu inte färdiga. Inga Apple-uppgifter eller signeringsnycklar ingår i Git. Eventuella Apple- och byggkostnader är projektets distributionskostnader, inte en obligatorisk månadsavgift för appens användare.
 
@@ -43,7 +43,7 @@ xcodebuild -project Sakina.xcodeproj -scheme Sakina \
 
 Efter tillägg av Swift-filer eller resurser: kör `python3 scripts/generate_project.py` och checka in det uppdaterade projektet. Generatorn kräver bara Python 3.
 
-**Verifierat hittills:** 61 portabla Swift-tester, 28 backendtester, riktigt Xcode-bygge och samtliga elva native-tester passerar. UI-proven täcker läsmarkering, återstart, bokmärken, surasökning och korrekt vers efter surabyte. Ett verkligt CPU-prov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, signering och TestFlight återstår. Se [STATUS.md](STATUS.md) och [native-proven](docs/IOS_VERIFICATION.md).
+**Verifierat hittills:** 61 portabla Swift-tester, 28 backendtester, riktigt Xcode-bygge och samtliga 18 native-tester (15 hostade och tre UI-flöden) passerar. UI-proven täcker läsmarkering, återstart, bokmärken, surasökning och korrekt vers efter surabyte. Ett verkligt CPU-prov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, signering och TestFlight återstår. Se [STATUS.md](STATUS.md) och [native-proven](docs/IOS_VERIFICATION.md).
 
 ## Struktur
 

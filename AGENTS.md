@@ -49,8 +49,10 @@ project whenever App Swift files or resource groups change. Local package produc
 are wired by `scripts/generate_project.py`; no external Swift dependencies.
 The scheme also contains hosted `AppTests` and `AppUITests`; use an actual
 available iPhone simulator destination with `xcodebuild test`. Actual macOS CI
-has passed the Apple SDK build, all eight AppStore tests and all three UI flows
-on 2026-10-25 (run 40154343011, source 4a30f477, Xcode16.4/iOS18.5 simulator).
+has passed the Apple SDK build, eight AppStore tests, seven AudioLibrary tests
+and all three UI flows on 2026-10-25 (run 40154414555, source a0b2e624,
+Xcode16.4/iOS18.5 simulator). The audio file tests use synthetic MPEG frames;
+they do not verify real playback, network downloads or device energy use.
 The parent accessibility identifier had masked child buttons; do not put an
 identifier on the entire verse Card again. Verse scroll IDs must include sura
 and ayah, and the verse group must refresh when its sura changes. See
