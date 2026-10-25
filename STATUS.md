@@ -177,9 +177,18 @@ ljudrättigheter och övriga villkor inför offentlig release är inte avslutade
 Före en färdig produkt återstår personlig installation, fysiska funktions-/energi-/
 tillgänglighetsprov, sakkunnig recitationsutvärdering som styrker
 kvalitetsanspråken samt vald distribution och innehållsrättigheter.
-[PR #7](https://github.com/AllCrow/Koran-test-/pull/7) utvärderar separat
-kortare CI-återkoppling med separata hostade/UI-resultat. Den ändringen
-ingår inte i den verifierade huvudkörningen 46 och ska invänta eget utfall.
+[PR #7](https://github.com/AllCrow/Koran-test-/pull/7) är mergad som
+`d6d73e50af564758e92713981adbb089232cf77a` efter
+[godkänd körning 45](https://github.com/AllCrow/Koran-test-/actions/runs/40176541522).
+Den bygger testmålen en gång och kör hostade tjänster före UI, så ett
+tjänstefel stoppar jobbet innan de långsammare UI-flödena. Alla tre varianter
+utförde fortfarande 80 hostade och åtta UI-prov samt 82 portabla Swift-prov;
+36 backendprov och båda byggena passerade. Båda resultatbundlarna finns
+återkontrollerade i artefakt12593107496. Faktisk checkout53719af och
+branchcba9f3e har identiska filträd. Publicerad app-/test-/bygg-/workflowkod
+matchar den godkända källan; skillnaderna är Markdown. Den redan godkända
+ägarnedladdningen46 är oförändrad. Ingen extra tung körning begärdes för
+identiska verifierade indata.
 Den parallella dokumentationscommitten `fbf1dca` och dess status bevaras
 i historiken.
 

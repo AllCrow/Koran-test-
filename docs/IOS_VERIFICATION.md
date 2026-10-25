@@ -34,8 +34,12 @@ Ett tjänstefel ska stoppa omgången före de långsammare UI-proven; samma
 UI-svit krävs fortfarande för ett godkänt nativejobb. Resultatartefakten
 bevarar `HostedTests.xcresult` och, när tjänsterna passerat,
 `UITestResults.xcresult`. Skärmbilder exporteras från UI-resultatet, eller
-från tjänsteresultatet om körningen stannade där. Det är en ändrad
-konfiguration som behöver faktisk Mac-verifiering innan den kan godkännas.
+från tjänsteresultatet om körningen stannade där.
+[Körning45](https://github.com/AllCrow/Koran-test-/actions/runs/40176541522)
+har verifierat denna konfiguration på samtliga tre varianter: 80 hostade
+prov följs av åtta UI-flöden, alla godkända. Artefakt12593107496 har båda
+kompletta resultatbundlarna. PR7 är integrerad somd6d73e5; app- och testkod
+är samma som i det godkända personliga main-bygget46.
 
 Det genererade Xcode-projektet har tre mål: `Sakina`, `SakinaTests` och
 `SakinaUITests`. Schemat `Sakina` kopplar båda testmålen till appen.

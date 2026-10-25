@@ -166,3 +166,35 @@ Personlig signering/installation, mikrofon, externa ljudrutter, riktiga
 nät-/offlinefall, Filer-providers, VoiceOver och värme/batteri måste provas
 på fysisk iPhone enligt [telefonprovet](../FIRST_IPHONE_TEST.md).
 En lyckad simulator eller osignerad binär styrker inte dessa krav.
+
+
+## Separat verifierad CI-återkoppling och ägarfil
+
+[PR7](https://github.com/AllCrow/Koran-test-/pull/7) är integrerad som
+`d6d73e50af564758e92713981adbb089232cf77a` efter godkänd
+[körning40176541522](https://github.com/AllCrow/Koran-test-/actions/runs/40176541522)
+på `cba9f3e8719f9965f3198366c5c734e1ad24f7d1`. Faktisk Apple-checkout
+`53719af9809dcc17f4ffec063c4af5d7a34e3d8c` har samma kompletta filträd:
+`342b808094b1ecbfc3da02cf3899f59cb93af35b`.
+
+Jobbloggarna bekräftar en gemensam build-for-testing, följd av separata
+körningar för SakinaTests och SakinaUITests med test-without-building.
+Alla tre varianter utförde 80 hostade och åtta UI-prov samt 82 unika
+portabla Swift-prov. Backend36 och fysisk/simulatorbyggnad passerade.
+Artefakt12593107496, ZIP-SHA256
+`498266f4822d534d0661e300f1c70dbd33fed61f341940572e946db2aba35648`,
+har faktiskt hämtats och innehåller både HostedTests.xcresult och
+UITestResults.xcresult med varsin Info.plist. Metadata pekar på headcba9f3e.
+
+Merge-trädet kontrollerades före och efter integration: app-, test-,
+resurs-, bygg- och workflowfiler matchar den godkända källan; endast
+Markdown skiljer. Inga extra native-omkörningar behövs för identiska
+redan verifierade indata. Main-bygge46 är fortfarande samma personliga app.
+
+Ägarutkast423266346 har dessutom lästs direkt via release-ID efter att
+det opublicerade tagguppslaget gav404: draft=true, tagpersonal-build-46-1,
+mål8cd977c. Release-IPA:n har3257522byte och digest
+`sha256:c9844553d63bd8bfa1917472614f118062f6ed33f10ddfa69e77a507f64d5d6f`,
+vilket matchar den här sessionens oberoende återkontroll av huvudkörningens
+artefakt12593165562. Binärens LC_BUILD_VERSION är iOS-plattform2,
+minOS17 och SDK26.2. Filen är osignerad och fysisk installation är inte provad.

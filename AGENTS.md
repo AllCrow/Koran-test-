@@ -180,7 +180,11 @@ Keep both actual MP3 interruption/route checks and the dedicated late-native-
 start WAV regression, bounded latency, no-EOF, same-resource and explicit-resume
 assertions. Do not replace native engine checks with published application flags.
 
-PR7 separately evaluates building tests once and splitting hosted/UI CI feedback.
-It is not part of tested main46; read its actual outcomes before any workflow
-integration. Preserve both result bundles and keep production app/test inputs
-unchanged unless a reproduced defect justifies a new verified candidate.
+PR7 merged as d6d73e5 after run40176541522 passed on cba9f3e. All three
+variants executed 80 hosted and eight UI cases, with 82 portable cases;
+36 backend cases and both builds passed. Actual checkout53719af has the same
+tree as cba9f3e; merged executable/test/build/workflow inputs match it, with
+Markdown-only differences. HostedTests.xcresult and UITestResults.xcresult
+were both inspected in artifact12593107496. Preserve the hosted-success gate
+before UI and both result bundles. Main46's owner draft remains the tested
+app package; the workflow change does not alter its application code.
