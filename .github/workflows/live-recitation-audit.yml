@@ -1,0 +1,66 @@
+name: Opt-in real recitation audit
+
+on:
+  push:
+    branches: [codex/verify-live-recitation-sources]
+    paths:
+      - '.github/workflows/live-recitation-audit.yml'
+      - 'Verification/EveryAyahLiveSourceTests.swift'
+      - 'scripts/stage_live_recitation_audit.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-recitation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  real-https-and-offline-playback:
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Report exact source and Apple tools
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.2.app
+          git rev-parse HEAD
+          xcodebuild -version
+          xcrun --sdk iphonesimulator --show-sdk-version
+      - name: Stage the isolated live-source suite
+        run: |
+          python3 scripts/stage_live_recitation_audit.py
+          python3 scripts/generate_project.py
+          git diff --exit-code -- App Sources backend Package.swift
+      - name: Test actual source downloads and offline native playback
+        shell: bash
+        run: |
+          set -euo pipefail
+          simulator_id=$(xcrun simctl list devices available --json | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          matches = [d["udid"] for runtime, entries in devices.items() if runtime.endswith(".iOS-26-2")
+                     for d in entries if d.get("isAvailable") and d["name"] == "iPhone 16e"]
+          if not matches: sys.exit("Requested iOS26.2/iPhone16e simulator is unavailable")
+          print(matches[0])')
+          xcodebuild -project Sakina.xcodeproj -scheme Sakina \
+            -configuration Debug -destination "platform=iOS Simulator,id=$simulator_id" \
+            -derivedDataPath LiveDerivedData -resultBundlePath LiveRecitation.xcresult \
+            -parallel-testing-enabled NO -only-testing:SakinaTests/EveryAyahLiveSourceTests \
+            CODE_SIGNING_ALLOWED=NO test
+      - name: Export metadata-only test attachments
+        if: always()
+        run: |
+          if [ -d LiveRecitation.xcresult ]; then
+            xcrun xcresulttool export attachments --path LiveRecitation.xcresult --output-path LiveRecitationEvidence
+          fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: Sakina-real-source-native-audit
+          path: |
+            LiveRecitation.xcresult
+            LiveRecitationEvidence
+          if-no-files-found: ignore
+          retention-days: 7
