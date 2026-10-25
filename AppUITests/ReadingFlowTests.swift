@@ -399,16 +399,30 @@ final class ReadingFlowTests: XCTestCase {
     }
 
     private func scrollFullyIntoView(_ element: XCUIElement) {
+        var movesContentUp = true
         for _ in 0..<10 {
             let top = app.navigationBars.firstMatch.frame.maxY
             let bottom = app.tabBars.firstMatch.frame.minY
+            let maximumStep = (bottom - top) * 0.4
+            var distance = maximumStep
             if element.exists {
                 let frame = element.frame
                 if element.isHittable && frame.minY >= top && frame.maxY <= bottom { return }
-                if !frame.isEmpty && frame.minY < top { app.swipeDown() } else { app.swipeUp() }
-            } else {
-                app.swipeUp()
+                if !frame.isEmpty, frame.minY.isFinite, frame.maxY.isFinite {
+                    movesContentUp = frame.minY >= top
+                    let remaining = movesContentUp ? frame.maxY - bottom : top - frame.minY
+                    distance = min(maximumStep, max(24, remaining + 12))
+                }
             }
+            // A whole-screen flick can skip the complete control on a compact
+            // iPhone at accessibility XXXL. Move only the missing distance and
+            // retain direction if List temporarily recycles the target cell.
+            let middle = (top + bottom) / 2
+            let origin = app.coordinate(withNormalizedOffset: .zero)
+            let start = origin.withOffset(CGVector(dx: app.frame.width / 2, dy: middle))
+            let end = origin.withOffset(CGVector(dx: app.frame.width / 2,
+                                                dy: middle + (movesContentUp ? -distance : distance)))
+            start.press(forDuration: 0.1, thenDragTo: end)
         }
         XCTAssertTrue(element.exists && element.isHittable)
         XCTAssertGreaterThanOrEqual(element.frame.minY, app.navigationBars.firstMatch.frame.maxY)

@@ -25,6 +25,21 @@ observerade avvikelsen var en tidig avläsning eller ett produktionsfel.
 Huvudgrenens senare läsar-/utseendeändringar och samtliga fyra strikta
 kontroller av lång versposition bevaras.
 
+Huvudgrenens [körning 40170146847](https://github.com/AllCrow/Koran-test-/actions/runs/40170146847)
+på `f9c77d2889c01e7608d8b59d96235c1b0d5aaa64` passerar 79 hostade och åtta
+UI-prov på iPhone16Pro/iOS18.5 och iPhone16e/iOS26.2. Den kompakta iPhoneSE3
+passerar alla 79 hostade men faller i ett av åtta UI-prov: svephjälparen
+passerar första versens läsknapp vid största tillgänglighetstext och tappar
+sedan riktningen när List återanvänder cellen. Skärminspelningen har granskats:
+knappen syns först delvis under tabbraden och nästa hela svep hamnar på vers2.
+Den samlade körningen är därför **failure**, inte godkänd leverans.
+
+Samma verifieringsbranch begränsar nu kontrollsökningens drag till det
+återstående avståndet och högst 40 procent av läsytan. Riktningen bevaras
+medan målcellen är återanvänd. Kraven på helt synlig, nåbar kontroll,
+44-punkters mål och verkligt ändrat/sparat värde behålls. Ingen läsarkod eller
+strikt verspositionskontroll ändras. De båda skärpta proven inväntar ny CI.
+
 ## Pågående verifiering av HTTP-nedladdning
 
 Branch `codex/native-download-transport-verification` tillför fem hostade
