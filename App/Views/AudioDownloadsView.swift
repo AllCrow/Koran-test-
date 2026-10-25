@@ -186,7 +186,15 @@ struct AudioDownloadsView: View {
     }
 
     private func refreshDownloadedCount() {
-        downloadedCount = audioLibrary.downloadedVerseCount(surahID: selectedSurahID, reciter: selectedReciter)
+        if audioLibrary.downloadingSurahID == selectedSurahID,
+           audioLibrary.downloadingReciter == selectedReciter {
+            // The foreground job already counted admitted files and updates
+            // this count as it saves them. Avoid rescanning the directory when
+            // the user revisits this screen during the same download.
+            downloadedCount = audioLibrary.completed
+        } else {
+            downloadedCount = audioLibrary.downloadedVerseCount(surahID: selectedSurahID, reciter: selectedReciter)
+        }
     }
 
     private func startDownload(_ surah: Surah) {

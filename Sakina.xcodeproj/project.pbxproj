@@ -154,6 +154,16 @@
 			isa = PBXBuildFile;
 			fileRef = 0E17ABB5153CB2488E36F3AF;
 		};
+		6FBA7D76C2040BA483B4EEDE = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "AppTests/ArabicTextPreparationTests.swift";
+			sourceTree = "<group>";
+		};
+		7660A698D44A69E2B73B690F = {
+			isa = PBXBuildFile;
+			fileRef = 6FBA7D76C2040BA483B4EEDE;
+		};
 		A8CFA11393C908FE3F8D0324 = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
@@ -163,6 +173,26 @@
 		5FE49F7D24495161A13B1363 = {
 			isa = PBXBuildFile;
 			fileRef = A8CFA11393C908FE3F8D0324;
+		};
+		7E8D482127D97F98125C33A1 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "AppTests/OfflineMP3PlaybackTests.swift";
+			sourceTree = "<group>";
+		};
+		2A4C22B682F4A19D3B035610 = {
+			isa = PBXBuildFile;
+			fileRef = 7E8D482127D97F98125C33A1;
+		};
+		F4B4C09A9785E2CA3BC5752B = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "AppTests/PracticeRecorderTests.swift";
+			sourceTree = "<group>";
+		};
+		C014EE9CF99D718C3CC486AD = {
+			isa = PBXBuildFile;
+			fileRef = F4B4C09A9785E2CA3BC5752B;
 		};
 		1B14DC85DA3657D87608FE5E = {
 			isa = PBXFileReference;
@@ -265,7 +295,7 @@
 		};
 		04D13FD0AA6F0197CF2C9990 = {
 			isa = PBXGroup;
-			children = (0E17ABB5153CB2488E36F3AF, A8CFA11393C908FE3F8D0324, 1B14DC85DA3657D87608FE5E);
+			children = (0E17ABB5153CB2488E36F3AF, 6FBA7D76C2040BA483B4EEDE, A8CFA11393C908FE3F8D0324, 7E8D482127D97F98125C33A1, F4B4C09A9785E2CA3BC5752B, 1B14DC85DA3657D87608FE5E);
 			name = "AppTests";
 			sourceTree = "<group>";
 		};
@@ -356,7 +386,7 @@
 		D6D3EFCD007A068187E3C9F7 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (48C1C939BEDFDB404E6375C3, 5FE49F7D24495161A13B1363, 67E2C1F8051DDB4BC2297E88);
+			files = (48C1C939BEDFDB404E6375C3, 7660A698D44A69E2B73B690F, 5FE49F7D24495161A13B1363, 2A4C22B682F4A19D3B035610, C014EE9CF99D718C3CC486AD, 67E2C1F8051DDB4BC2297E88);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4A675AF9B1361023D153D34C = {

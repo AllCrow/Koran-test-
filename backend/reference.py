@@ -5,6 +5,7 @@ from functools import lru_cache
 import hashlib
 import json
 from pathlib import Path
+import re
 
 from .schemas import ReferenceID
 
@@ -38,8 +39,26 @@ class ReferenceRepository:
     def _index(self) -> dict:
         try:
             index = json.loads((self.directory / "index.json").read_text(encoding="utf-8"))
-            if index["source"] != self.source or not index["surahs"] or not index["hashes"]:
+            if (not isinstance(index, dict) or type(index.get("version")) is not int
+                    or index["version"] != 1 or index.get("source") != self.source):
                 raise ValueError("Wrong practice reference source")
+            declarations = index.get("surahs")
+            hashes = index.get("hashes")
+            if not isinstance(declarations, list) or not declarations or not isinstance(hashes, dict):
+                raise ValueError("Invalid practice reference index")
+            seen = set()
+            for declaration in declarations:
+                if (not isinstance(declaration, dict)
+                        or type(declaration.get("id")) is not int
+                        or not 1 <= declaration["id"] <= 114
+                        or declaration["id"] in seen
+                        or type(declaration.get("count")) is not int
+                        or declaration["count"] < 1):
+                    raise ValueError("Invalid practice reference declaration")
+                seen.add(declaration["id"])
+                digest = hashes.get(f"{declaration['id']:03d}.json")
+                if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+                    raise ValueError("Invalid practice reference checksum")
             return index
         except (OSError, KeyError, TypeError, ValueError) as error:
             raise ReferenceUnavailable("Practice reference index unavailable") from error
@@ -49,7 +68,7 @@ class ReferenceRepository:
         try:
             index = self._index()
             return all((self.directory / f"{entry['id']:03d}.json").is_file() for entry in index["surahs"])
-        except (ReferenceUnavailable, KeyError, TypeError):
+        except (ReferenceUnavailable, KeyError, TypeError, OSError):
             return False
 
     @lru_cache(maxsize=114)
@@ -61,8 +80,21 @@ class ReferenceRepository:
             if hashlib.sha256(payload).hexdigest() != expected_hash:
                 raise ValueError("Practice reference checksum mismatch")
             chapter = json.loads(payload)
-            if chapter["surah_id"] != surah_id:
+            if (not isinstance(chapter, dict) or type(chapter.get("surah_id")) is not int
+                    or chapter["surah_id"] != surah_id):
                 raise ValueError("Wrong practice reference chapter")
+            declaration = next(entry for entry in self._index()["surahs"] if entry["id"] == surah_id)
+            ayahs = chapter.get("ayahs")
+            if not isinstance(ayahs, list) or len(ayahs) != declaration["count"]:
+                raise ValueError("Wrong practice reference verse count")
+            for number, ayah in enumerate(ayahs, 1):
+                if (not isinstance(ayah, dict) or type(ayah.get("ayah_number")) is not int
+                        or ayah["ayah_number"] != number or not isinstance(ayah.get("text"), str)
+                        or not ayah["text"].strip()):
+                    raise ValueError("Invalid practice reference verse")
+            basmala = chapter.get("basmala")
+            if basmala is not None and (not isinstance(basmala, str) or not basmala.strip()):
+                raise ValueError("Invalid practice reference Basmala")
             return chapter
         except (OSError, KeyError, TypeError, ValueError) as error:
             raise ReferenceUnavailable("Practice reference chapter unavailable") from error
@@ -74,9 +106,8 @@ class ReferenceRepository:
         if declared is None or ayah_number > declared["count"]:
             raise ValueError("Invalid reference")
         chapter = self._chapter(surah_id)
-        ayah = next((ayah for ayah in chapter["ayahs"] if ayah["ayah_number"] == ayah_number), None)
-        if ayah is None or not isinstance(ayah["text"], str) or not ayah["text"]:
-            raise ReferenceUnavailable("Practice reference verse unavailable")
+        # _chapter validated consecutive numbering and the declared count.
+        ayah = chapter["ayahs"][ayah_number - 1]
         text = ayah["text"]
         if include_basmala and ayah_number == 1 and surah_id not in (1, 9):
             basmala = chapter.get("basmala")

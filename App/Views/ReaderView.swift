@@ -71,7 +71,7 @@ struct ReaderView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: store.setTajweedEnabled))
+                    Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: { store.setTajweedEnabled($0) }))
                     Toggle("Visa färgförklaring", isOn: $showLegend)
                     Toggle("Fortsätt till nästa vers", isOn: $player.autoplay)
                 } label: { Label("Läsinställningar", systemImage: "textformat.size") }
@@ -199,12 +199,14 @@ struct SurahPicker: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
     @State private var search = ""
+    @State private var searchIndex = SurahSearchIndex(surahs: [])
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let select: (Surah) -> Void
 
     var body: some View {
+        let matches = filtered
         NavigationStack {
-            List(filtered) { surah in
+            List(matches) { surah in
                 Button {
                     select(surah)
                     dismiss()
@@ -224,12 +226,14 @@ struct SurahPicker: View {
                 .accessibilityIdentifier("surah.select.\(surah.id)")
             }
             .overlay {
-                if filtered.isEmpty && store.index != nil {
+                if matches.isEmpty && store.index != nil {
                     ContentUnavailableView("Ingen sura hittades", systemImage: "magnifyingglass",
                                            description: Text("Prova ett annat namn eller surans nummer."))
                 }
             }
             .searchable(text: $search, prompt: "Namn eller surans nummer")
+            .onAppear { refreshSearchIndex() }
+            .onChange(of: store.index?.surahs) { _, _ in refreshSearchIndex() }
             .navigationTitle("Välj sura")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Stäng") { dismiss() } } }
         }
@@ -243,26 +247,53 @@ struct SurahPicker: View {
     }
     private var filtered: [Surah] {
         let surahs = store.index?.surahs ?? []
-        let query = normalizedSearchText(search)
-        guard !query.isEmpty else { return surahs }
-        return surahs.filter {
-            normalizedSearchText($0.englishName).contains(query) ||
-            normalizedSearchText($0.name).contains(query) ||
-            normalizedSearchText($0.englishNameTranslation).contains(query) ||
-            String($0.id) == query
+        // The appearance/index-change handlers do the Unicode work once. This
+        // fallback covers the first frame before those handlers have run.
+        if searchIndex.surahs == surahs { return searchIndex.matching(search) }
+        if search.isEmpty { return surahs }
+        return SurahSearchIndex(surahs: surahs).matching(search)
+    }
+
+    private func refreshSearchIndex() {
+        let surahs = store.index?.surahs ?? []
+        if searchIndex.surahs != surahs { searchIndex = SurahSearchIndex(surahs: surahs) }
+    }
+}
+
+/// Search keys are copies. Display names and Quran text keep their original UTF-8.
+/// Preparing the index avoids refolding every sura name on each typed character.
+struct SurahSearchIndex {
+    let surahs: [Surah]
+    private let entries: [(surah: Surah, names: [String], number: String)]
+
+    init(surahs: [Surah]) {
+        self.surahs = surahs
+        entries = surahs.map { surah in
+            (surah, [surah.englishName, surah.name, surah.englishNameTranslation].map(Self.normalized), String(surah.id))
         }
     }
 
-    /// Quran source names carry Arabic vowel marks; normal keyboard input does not.
-    /// Normalize only this search copy, never any displayed or stored Quran text.
-    private func normalizedSearchText(_ input: String) -> String {
+    func matching(_ search: String) -> [Surah] {
+        let query = Self.normalized(search)
+        guard !query.isEmpty else { return surahs }
+        return entries.compactMap { entry in
+            entry.number == query || entry.names.contains(where: { $0.contains(query) }) ? entry.surah : nil
+        }
+    }
+
+    private static func normalized(_ input: String) -> String {
         let folded = input.folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: Locale(identifier: "en_US_POSIX"))
         let scalars = folded.unicodeScalars.filter {
             !CharacterSet.nonBaseCharacters.contains($0) &&
             !CharacterSet.whitespacesAndNewlines.contains($0) &&
             !CharacterSet.punctuationCharacters.contains($0) && $0.value != 0x0640
         }
-        return String(String.UnicodeScalarView(scalars)).map { character in
+        // A normal Arabic keyboard produces alif rather than the source name's
+        // alif-wasl. Treat those common search spellings alike on this copy.
+        let keyboardScalars = scalars.map { scalar -> Unicode.Scalar in
+            [0x0622, 0x0623, 0x0625, 0x0671].contains(scalar.value) ? Unicode.Scalar(0x0627)! : scalar
+        }
+        return String(String.UnicodeScalarView(keyboardScalars)).map { character in
             character.wholeNumberValue.map { String($0) } ?? String(character)
         }.joined()
     }

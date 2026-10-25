@@ -52,10 +52,11 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         XCTAssertFalse(player.isPlaying, "Changing reciter while paused must not start audio")
         XCTAssertNil(player.activeReference, "A replacement recording is not active before playback")
         XCTAssertEqual(player.requestedReference, verse)
-        XCTAssertEqual(assetURL(context.engine), context.url(for: verse, reciter: .minshawi))
+        XCTAssertNil(context.engine.currentItem, "A paused reciter change must not prefetch or decode audio")
         player.resume()
         await waitFor(player.$activeReference, matching: { $0 == verse })
         XCTAssertTrue(player.isPlaying)
+        XCTAssertEqual(assetURL(context.engine), context.url(for: verse, reciter: .minshawi))
 
         player.stop()
         XCTAssertNil(player.requestedReference)
@@ -64,8 +65,9 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         XCTAssertFalse(player.isBuffering)
         XCTAssertNil(context.engine.currentItem)
 
-        let restored = RecitationPlayer(audioLibrary: context.library, defaults: context.defaults,
-            streamingURL: { _, _ in context.root.appendingPathComponent("unavailable.mp3") })
+        let restored = RecitationPlayer(player: AVPlayer(),
+            audioURL: { _, _ in context.root.appendingPathComponent("unavailable.mp3") },
+            defaults: context.defaults, integratesWithSystemAudio: true)
         defer { restored.stop() }
         XCTAssertEqual(restored.selectedReciter, .minshawi)
         XCTAssertFalse(restored.autoplay)
@@ -79,7 +81,7 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         context.player.playOnce(reference: verse, chapterVerseCount: 7)
         await waitFor(context.player.$activeReference, matching: { $0 == verse })
         XCTAssertTrue(context.player.isPlaying)
-        await waitFor(context.player.$isPlaying, matching: { !$0 })
+        await waitFor(context.player.$isPlaying, matching: { !$0 && context.player.hasFinishedVerse })
 
         XCTAssertGreaterThan(context.engine.currentTime().seconds, 2.5)
         XCTAssertEqual(context.player.requestedReference, verse)
@@ -102,7 +104,7 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         XCTAssertEqual(context.player.requestedReference, last)
         XCTAssertEqual(assetURL(context.engine), context.url(for: last, reciter: .alafasy))
         XCTAssertTrue(context.player.isPlaying)
-        await waitFor(context.player.$isPlaying, matching: { !$0 })
+        await waitFor(context.player.$isPlaying, matching: { !$0 && context.player.hasFinishedVerse })
         XCTAssertEqual(context.player.requestedReference, last)
         XCTAssertEqual(context.player.activeReference, last)
         XCTAssertGreaterThan(context.engine.currentTime().seconds, 2.5)
@@ -217,13 +219,14 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         let library = AudioLibrary(directory: root)
         let engine = AVPlayer()
         let fallbacks = FallbackLog()
-        let player = RecitationPlayer(audioLibrary: library, defaults: defaults, player: engine,
-            streamingURL: { reference, _ in
+        let player = RecitationPlayer(player: engine,
+            audioURL: { reference, reciter in
+                if let local = library.localURL(for: reference, reciter: reciter) { return local }
                 fallbacks.references.append(reference)
                 if !allowFallback { XCTFail("Saved playback unexpectedly requested a streaming fallback") }
                 // Even a regression cannot contact an external service in these tests.
                 return root.appendingPathComponent("unavailable.mp3")
-            })
+            }, defaults: defaults, integratesWithSystemAudio: true)
         let context = Fixture(root: root, library: library, defaults: defaults, engine: engine,
                               player: player, fallbacks: fallbacks)
         let data = try XCTUnwrap(Data(base64Encoded: Self.generatedTone, options: .ignoreUnknownCharacters))

@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 import QuranCore
 
 @MainActor
@@ -7,11 +8,22 @@ struct SettingsView: View {
     @EnvironmentObject private var player: RecitationPlayer
     @EnvironmentObject private var recorder: PracticeRecorder
     @EnvironmentObject private var assessment: RecitationAssessmentStore
+    @State private var exportDocument: ReadingBackupDocument?
+    @State private var exportFilename = "Sakina-lasdata"
+    @State private var showExporter = false
+    @State private var showImporter = false
+    @State private var pendingImport: Data?
+    @State private var showImportConfirmation = false
+    @State private var isReadingBackup = false
+    @State private var backupNotice: String?
+    @State private var backupError: String?
+    @State private var backupRequestID = UUID()
+    @State private var backupReadTask: Task<Void, Never>?
 
     var body: some View {
         List {
             Section("Din läsvana") {
-                Stepper(value: Binding(get: { store.dailyGoal }, set: store.setDailyGoal), in: 1...50) {
+                Stepper(value: Binding(get: { store.dailyGoal }, set: { store.setDailyGoal($0) }), in: 1...50) {
                     LabeledContent("Dagligt mål", value: "\(store.dailyGoal) verser")
                 }
                 LabeledContent("Nuvarande streak", value: daysLabel(store.streakSummary.current))
@@ -21,7 +33,8 @@ struct SettingsView: View {
             }
             Section("Läsning och ljud") {
                 NavigationLink("Ljud för offline-lyssning") { AudioDownloadsView() }
-                Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: store.setTajweedEnabled))
+                Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: { store.setTajweedEnabled($0) }))
+                    .accessibilityIdentifier("settings.tajweed")
                 Picker("Recitatör", selection: Binding(get: { player.selectedReciter }, set: {
                     recorder.stopAll()
                     player.selectReciter($0)
@@ -30,6 +43,7 @@ struct SettingsView: View {
                 }
                 Toggle("Spela nästa vers automatiskt", isOn: $player.autoplay)
             }
+            readingBackupSection
             Section("Bokmärken") {
                 if store.bookmarks.isEmpty {
                     Label("Spara en vers med bokmärkessymbolen i läsvyn.", systemImage: "bookmark")
@@ -51,6 +65,10 @@ struct SettingsView: View {
                 }
             }
             Section("Om Sakina") {
+                if let versionDescription {
+                    Text(versionDescription).font(.caption).foregroundStyle(.secondary)
+                        .accessibilityIdentifier("settings.version")
+                }
                 NavigationLink("Källor och textutgåvor") { SourceNoticeView() }
                 NavigationLink("Integritet") { PrivacyView() }
                 Text("Ingen prenumeration, inget konto och inga annonser i den här versionen.")
@@ -62,6 +80,129 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Mitt")
+        .fileExporter(isPresented: $showExporter, document: exportDocument, contentType: .json,
+                      defaultFilename: exportFilename) { result in
+            exportDocument = nil
+            switch result {
+            case .success:
+                backupNotice = "Läsdatan har exporterats till den fil du valde."
+            case .failure(let error):
+                if !isUserCancellation(error) { backupError = "Säkerhetskopian kunde inte sparas. Försök igen." }
+            }
+        }
+        .fileImporter(isPresented: $showImporter, allowedContentTypes: [.json], allowsMultipleSelection: false) { result in
+            switch result {
+            case .success(let urls):
+                if let url = urls.first { readBackup(from: url) }
+            case .failure(let error):
+                if !isUserCancellation(error) { backupError = "Säkerhetskopian kunde inte öppnas. Försök igen." }
+            }
+        }
+        .confirmationDialog("Lägg till läsdata från säkerhetskopian?", isPresented: $showImportConfirmation,
+                            titleVisibility: .visible) {
+            Button("Lägg till läsdata") {
+                guard let data = pendingImport else { return }
+                pendingImport = nil
+                do {
+                    try store.mergeReadingBackup(data)
+                    backupNotice = "Läsdatan har lagts till. Dina befintliga data och inställningar är kvar."
+                } catch { backupError = error.localizedDescription }
+            }
+            Button("Avbryt", role: .cancel) { pendingImport = nil }
+        } message: {
+            Text("Bokmärken och läsdagar läggs till. Din befintliga läsposition och dina inställningar behålls.")
+        }
+        .onDisappear {
+            backupRequestID = UUID()
+            backupReadTask?.cancel()
+            backupReadTask = nil
+            isReadingBackup = false
+        }
+    }
+
+    private var readingBackupSection: some View {
+        Section("Säkerhetskopiera läsdata") {
+            Button {
+                do {
+                    exportDocument = ReadingBackupDocument(data: try store.readingBackupData())
+                    exportFilename = "Sakina-lasdata-" + Date.now.formatted(.iso8601.year().month().day().dateSeparator(.dash))
+                    backupError = nil
+                    backupNotice = nil
+                    showExporter = true
+                } catch { backupError = error.localizedDescription }
+            } label: {
+                Label("Exportera läsdata", systemImage: "square.and.arrow.up")
+            }
+            .accessibilityIdentifier("settings.backup.export")
+            .disabled(isReadingBackup)
+            Button {
+                backupError = nil
+                backupNotice = nil
+                showImporter = true
+            } label: {
+                Label("Importera läsdata", systemImage: "square.and.arrow.down")
+            }
+            .accessibilityIdentifier("settings.backup.import")
+            .disabled(isReadingBackup)
+            Text("Spara bokmärken, läsposition och läsdagar i en fil inför en ominstallation. Ljud, inspelningar och inställningar ingår inte.")
+                .font(.caption).foregroundStyle(.secondary)
+            if isReadingBackup { ProgressView("Läser säkerhetskopian …") }
+            if let backupNotice {
+                Label(backupNotice, systemImage: "checkmark.circle")
+                    .font(.callout).foregroundStyle(Palette.green)
+            }
+            if let backupError { ErrorBanner(message: backupError) }
+        }
+    }
+
+    private func readBackup(from url: URL) {
+        backupReadTask?.cancel()
+        let requestID = UUID()
+        backupRequestID = requestID
+        isReadingBackup = true
+        pendingImport = nil
+        backupNotice = nil
+        backupError = nil
+        let maximumBytes = AppStore.maximumReadingBackupBytes
+        backupReadTask = Task { @MainActor in
+            defer {
+                if backupRequestID == requestID {
+                    isReadingBackup = false
+                    backupReadTask = nil
+                }
+            }
+            guard !Task.isCancelled, backupRequestID == requestID else { return }
+            let reader = Task.detached(priority: .userInitiated) {
+                try ReadingBackupFileReader.read(url, maximumBytes: maximumBytes)
+            }
+            do {
+                let data = try await withTaskCancellationHandler {
+                    try await reader.value
+                } onCancel: {
+                    reader.cancel()
+                }
+                try Task.checkCancellation()
+                guard backupRequestID == requestID else { return }
+                pendingImport = data
+                showImportConfirmation = true
+            } catch is CancellationError { }
+            catch {
+                guard backupRequestID == requestID, !Task.isCancelled else { return }
+                backupError = (error as? ReadingBackupFileReader.ReadError)?.errorDescription
+                    ?? "Säkerhetskopian kunde inte läsas. Välj en Sakina-fil och försök igen."
+            }
+        }
+    }
+
+    private func isUserCancellation(_ error: Error) -> Bool {
+        let error = error as NSError
+        return error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError
+    }
+
+    private var versionDescription: String? {
+        guard let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+              let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String else { return nil }
+        return "Version \(version) (\(build))"
     }
 
     private var sortedBookmarks: [AyahReference] {
@@ -72,6 +213,63 @@ struct SettingsView: View {
     private func daysLabel(_ count: Int) -> String { count == 1 ? "1 dag" : "\(count) dagar" }
     private func surahName(_ reference: AyahReference) -> String {
         store.index?.surahs.first { $0.id == reference.surahID }?.englishName ?? "Sura \(reference.surahID)"
+    }
+}
+
+private struct ReadingBackupDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.json] }
+    let data: Data
+
+    init(data: Data) { self.data = data }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else { throw CocoaError(.fileReadCorruptFile) }
+        self.data = data
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: data)
+    }
+}
+
+/// A provider file may need coordination/download. Keep that work off the UI
+/// actor, keep its security scope open, and stop after the accepted byte bound.
+private enum ReadingBackupFileReader {
+    enum ReadError: LocalizedError {
+        case tooLarge
+        case unavailable
+        var errorDescription: String? {
+            switch self {
+            case .tooLarge: return "Filen är för stor. Välj en säkerhetskopia skapad av Sakina."
+            case .unavailable: return "Säkerhetskopian kunde inte läsas. Försök igen."
+            }
+        }
+    }
+
+    static func read(_ url: URL, maximumBytes: Int) throws -> Data {
+        try Task.checkCancellation()
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        var coordinationError: NSError?
+        var result: Result<Data, Error>?
+        NSFileCoordinator(filePresenter: nil).coordinate(readingItemAt: url, options: [], error: &coordinationError) { coordinatedURL in
+            result = Result {
+                let handle = try FileHandle(forReadingFrom: coordinatedURL)
+                defer { try? handle.close() }
+                var data = Data()
+                while data.count <= maximumBytes {
+                    try Task.checkCancellation()
+                    let chunk = try handle.read(upToCount: min(65_536, maximumBytes + 1 - data.count)) ?? Data()
+                    if chunk.isEmpty { return data }
+                    data.append(chunk)
+                    if data.count > maximumBytes { throw ReadError.tooLarge }
+                }
+                throw ReadError.tooLarge
+            }
+        }
+        if let coordinationError { throw coordinationError }
+        guard let result else { throw ReadError.unavailable }
+        return try result.get()
     }
 }
 
@@ -130,6 +328,7 @@ struct PrivacyView: View {
             Section("Sparas på din iPhone") {
                 Text("Läsposition, bokmärken, läsmål och streak sparas lokalt. Appen kräver inget konto och innehåller ingen användningsspårning eller annonser.")
                 Text("Inspelningar kan raderas i övningsvyn och tas bort vid nästa appstart. Ingen röst laddas upp automatiskt.")
+                Text("Du kan själv exportera läsdata till en fil och lägga till dem igen efter en ominstallation. Appen gör ingen automatisk säkerhetskopiering till en server.")
             }
             Section("När du använder internet") {
                 Text("När du strömmar eller laddar ned recitationsljud kontaktar appen EveryAyah. Sparat ljud spelas från telefonen. När du öppnar tafsir kontaktar appen AlQuran Cloud. Tjänsterna får din IP-adress och vilken vers du begär, men ingen röstinspelning från appen.")

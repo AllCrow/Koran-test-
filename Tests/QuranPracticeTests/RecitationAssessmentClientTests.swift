@@ -155,6 +155,19 @@ final class RecitationAssessmentClientTests: XCTestCase {
         catch { XCTAssertEqual(error as? AssessmentError, .responseTooLarge) }
     }
 
+    func testResponseExactlyAtTheSizeLimitStillValidates() async throws {
+        var response = try payload()
+        let remaining = RecitationAssessmentClient.maximumResponseBytes - response.count
+        XCTAssertGreaterThan(remaining, 0)
+        // JSON trailing whitespace is valid. This checks the receive loop's
+        // boundary without changing its exact reference text or response schema.
+        response.append(Data(repeating: 32, count: remaining))
+        serve(response)
+        let assessment = try await client().assess(audioData: audio, ayah: ayah)
+        XCTAssertEqual(assessment.status, .assessed)
+        XCTAssertTrue(assessment.referenceText.utf8.elementsEqual(practiceText.utf8))
+    }
+
     func testServerFailuresDoNotExposeBodiesOrInventAssessment() async throws {
         for (status, expected) in [(401, AssessmentError.serviceUnavailable), (413, .recordingTooLarge), (415, .invalidRecording), (422, .invalidReference), (429, .rateLimited), (503, .serviceUnavailable)] {
             AssessmentURLProtocol.setHandler { _ in (status, Data("private server diagnostics".utf8), [:]) }

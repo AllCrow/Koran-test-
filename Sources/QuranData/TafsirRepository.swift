@@ -12,6 +12,7 @@ public struct TafsirEntry: Hashable, Sendable {
 }
 
 public actor TafsirRepository {
+    public static let maximumResponseBytes = 1024 * 1024
     public enum TafsirError: LocalizedError, Equatable {
         case unavailable
         case unexpectedContent
@@ -56,6 +57,8 @@ public actor TafsirRepository {
         configuration.timeoutIntervalForRequest = 20
         configuration.timeoutIntervalForResource = 30
         configuration.urlCache = nil
+        configuration.httpCookieStorage = nil
+        configuration.httpShouldSetCookies = false
         session = URLSession(configuration: configuration)
     }
 
@@ -71,20 +74,29 @@ public actor TafsirRepository {
         }
         let address = "https://api.alquran.cloud/v1/ayah/\(reference.surahID):\(reference.ayahNumber)/ar.muyassar"
         guard let url = URL(string: address) else { throw TafsirError.unavailable }
+        var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData)
+        request.httpShouldHandleCookies = false
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
         let data: Data
         let response: URLResponse
         do {
-            (data, response) = try await session.data(from: url)
+            (data, response) = try await receiveResponse(for: request)
         } catch is CancellationError {
             throw CancellationError()
         } catch let error as URLError where error.code == .cancelled {
             throw CancellationError()
+        } catch let error as TafsirError {
+            throw error
         } catch {
             throw TafsirError.unavailable
         }
         try Task.checkCancellation()
         guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
             throw TafsirError.unavailable
+        }
+        guard data.count <= Self.maximumResponseBytes,
+              response.expectedContentLength <= Int64(Self.maximumResponseBytes) else {
+            throw TafsirError.unexpectedContent
         }
         guard let result = try? JSONDecoder().decode(Envelope.self, from: data),
               result.code == 200,
@@ -107,6 +119,34 @@ public actor TafsirRepository {
             entries.removeValue(forKey: recentReferences.removeFirst())
         }
         return entry
+    }
+
+    private func receiveResponse(for request: URLRequest) async throws -> (Data, URLResponse) {
+        #if canImport(Darwin)
+        let (bytes, response) = try await session.bytes(for: request)
+        let dataTask = bytes.task
+        defer { dataTask.cancel() }
+        return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else { return (Data(), response) }
+            guard response.expectedContentLength <= Int64(Self.maximumResponseBytes) else {
+                throw TafsirError.unexpectedContent
+            }
+            var data = Data()
+            data.reserveCapacity(Int(max(0, min(response.expectedContentLength, Int64(Self.maximumResponseBytes)))))
+            for try await byte in bytes {
+                if data.count.isMultiple(of: 4096) { try Task.checkCancellation() }
+                guard data.count < Self.maximumResponseBytes else { throw TafsirError.unexpectedContent }
+                data.append(byte)
+            }
+            try Task.checkCancellation()
+            return (data, response)
+        } onCancel: {
+            dataTask.cancel()
+        }
+        #else
+        return try await session.data(for: request)
+        #endif
     }
 
     private func touch(_ reference: AyahReference) {

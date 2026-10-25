@@ -134,7 +134,7 @@ struct PracticeView: View {
                 Text("Väljer du en annan sura tas din tillfälliga inspelning bort.")
             }
             if !usesVerticalControls { Spacer() }
-            Picker("Vers", selection: Binding(get: { verseNumber }, set: selectVerse)) {
+            Picker("Vers", selection: Binding(get: { verseNumber }, set: { selectVerse($0) })) {
                 ForEach(1...chapter.surah.numberOfAyahs, id: \.self) { number in
                     Text("Vers \(number)").tag(number)
                 }

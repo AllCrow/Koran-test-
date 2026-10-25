@@ -4,20 +4,22 @@ Uppdaterat: **2026-10-25**. Den senaste omgången fokuserar på användarens beg
 
 ## Pågående verifiering av ljudspelaren
 
-Sju nya hostade prov i `AppTests/RecitationPlayerTests.swift` förbereder kontroll
-av riktig MP3-avkodning, sparat ljud för alla tre recitatörsval, paus/återstart,
-versslut och autospelning, övning av en enda vers, simulerade ljudavbrott,
-gamla spelarhändelser efter surabyte samt ett ospelbart ljudklipp. Provfilen är
-en lokalt genererad, svag 440 Hz-ton i tre sekunder, utan röst eller religiöst
-innehåll. Den ligger endast i testkoden och ska inte följa med i iPhone-appen.
+Sju nya hostade prov i `AppTests/OfflineMP3PlaybackTests.swift` kompletterar
+huvudgrenens PCM-prov med riktig MP3-avkodning, lokalt filval för alla tre
+recitatörer och aktiverad systemljudsession. En lokalt genererad, svag 440 Hz-ton
+i tre sekunder används; ingen röst eller religiöst innehåll ingår.
 
-Spelarens befintliga AVPlayer och URL-val kan injiceras i proven. Appens normala
-val är oförändrat: sparad fil först, därefter EveryAyah. Testfallen använder
-fil-URL:er även för felvägen och gör inga externa ljudförfrågningar. De nya proven
-är **inte ännu körda i iOS**; tidigare 18 godkända native-prov nedan gäller den
-tidigare källversionen. En riktig simulatoromgång och iPhoneOS-byggning krävs
-innan denna ändring beskrivs som verifierad. Fysiska ljudrutter, mikrofon,
-recitationsinspelningarnas innehåll samt energi/värme täcks inte av dessa tonprov.
+Proven kontrollerar även paus/återstart, versslut/autospelning, en vers i övning,
+simulerade ljudavbrott, gamla händelser efter surabyte och ett ospelbart klipp.
+De använder fil-URL:er även för felvägen och gör inga externa ljudförfrågningar.
+De första sju MP3-proven passerade i [körning 40159654656](https://github.com/AllCrow/Koran-test-/actions/runs/40159654656),
+källa `dffc0bb115812db66a02e93763b3a0eb37c97a4b`, med 18 äldre native-prov och
+riktig iPhoneOS-paketering. Huvudgrenens förbättringar från `1c13b88` har därefter
+integrerats utan att skriva över dem. Ett pausat recitatörsbyte ska nu behålla
+valet utan att skapa eller hämta ett nytt ljudklipp före uttrycklig återstart.
+**Den samlade nya versionen behöver en ny Mac-körning före godkännande.**
+Fysisk installation, ljudrutter, mikrofon, källinspelningarnas innehåll och
+energi/värme är fortfarande inte godkända genom dessa tonprov.
 
 ## Privat installation och fysisk iPhone-fil
 

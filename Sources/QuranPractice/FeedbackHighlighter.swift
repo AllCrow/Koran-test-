@@ -24,22 +24,36 @@ public enum FeedbackHighlighter {
                 ranges[ranges.count - 1] = last.lowerBound..<max(last.upperBound, range.upperBound)
             } else { ranges.append(range) }
         }
+        guard !ranges.isEmpty else {
+            return text.isEmpty ? [] : [FeedbackSpan(text: text, isHighlighted: false)]
+        }
 
         var result: [FeedbackSpan] = []
         var scalarStart = 0
         var rangeIndex = 0
+        var pendingText = ""
+        var pendingHighlight = false
+        // Append into one uniquely owned buffer until the style changes. Building
+        // `last.text + fragment` per grapheme copies an ever-growing span for
+        // long verses or references without any highlighted characters.
+        func flush() {
+            guard !pendingText.isEmpty else { return }
+            result.append(FeedbackSpan(text: pendingText, isHighlighted: pendingHighlight))
+            pendingText = ""
+        }
         for character in text {
             let fragment = String(character)
             let scalarEnd = scalarStart + fragment.unicodeScalars.count
             while rangeIndex < ranges.count, ranges[rangeIndex].upperBound <= scalarStart { rangeIndex += 1 }
             let highlighted = rangeIndex < ranges.count && ranges[rangeIndex].lowerBound < scalarEnd
-            if let last = result.last, last.isHighlighted == highlighted {
-                result[result.count - 1] = FeedbackSpan(text: last.text + fragment, isHighlighted: highlighted)
-            } else {
-                result.append(FeedbackSpan(text: fragment, isHighlighted: highlighted))
+            if !pendingText.isEmpty && pendingHighlight != highlighted {
+                flush()
             }
+            pendingHighlight = highlighted
+            pendingText.append(contentsOf: fragment)
             scalarStart = scalarEnd
         }
+        flush()
         return result
     }
 }

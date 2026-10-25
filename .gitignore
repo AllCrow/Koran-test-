@@ -3,6 +3,9 @@
 .build-*/
 .swiftpm/
 DerivedData/
+SimulatorAttachments/
+/iPhone-build-info.json
+/release-notes.md
 *.xcresult/
 *.xcuserstate
 xcuserdata/
