@@ -24,7 +24,7 @@ Se [kraven](KRAV.md), [aktuell status](STATUS.md), [modellundersökningen](docs/
 
 ## Provköra med bara iPhone
 
-Du behöver inte äga en Mac, men appen behöver byggas och signeras i en macOS-miljö. Ett GitHub Actions-flöde för tester och osignerat simulatorbygge är förberett; inget lyckat Xcode-bygge är ännu bekräftat. En simulatorartefakt kan **inte** installeras på en fysisk iPhone.
+Du behöver inte äga en Mac, men appen behöver byggas och signeras i en macOS-miljö. GitHub Actions har nu byggt appen med Apples riktiga SDK och kört åtta godkända hostade tester i iPhone-simulatorn. UI-proven slutförs efter en identifierarrättning; inget fysiskt iPhone-prov är utfört. En simulatorartefakt kan **inte** installeras på en fysisk iPhone.
 
 Distributionsvägen är en betrodd molnbaserad Mac, Apple Developer-medlemskap, App Store Connect och korrekt signering, därefter TestFlight. Dessa delar är ännu inte färdiga. Inga Apple-uppgifter eller signeringsnycklar ingår i Git. Eventuella Apple- och byggkostnader är projektets distributionskostnader, inte en obligatorisk månadsavgift för appens användare.
 
@@ -43,7 +43,7 @@ xcodebuild -project Sakina.xcodeproj -scheme Sakina \
 
 Efter tillägg av Swift-filer eller resurser: kör `python3 scripts/generate_project.py` och checka in det uppdaterade projektet. Generatorn kräver bara Python 3.
 
-**Verifierat hittills:** 61 portabla Swift-tester passerar: 22 för kärnlogik, 18 för data och 21 för analyskontrakt/referenser. Backendens 28 tester passerar, inklusive riktig M4A/AAC-/WAV-avkodning, upprepad avbrytning och avgränsade madd arid-varianter. Ett verkligt CPU-prov och lokala Docker-startkontroller har också genomförts. Åtta hostade iOS-tester och tre UI-flöden är förberedda men **inte körda**. Inget av detta ersätter ett Xcode-bygge eller en fysisk iPhone-körning. Se [STATUS.md](STATUS.md) och [native-proven](docs/IOS_VERIFICATION.md).
+**Verifierat hittills:** 61 portabla Swift-tester passerar: 22 för kärnlogik, 18 för data och 21 för analyskontrakt/referenser. Backendens 28 tester passerar. Riktigt Xcode-bygge och åtta hostade iOS-tester har också passerat; tre UI-flöden omprovas efter en identifierarrättning. Ett verkligt CPU-prov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, signering och TestFlight återstår. Se [STATUS.md](STATUS.md) och [native-proven](docs/IOS_VERIFICATION.md).
 
 ## Struktur
 

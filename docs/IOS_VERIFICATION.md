@@ -23,7 +23,7 @@ xcodebuild -project Sakina.xcodeproj -scheme Sakina \
 Välj ett faktiskt tillgängligt simulatornamn från det första kommandot.
 [GitHub Actions-flödet](../.github/workflows/ios.yml) väljer ett tillgängligt
 iPhone-ID och sparar en `.xcresult` även om teststeget misslyckas. Flödet är
-förberett men har inte körts i det begärda privata repot.
+startat i användarens repo [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-/actions/runs/40152872024). Användaren har uttryckligen godkänt publikt läge tills vidare. Native-resultatet är ännu inte godkänt.
 
 | Testgrupp | Avsikt |
 | --- | --- |
