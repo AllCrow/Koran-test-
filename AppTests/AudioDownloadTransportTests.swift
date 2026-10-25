@@ -127,7 +127,8 @@ final class AudioDownloadTransportTests: XCTestCase {
         XCTAssertEqual(server.requests.count, 1)
         XCTAssertEqual(library.completed, 0)
         XCTAssertEqual(library.downloadedVerseCount(surahID: 108, reciter: .alafasy), 0)
-        XCTAssertTrue(try XCTUnwrap(library.errorMessage).contains("stor"))
+        let message = try XCTUnwrap(library.errorMessage)
+        XCTAssertTrue(message.contains("stor"), message)
         XCTAssertTrue(transport.temporaryFiles.isEmpty, "The unfinished transfer must be cancelled by the delegate")
     }
 
@@ -143,7 +144,8 @@ final class AudioDownloadTransportTests: XCTestCase {
         XCTAssertEqual(server.requests.count, 1)
         XCTAssertEqual(library.completed, 0)
         XCTAssertEqual(library.downloadedVerseCount(surahID: 108, reciter: .alafasy), 0)
-        XCTAssertTrue(try XCTUnwrap(library.errorMessage).contains("stor"))
+        let message = try XCTUnwrap(library.errorMessage)
+        XCTAssertTrue(message.contains("stor"), message)
         XCTAssertTrue(transport.temporaryFiles.isEmpty, "No terminating HTTP chunk was sent; delegate cancellation must finish the job")
     }
 
@@ -191,7 +193,7 @@ final class AudioDownloadTransportTests: XCTestCase {
 @MainActor
 private final class HTTPDownloadTransport {
     private let server: LoopbackAudioHTTPServer
-    private let session: URLSession
+    private let downloader: AudioFileDownloader
     private(set) var requests: [URLRequest] = []
     private(set) var temporaryFiles: [URL] = []
 
@@ -205,7 +207,7 @@ private final class HTTPDownloadTransport {
         configuration.timeoutIntervalForRequest = 8
         configuration.timeoutIntervalForResource = 10
         configuration.httpMaximumConnectionsPerHost = 1
-        session = URLSession(configuration: configuration)
+        downloader = AudioFileDownloader(configuration: configuration)
     }
 
     var download: AudioLibrary.Download {
@@ -220,7 +222,7 @@ private final class HTTPDownloadTransport {
             components.path = origin.path
             var routed = original
             routed.url = try XCTUnwrap(components.url)
-            let (temporary, response) = try await session.download(for: routed, delegate: delegate)
+            let (temporary, response) = try await downloader.download(for: routed, delegate: delegate)
             temporaryFiles.append(temporary)
             let http = try XCTUnwrap(response as? HTTPURLResponse)
             let fields = Dictionary(uniqueKeysWithValues: http.allHeaderFields.map {
@@ -232,8 +234,8 @@ private final class HTTPDownloadTransport {
         }
     }
 
-    func stop() { session.invalidateAndCancel() }
-    deinit { session.invalidateAndCancel() }
+    func stop() { downloader.invalidateAndCancel() }
+    deinit { downloader.invalidateAndCancel() }
 }
 
 /// A tiny queue-confined HTTP/1.1 server. No TLS keys, external interface,

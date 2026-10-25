@@ -20,7 +20,7 @@ final class AudioLibrary: ObservableObject {
     var progress: Double { total > 0 ? Double(completed) / Double(total) : 0 }
 
     private let directory: URL?
-    private let session: URLSession
+    private let downloader: AudioFileDownloader
     private let downloadFile: Download
     private let fileManager = FileManager.default
     private let maximumVerseBytes: Int64 = 32 * 1_024 * 1_024
@@ -38,10 +38,10 @@ final class AudioLibrary: ObservableObject {
         configuration.timeoutIntervalForRequest = 30
         configuration.timeoutIntervalForResource = 180
         configuration.waitsForConnectivity = false
-        let networkSession = URLSession(configuration: configuration)
-        session = networkSession
+        let networkDownloader = AudioFileDownloader(configuration: configuration)
+        downloader = networkDownloader
         downloadFile = download ?? { request, delegate in
-            try await networkSession.download(for: request, delegate: delegate)
+            try await networkDownloader.download(for: request, delegate: delegate)
         }
 
         do {
@@ -69,7 +69,7 @@ final class AudioLibrary: ObservableObject {
 
     deinit {
         downloadTask?.cancel()
-        session.invalidateAndCancel()
+        downloader.invalidateAndCancel()
     }
 
     /// Returns only a file with a valid MP3 header, with its size and date unchanged.
