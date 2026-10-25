@@ -48,8 +48,21 @@ final class ContentIssueReportTests: XCTestCase {
     func testDescriptionRetainsArabicScalarsAndUnknownCharacters() throws {
         let description = "\u{FEFF}بِّسْمِ ٱللَّهِ\u{200F} e\u{0301}"
         let report = try makeReport(description: description)
+        XCTAssertEqual(Array(report.description.utf8), Array(description.utf8), "The report input must retain every scalar")
+        let encoded = try report.jsonData()
+        struct DescriptionOnly: Decodable { let description: String }
+        let typed = try JSONDecoder().decode(DescriptionOnly.self, from: encoded)
+        XCTAssertEqual(Array(typed.description.utf8), Array(description.utf8))
         let exported = try XCTUnwrap(try object(report)["description"] as? String)
         XCTAssertEqual(Array(exported.utf8), Array(description.utf8))
+        XCTAssertNotNil(encoded.range(of: Data("\\uFEFF".utf8)), "The leading scalar uses an unambiguous JSON escape")
+
+        // A control with the system encoder localizes the prior Darwin loss.
+        // This is a fixed synthetic fixture, never an actual user's report.
+        let control = try JSONEncoder().encode(report)
+        let controlObject = try XCTUnwrap(JSONSerialization.jsonObject(with: control) as? [String: Any])
+        let controlDescription = try XCTUnwrap(controlObject["description"] as? String)
+        print("Content report Unicode control: raw input marker=\(report.description.utf8.starts(with: [0xEF, 0xBB, 0xBF])), encoded literal marker=\(control.range(of: Data([0xEF, 0xBB, 0xBF])) != nil), Foundation-decoded marker=\(controlDescription.utf8.starts(with: [0xEF, 0xBB, 0xBF]))")
     }
 
     private func makeReport(topic: ContentIssueReport.Topic = .readingText, reciter: Reciter = .alafasy,

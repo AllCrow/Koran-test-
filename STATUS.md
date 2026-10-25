@@ -363,3 +363,10 @@ och simulatorappar. Native-gaten hittade en Unicode-regression i rapportens
 beskrivning: iOS trimmade U+FEFF. Testet behålls; exporten bevarar nu hela
 inmatningen och använder trimning endast för att identifiera tom text.
 Inga UI-fall godkänns från den körningen; den är inte en godkänd leverans.
+
+PR-körning 40223934384 på eff9e59 hittade samma rapportprov trots att
+inmatningen nu bevaras. Den räknas inte som godkänd. Nästa kandidat behåller
+originalassertionen och kontrollerar även inmatningens byte och JSONDecoder,
+samt en separat kontroll med systemets JSONEncoder/JSONSerialization. U+FEFF
+exporteras som JSON-Unicode-escape för entydig läsning över Foundation-versioner.
+Detta gäller rapportbeskrivningen; koranresurserna ändras inte.

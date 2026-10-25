@@ -72,7 +72,17 @@ struct ContentIssueReport: Encodable, Equatable, Sendable {
     func jsonData() throws -> Data {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        return try encoder.encode(self)
+        var data = try encoder.encode(self)
+        // Some Foundation JSON readers treat a literal U+FEFF at the start of
+        // a string value as a byte-order marker. A JSON Unicode escape retains
+        // the scalar unambiguously across those readers, without changing the
+        // user's description. All other encoded UTF-8 stays untouched.
+        let marker = Data([0xEF, 0xBB, 0xBF])
+        let escapedMarker = Data("\\uFEFF".utf8)
+        while let range = data.range(of: marker) {
+            data.replaceSubrange(range, with: escapedMarker)
+        }
+        return data
     }
 
     enum CodingKeys: String, CodingKey {
