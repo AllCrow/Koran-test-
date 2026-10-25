@@ -11,13 +11,15 @@ för din telefon innan den kan öppnas.
    och iOS-version. Appen ska inte kräva konto, betalning eller mikrofonåtkomst
    bara för att du läser.
 2. Öppna **Koranen**, välj al-Fatiha och läs. Växla tajweedfärger och prova de
-   fyra storlekarna under **aA → Arabisk textstorlek**. Under **Mitt → Arabisk
+   fyra storlekarna under **Läsinställningar → Arabisk textstorlek** (reglageikonen
+   uppe till höger). Under **Mitt → Arabisk
    textstorlek** finns samma val och en förhandsvisning från vers 1:1. Stäng
    och öppna appen för att kontrollera att valet sparas. Prova också större
    text i iOS-inställningarna; appens val ska samverka med systemets storlek.
    Kontrollera bokstäver, diakritik och högerjustering. Prova även en lång vers,
-   mörkt läge och telefonens största textstorlek.
-   Välj till exempel sura 2, öppna **aA → Gå till vers** och skriv **255**.
+   **Mitt → Utseende → Mörkt** och telefonens största textstorlek. Prova även
+   **Ljust** och **Följ iPhone**; utseendet ska sparas efter omstart.
+   Välj till exempel sura 2, öppna **Läsinställningar → Gå till vers** och skriv **255**.
    Hoppet ska visa 2:255 utan att räknas som en läst vers.
 3. Markera en vers som läst och spara ett bokmärke. Stäng och öppna appen igen.
    Markeringen och bokmärket ska finnas kvar. Att bara öppna eller hoppa till en

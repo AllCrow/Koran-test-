@@ -39,6 +39,12 @@ final class ReadingFlowTests: XCTestCase {
         app.tabBars.buttons["Idag"].tap()
         XCTAssertEqual(progress.value as? String, "1 av 3 verser lästa")
         attachScreenshot("Home-reading-progress")
+        let readingDays = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH %@", "home.readingDay."))
+        XCTAssertEqual(readingDays.count, 7)
+        let today = readingDays.element(boundBy: 6)
+        scrollFullyIntoView(today)
+        XCTAssertEqual(today.value as? String, "1 vers markerad")
+        attachScreenshot("Home-seven-reading-days")
         app.terminate()
         app.launch()
         let restored = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
@@ -399,17 +405,39 @@ final class ReadingFlowTests: XCTestCase {
     }
 
     private func scrollFullyIntoView(_ element: XCUIElement) {
+        var direction: CGFloat = 1
         for _ in 0..<10 {
             let top = app.navigationBars.firstMatch.frame.maxY
             let bottom = app.tabBars.firstMatch.frame.minY
+            let maximumDrag = (bottom - top) * 0.4
+            var drag = direction * maximumDrag
             if element.exists {
                 let frame = element.frame
-                if element.isHittable && frame.minY >= top && frame.maxY <= bottom { return }
-                if !frame.isEmpty && frame.minY < top { app.swipeDown() } else { app.swipeUp() }
-            } else {
-                app.swipeUp()
+                if !frame.isEmpty, frame.minY.isFinite, frame.maxY.isFinite {
+                    if frame.minY >= top && frame.maxY <= bottom {
+                        XCTAssertTrue(element.isHittable, "A fully visible control must be operable")
+                        return
+                    }
+                    let overflow = frame.minY < top ? frame.minY - top - 8 : frame.maxY - bottom + 8
+                    direction = overflow < 0 ? -1 : 1
+                    drag = direction * min(maximumDrag, max(24, abs(overflow)))
+                }
             }
+            // Full-screen flicks can alternate past a tall Dynamic Type row
+            // on compact phones, then lose its virtualized List cell entirely.
+            // Move only the measured overflow, bounded to the content viewport,
+            // and retain direction if the next cell snapshot is off screen.
+            let center = (top + bottom) / 2
+            let origin = app.coordinate(withNormalizedOffset: .zero)
+            let start = origin.withOffset(CGVector(dx: app.frame.width / 2, dy: center + drag / 2))
+            let end = origin.withOffset(CGVector(dx: app.frame.width / 2, dy: center - drag / 2))
+            start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.1)
         }
+        attachScreenshot("Control-not-fully-visible")
+        let diagnostic = XCTAttachment(string: "Target: \(element.debugDescription)\n\(app.debugDescription)")
+        diagnostic.name = "Control-frame-and-hierarchy"
+        diagnostic.lifetime = .keepAlways
+        add(diagnostic)
         XCTAssertTrue(element.exists && element.isHittable)
         XCTAssertGreaterThanOrEqual(element.frame.minY, app.navigationBars.firstMatch.frame.maxY)
         XCTAssertLessThanOrEqual(element.frame.maxY, app.tabBars.firstMatch.frame.minY)

@@ -111,3 +111,54 @@ deklarationer och filidentitet, medan provet här visar att verklig inferens och
 API-svar fungerar för de angivna insignalernas begränsade fall. Ingen av
 kontrollerna ersätter den bredare utvärderingen i
 [forskningsunderlaget](RECITATION_RESEARCH.md).
+
+## Fler verkliga funktionsprov 2026-10-25
+
+En ytterligare körning har genomförts med **18 hela källklipp**: öppningsversen
+**2:1, 9:1, 95:1, 97:1, 113:1 och 114:1**, var och en med al-Afasy,
+al-Husary och al-Minshawi. Samtliga filer hämtades från samma EveryAyah-mappar
+som appen använder. Inget klipp hoppades över eller ersattes. Källfilerna
+avkodades och kodades till **M4A/AAC, mono, 44,1 kHz, 64 kbit/s** utan
+beskärning, sammanfogning eller införda fel. M4A-filernas containertider var
+**3,417–19,618 sekunder**, samtliga under inspelningsgränsen på 60 sekunder.
+
+Alla anrop använde respektive vald referens med `include_basmala=false`.
+Källklippens fullständiga frasinnehåll och Basmala-/waqf-förhållande till
+referensen har **inte sakkunnigkontrollerats**. Formatet liknar appens
+inspelningar, men ljudet kommer från publicerade recitatörer, inte från
+iPhone-mikrofon eller nya elever.
+
+**Alla 18 anrop returnerade `assessed` med noll presenterade indikationer.**
+Inga anrop fick `unavailable` eller `insufficient_audio`. Det senare
+valideringskontraktet avvisar byteidentiska förväntade/observerade fonem och
+kolliderande återkopplingsidentiteter; denna körnings svar innehöll inga
+sådana poster. Noll indikationer är fortfarande inget intyg på korrekt
+recitation och mäter inte vilka fel modellen skulle missa hos en elev.
+
+[Hela resultatfilen](evidence/model-expanded-smoke-2026-10-25.json) bevarar
+alla 18 API-svar, källadresser, separata SHA256-hashar för MP3 och M4A,
+format-/längdmetadata, kodhashar och begränsningar. Ljudfiler och modellvikter
+ligger utanför Git och iPhone-paketet. Backendfilerna matchade exakt
+**f9c77d2889c01e7608d8b59d96235c1b0d5aaa64** vid körningen.
+
+| Mått | Observerat i denna körning |
+| --- | --- |
+| Modell/revision | Muaalem v3.2, `01a1ef9fbe40d144ef845101e89ff924aed3fef5` |
+| Miljö | Linux x86_64, Python 3.12.14, PyTorch 2.7.1+cpu, två CPU-trådar |
+| Modelladdning från befintliga lokala filer | 1,976 s |
+| Anropstid, min/median/max | 1,743 / 3,3945 / 11,609 s |
+| Rapporterad topp-RSS för processen | 3 334,6 MiB |
+
+Inferensen kördes med lokal modellcache och explicita offlineinställningar;
+ingen modell hämtades och ingen publik tjänst startades. Anropstiderna gäller
+API-anrop i samma process och omfattar inte källhämtning, transkodning eller
+publikt nätverk. Disk-/sidcachen dokumenterades inte som kall. Måtten gäller
+Linux-processen och säger inget om iPhones temperatur, batteri eller minne.
+
+Körningen breddar funktionsprovet med sex ytterligare versreferenser men
+tillför inga oberoende lärarbedömningar eller precision-/recall-mått.
+Träningsöverlapp är okänt och sifat-huvudena bedöms fortfarande inte separat.
+Det tidigare fallet med en indikation för **al-Afasy 112:2** finns kvar
+oförändrat och har inte omklassificerats. Ingen jämförelse med Tarteel har
+gjorts. Den automatiska tajweedhjälpen är fortsatt experimentell och avstängd
+i standardbygget; kvalitetsmålet är ännu inte styrkt.
