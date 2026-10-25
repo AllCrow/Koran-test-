@@ -4,7 +4,7 @@ This is an iPhone-first SwiftUI app (iOS 17+) with portable Swift packages and a
 experimental Python recitation backend. Preserve the user's full requirements
 in `KRAV.md`, actual verification in `STATUS.md`, and all source history.
 
-The user owns only an iPhone and wants cloud Mac builds and eventual TestFlight
+The user owns only an iPhone and wants cloud Mac builds and a personal native
 installation. This Linux environment has no Xcode or physical iPhone. Never
 describe syntax checks or Linux tests as a verified native build. Do not claim
 Tarteel parity or low heat without the corresponding measurements.
@@ -61,7 +61,11 @@ available iPhone simulator destination with `xcodebuild test`. See `STATUS.md`
 for the exact latest tested source, run and counts. Mac CI uses Xcode16.4 and
 an iOS18.5 simulator. Native suites cover AppStore, AudioLibrary, PracticeRecorder,
 RecitationPlayer and text/search/navigation. Audio validation uses synthetic MPEG
-frames; player tests perform real muted playback of generated local PCM WAVs.
+frames; PCM player tests perform real muted playback of generated local WAVs.
+OfflineMP3PlaybackTests also decode and play a generated quiet MP3 through
+AudioLibrary with the system session enabled. Both use generated test content,
+not reciter recordings. The combined run 40164031500 passed 56 hosted tests
+and all five UI flows; see STATUS.md for the exact head/check-out sources.
 Controlled download responses and permission callbacks do not establish real
 network transfer, physical microphone behavior, audio routes or device energy.
 The parent accessibility identifier had masked child buttons; do not put an
@@ -87,6 +91,10 @@ position assertions require the entire target badge near the viewport's top
 within five seconds; mere existence or hittability is insufficient. Inspect
 the resulting screenshots as well as test results. Actual latest verification
 is recorded in STATUS.md; do not describe an unrun change as verified.
+
+Apple requirements checked 2026-10-25 require Xcode26+/iOS26 SDK for App Store
+Connect uploads since 2026-04-28. The verified Xcode16.4/iOS18.5 build is not
+upload acceptance proof. Personal signing remains the current priority.
 
 Reading backup import is additive and validated before mutation. Keep its
 bounded file read, security-scoped/coordinated access and stale-request guard.

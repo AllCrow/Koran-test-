@@ -2,7 +2,7 @@
 
 Pågående native-app i SwiftUI för **iOS 17 eller senare**. Sakina är arbetsnamnet. Målet är en lugn koranapp med låg värme- och batteribelastning, uppmuntrande läsning och utan obligatorisk månadsprenumeration.
 
-Utvecklingen fortsätter självständigt enligt användarens senaste instruktion. Koden, kraven och verifieringsläget bevaras i projektet. Appen är ännu inte en signerad, enhetstestad eller publicerad produkt.
+Utvecklingen fortsätter självständigt enligt användarens senaste instruktion. Koden, kraven och verifieringsläget bevaras i projektet. Appen är ännu inte en signerad, fysiskt enhetstestad eller publicerad produkt.
 
 ## Nuvarande funktioner
 
@@ -46,6 +46,20 @@ xcodebuild -project Sakina.xcodeproj -scheme Sakina \
 ```
 
 Efter tillägg av Swift-filer eller resurser: kör `python3 scripts/generate_project.py` och checka in det uppdaterade projektet. Generatorn kräver bara Python 3.
+
+Apples [aktuella uppladdningskrav](https://developer.apple.com/news/upcoming-requirements/),
+kontrollerade 2026-10-25, kräver sedan 28 april 2026 **Xcode 26+ och iOS 26 SDK**
+för App Store Connect. CI-proven med Xcode16.4/iOS18.5 bevisar därför inte
+att en TestFlight-/App Store-uppladdning accepteras. Den vägen kräver ett nytt
+bygge och verifiering samt distributionens signering. Minsta körversion iOS17
+är en annan inställning än bygg-SDK:n. Den personliga installationsvägen
+beskrivs i [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md).
+
+[Den samlade Mac-körningen](https://github.com/AllCrow/Koran-test-/actions/runs/40164031500)
+passerar **67 portabla Swift-tester, 32 backendtester och 61 native-prov**:
+56 hostade iOS-prov och alla fem UI-flöden. Sju nya MP3-prov använder riktig
+avkodning och AVPlayer med en genererad ton. Långt vershopp och återställning
+passerar också med de ursprungliga kraven på exakt vers och läskredit.
 
 Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, personlig signering och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
 
