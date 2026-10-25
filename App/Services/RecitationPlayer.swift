@@ -42,6 +42,7 @@ final class RecitationPlayer: ObservableObject {
     private var generation = UUID()
     private var itemStatusObservation: NSKeyValueObservation?
     private var playbackObservation: NSKeyValueObservation?
+    private var playbackRateObservation: NSKeyValueObservation?
     private var itemNotifications: [NSObjectProtocol] = []
     private var interruptionNotification: NSObjectProtocol?
     private var routeNotification: NSObjectProtocol?
@@ -121,6 +122,7 @@ final class RecitationPlayer: ObservableObject {
     deinit {
         itemStatusObservation?.invalidate()
         playbackObservation?.invalidate()
+        playbackRateObservation?.invalidate()
         for token in itemNotifications {
             NotificationCenter.default.removeObserver(token)
         }
@@ -286,6 +288,14 @@ final class RecitationPlayer: ObservableObject {
             }
         }
 
+        playbackRateObservation = player.observe(\.rate, options: [.new]) { [weak self, weak item] _, _ in
+            Task { @MainActor [weak self, weak item] in
+                guard let self, let item,
+                      self.isCurrent(item, generation: itemGeneration) else { return }
+                self.updatePlaybackState(item: item, reference: reference)
+            }
+        }
+
         itemNotifications.append(NotificationCenter.default.addObserver(
             forName: AVPlayerItem.didPlayToEndTimeNotification,
             object: item,
@@ -356,6 +366,17 @@ final class RecitationPlayer: ObservableObject {
     }
 
     private func updatePlaybackState(item: AVPlayerItem, reference: AyahReference) {
+        guard wantsToPlay else {
+            // A late native rate/ready transition must not leave the engine
+            // playing behind a paused UI after interruption or route removal.
+            if player.rate != 0 || player.timeControlStatus != .paused {
+                player.pause()
+            }
+            isPlaying = false
+            isBuffering = false
+            updateNowPlaying()
+            return
+        }
         guard item.status != .failed else { return }
         switch player.timeControlStatus {
         case .playing:
@@ -474,6 +495,8 @@ final class RecitationPlayer: ObservableObject {
         itemStatusObservation = nil
         playbackObservation?.invalidate()
         playbackObservation = nil
+        playbackRateObservation?.invalidate()
+        playbackRateObservation = nil
         for token in itemNotifications {
             NotificationCenter.default.removeObserver(token)
         }

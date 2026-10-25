@@ -9,6 +9,39 @@ import XCTest
 /// microphone, human recording or a claim about reciter/MP3 audio quality.
 @MainActor
 final class RecitationPlayerTests: XCTestCase {
+    func testLateNativePlayCannotOverrideAnExplicitPause() async throws {
+        let source = try wave(seconds: 8)
+        let rig = try makePlayer { _, _ in source }
+        defer { rig.service.stop() }
+        let verse = try reference(1)
+        let began = expectation(description: "The generated local verse really starts")
+        let start = rig.service.$activeReference.first(where: { $0 == verse })
+            .sink { _ in began.fulfill() }
+        defer { start.cancel() }
+        rig.service.play(reference: verse, chapterVerseCount: 7)
+        await fulfillment(of: [began], timeout: 12)
+
+        rig.service.pause()
+        // Model a delayed native start/rate transition after the app has
+        // already accepted the user's pause. Keep the real eight-second WAV;
+        // reaching EOF cannot satisfy the two-second acknowledgement.
+        rig.engine.play()
+        let paused = expectation(description: "The controller rejects a late native play")
+        let acknowledgement = rig.engine.publisher(for: \.rate, options: [.initial, .new])
+            .first(where: { $0 == 0 }).sink { _ in paused.fulfill() }
+        defer { acknowledgement.cancel() }
+        await fulfillment(of: [paused], timeout: 2)
+
+        XCTAssertEqual(rig.engine.rate, 0)
+        XCTAssertFalse(rig.service.isPlaying)
+        XCTAssertFalse(rig.service.isBuffering)
+        XCTAssertFalse(rig.service.hasFinishedVerse)
+        XCTAssertLessThan(rig.engine.currentTime().seconds, 4)
+        XCTAssertEqual(rig.service.requestedReference, verse)
+        XCTAssertEqual(rig.service.activeReference, verse)
+        XCTAssertNil(rig.service.errorMessage)
+    }
+
     func testPausedReciterChangeDefersLoadingUntilExplicitResume() throws {
         let source = try wave(seconds: 8)
         var requests: [Reciter] = []
