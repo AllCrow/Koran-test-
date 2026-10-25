@@ -358,9 +358,21 @@ final class ReadingFlowTests: XCTestCase {
             let bottom = tabBar.frame.minY
             let upperLimit = top + min(150, (bottom - top) / 4)
             let frame = candidate.frame
+            let window = self.app.frame
             guard !frame.isEmpty, frame.minY.isFinite, frame.maxY.isFinite,
-                  frame.minY >= top, frame.maxY <= upperLimit else { return false }
-            return candidate.isHittable
+                  frame.minX.isFinite, frame.maxX.isFinite,
+                  frame.minY >= top, frame.maxY <= upperLimit,
+                  frame.minX >= window.minX, frame.maxX <= window.maxX else { return false }
+            // The badge is read-only. On iOS 26 its tall native List cell can
+            // report it as non-hittable despite correct visible geometry;
+            // run 39's failure image/frame show the whole 2:255 badge at y129.
+            // Keep the full near-top bounds and exact reference, not a tap
+            // activation point on a label. Interactive controls still require
+            // hittability and real taps in their separate assertions.
+            let parts = candidate.identifier.split(separator: ".")
+            return self.app.state == .runningForeground && parts.count == 4
+                && parts[0] == "reader" && parts[1] == "verse"
+                && candidate.label == "\(parts[2]):\(parts[3])"
         }
         let expectation = XCTNSPredicateExpectation(predicate: visible, object: element)
         let ready = XCTWaiter.wait(for: [expectation], timeout: 5) == .completed
