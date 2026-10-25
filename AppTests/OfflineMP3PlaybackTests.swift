@@ -185,6 +185,8 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         XCTAssertEqual(context.engine.rate, 0)
         XCTAssertFalse(context.player.isPlaying)
         XCTAssertFalse(context.player.hasFinishedVerse, "Natural completion must not satisfy a pause probe")
+        XCTAssertLessThan(context.engine.currentTime().seconds, 2.5,
+                          "The generated three-second tone must still have audio left after a pause")
     }
 
     private func waitFor<Value>(_ publisher: Published<Value>.Publisher,
