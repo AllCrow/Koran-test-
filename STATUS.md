@@ -48,7 +48,7 @@ utan att skriva över andra ändringar. Ny fullständig simulatorverifiering åt
 - Streakhistorik räknas konsekvent även i tidszoner med historiskt överhoppade datum. Systemets tids-/tidszonsändring uppdaterar dagens läsprogression utan polling. Modellens indikation om ett extra ljud färgar inte en befintlig bokstav.
 - Backend avvisar spellistor och ofullständig PCM; dubbelt avbrutna HTTP-anrop behåller analysplatsen tills arbetstråden har avslutats.
 
-De native-ändringarna är källgranskade och syntaxkontrollerade, inte Apple SDK- eller enhetsgodkända. Åtta hostade iOS-tester och tre UI-flöden är förberedda i projekt/scheme/CI men **inte körda**. Se [native-proven](docs/IOS_VERIFICATION.md).
+Det första riktiga Apple SDK-bygget har nu passerat på macOS med Xcode 16.4 och iPhoneSimulator 18.5 SDK. Samtliga **åtta hostade AppStore-tester har passerat i simulatorn**. Tre UI-flöden kördes och hittade en verklig konflikt mellan verskortets och knapparnas tillgänglighetsidentifierare; kortets identifierare har flyttats till en separat textetikett. Samma UI-prov körs igen. Detta är ännu inget godkänt fullständigt simulator- eller enhetsresultat. Se [native-proven](docs/IOS_VERIFICATION.md).
 
 [Verifieringssammanställningen](docs/evidence/polish-verification-2026-10-25.json) sparar resultat, avgränsningar och SHA256 för den granskade källkoden.
 
@@ -56,7 +56,7 @@ De native-ändringarna är källgranskade och syntaxkontrollerade, inte Apple SD
 
 | Del | Nuvarande läge | Återstående kontroll |
 | --- | --- | --- |
-| iPhone-app | SwiftUI för iOS 17+, startsida, läsare, övning, inställningar och ljudnedladdningar. | Verkligt Xcode-bygge, simulator och fysisk iPhone. |
+| iPhone-app | SwiftUI för iOS 17+, startsida, läsare, övning, inställningar och ljudnedladdningar. Riktigt simulatorbygge på macOS har passerat. | Slutför UI-prov och fysisk iPhone-verifiering. |
 | Korantext | Alla 114 suror och 6 236 ayat lokalt, uppdelade per sura. Källmaterial och hashmanifest ingår. | Visuell arabisk återgivning och läsflöde på enheten. |
 | Tajweedvisning | Separat annoterad edition, parser och på/av-val. | Färger, diakritik och växling på iPhone. |
 | Arabisk font | Amiri Quran är bundlad med OFL-licens och fixerad proveniens. Hashar och täckning av lästextens synliga tecken är verifierade. | Formgivning, radbrytning och tillgänglighet på iPhone. Glyph-täckning är inte ett renderingsprov. |
@@ -80,7 +80,7 @@ Korantext, tajweeddata och övningsreferenser är lokala. Recitationsljud kräve
 | Koranresurser | **Godkända** | 114 suror, 6 236 konsekutiva referenser, metadatakoppling, UTF-8-bevarande och samtliga käll-/resurshashar. |
 | Övningsreferenser | **Godkända** | Fixerad källversion, originaldata/API-hashar, filinventering, licensnotiser samt fonemkompatibilitet för samtliga referenser. |
 | Font och resurser | **Godkända** | Amiri Quran-/OFL-hashar, resursdeklarationer och synlig teckentäckning för kanonisk lästext. |
-| Native Xcode-/enhetsprov | **Inte utförda** | Åtta hostade tester och tre UI-flöden är förberedda. SwiftUI, AVFoundation, fysisk telefon och signering är inte godkända genom portabla tester. |
+| Native Xcode-/enhetsprov | **Bygge och åtta hostade tester passerade; UI-prov pågår** | Verkliga macOS-/iPhone-simulatorkörningar har utförts. Första testbyggets arkitekturkonflikt är rättad; åtta AppStore-tester passerade i nästa körning. Tre UI-prov hittade en identifierarkonflikt som nu är rättad och omprovas. Fysisk telefon, ljudrutter och signering återstår. |
 | Verklig Muaalem-inferens | **Utförd; utökat prov med 35 indata** | 33 referensklipp från al-Fatiha/al-Ikhlas med tre recitatörer samt annan vers och tystnad. Ett referensfall behöver sakkunnig granskning. Inga expertetiketter eller generell kvalitetsmätning. |
 | REA-inspektion | **Utförd på verklig viktfil** | 816 F32-tensorer, 605 754 251 deklarerade element och full SHA256 verifierade. Tensorvärden eller kvalitet tolkas inte av denna kontroll. |
 | Dockerbygg/-start | **Tidigare image och aktuell källstart kontrollerade** | Image från 2026-10-24 kördes som UID 10001 utan nätverk eller värdportar. Den 25 oktober startades aktuell backendkod och referenser via read-only-mount i samma runtime, som UID 1000, utan nätverk/värdportar. Verklig lokal HTTP-hälsa gav inte-redo-läge och ren avstängning. Det är ingen ny imagebyggning, containerinferens eller publik tjänst. |
@@ -89,7 +89,7 @@ Koranverifieringen körs med `python3 scripts/verify_content.py`. Offlineåtersk
 
 Övningsreferenserna kontrolleras med `python3 scripts/export_practice_references.py --verify`. Det separata datasetet behövs eftersom läsvyns rikare Uthmani-text lämnar vissa tecken utanför modellens fonemvokabulär. Inga originalsträngar i läsvyn har ändrats för att passa modellen.
 
-Swift-syntax, Foundation-baserad typkontroll och Xcode-projektets struktur har också kontrollerats under arbetet. Detta ersätter inte ett riktigt Xcode-bygge. Kommandon och projektlayout finns i [README.md](README.md); backendens testomfattning finns i [backend/README.md](backend/README.md).
+Swift-syntax, Foundation-baserad typkontroll och Xcode-projektets struktur har också kontrollerats. Dessa tidigare kontroller har nu följts av det riktiga Mac-bygget ovan; ingen av dem ersätter fysisk iPhone-provning. Kommandon och projektlayout finns i [README.md](README.md); backendens testomfattning finns i [backend/README.md](backend/README.md).
 
 ## Recitationsanalysens faktiska gränser
 
@@ -121,7 +121,11 @@ Tillgängliga API:er och ljudfiler betyder inte att alla rättigheter för appen
 
 Ett lokalt Git-repo finns. Grundversionen är sparad i `238ac4b` och den integrerade offline-/analyspipelinen i `10abe88`; följande ändringar och dokumentation bevaras i nya snapshots. Se lokal Git-logg för senaste commit. Denna status innebär inte att det senaste arbetsträdet redan är uppladdat eller att utvecklingen är färdig.
 
-Användaren har skapat [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-). Ägare AllCrow, publikt läge, tomt repo och läs-/skrivåtkomst är kontrollerade den 25 oktober. Användaren godkände därefter uttryckligen **publikt tills vidare**, vilket ersätter det tidigare privatkravet för uppladdningen. Integrationen nekas att ändra synlighet (403); ägaren behöver utföra ett senare byte till privat. Koden och den fulla lokala Git-historiken förbereds för det angivna repot. Uppladdning och Mac-byggresultat ska verifieras separat innan de beskrivs som godkända.
+Användaren har skapat [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-). Ägare AllCrow, publikt läge och läs-/skrivåtkomst är kontrollerade den 25 oktober. Användaren godkände uttryckligen **publikt tills vidare**, vilket ersätter det tidigare privatkravet för uppladdningen. Integrationen nekas att ändra synlighet (403); ägaren behöver utföra ett senare byte till privat.
+
+Koden och hela den tidigare lokala Git-historiken är uppladdade. Första remote `main` verifierades mot lokal commit **`eccabe79ad7405d2cb4fe5ad317e46de9416d14d`**. Det [första Mac-bygget](https://github.com/AllCrow/Koran-test-/actions/runs/40152872024) kompilerade appen, men testlänkningen hittade en arkitekturkonflikt. Standardinställningen `ONLY_ACTIVE_ARCH=YES` för Debug rättade den.
+
+I [nästa körning](https://github.com/AllCrow/Koran-test-/actions/runs/40153076721), kodcommit **`4645f6c3547057a6ee3f449664624af92116566b`**, passerade appbygget, 61 portabla Swift-tester, 28 backendtester och samtliga åtta hostade iOS-tester. De tre UI-proven kördes men misslyckades på versknapparnas identifierare. Den avgränsade rättningen finns i **`e7e859dc7a33734f59a731ea1ec6e386d6574589`** och [omprovas här](https://github.com/AllCrow/Koran-test-/actions/runs/40153744517). Ingen installerbar fysisk iPhone-version eller TestFlight-publicering finns ännu.
 
 REA finns separat i `/workspace/rea`, commit `f196ebf80665107aedc16892af25a1e1f9f26f43`. Det har faktiskt inventerat Muaalems safetensors-fil och strömmat hela filen för SHA256; den matchar den fixerade HF-artefakten. [Oförändrad evidens och metod](docs/REA_MODEL_INSPECTION.md) är sparade. Detta är en artefaktundersökning, inte en kvalitetsbedömning. **Tarteels app eller servrar har inte analyserats.**
 
@@ -130,8 +134,8 @@ Användaren har iPhone men ingen Mac. Molnbaserad macOS-byggmiljö, Apple Develo
 ## Återstående releasekrav och fortsatt arbete
 
 1. Utöka modellproven från den verifierade begränsade körningen till flera verser, elever och verkliga förhållanden. Kör sakkunnig utvärdering; påstå ingen Tarteel-paritet innan den är styrkt.
-2. Verifiera uppladdad commit i användarens AllCrow/Koran-test-. Bevara lokala snapshots; följ det nya beslutet om publikt tills vidare.
-3. Kör riktigt Xcode-bygge och simulatorprov i macOS. Prova därefter läsning, arabisk text, ljudsynkning, nedladdning/offline, tafsir, streak, inspelning och eventuell analys på fysisk iPhone.
+2. Fortsätt verifiera uppladdade commits i användarens AllCrow/Koran-test-. Bevara lokala snapshots; följ det nya beslutet om publikt tills vidare.
+3. Slutför simulatorns UI-prov efter det godkända Xcode-bygget och de åtta hostade testerna. Prova därefter läsning, arabisk text, ljudsynkning, nedladdning/offline, tafsir, streak, inspelning och eventuell analys på fysisk iPhone.
 4. Mät telefonens värme, batteri, minne och svarstid. **Ingen fysisk temperatur- eller energimätning är ännu utförd.**
 5. Slutför innehållsrättigheter, användarinformation, signering och TestFlight-distribution. Dokumentera vad som faktiskt passerar varje steg.
 
