@@ -55,11 +55,12 @@ bygge och verifiering samt distributionens signering. Minsta körversion iOS17
 är en annan inställning än bygg-SDK:n. Den personliga installationsvägen
 beskrivs i [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
-[Den samlade Mac-körningen](https://github.com/AllCrow/Koran-test-/actions/runs/40164031500)
+[Den samlade Mac-körningen](https://github.com/AllCrow/Koran-test-/actions/runs/40165021106)
 passerar **67 portabla Swift-tester, 32 backendtester och 61 native-prov**:
 56 hostade iOS-prov och alla fem UI-flöden. Sju nya MP3-prov använder riktig
-avkodning och AVPlayer med en genererad ton. Långt vershopp och återställning
-passerar också med de ursprungliga kraven på exakt vers och läskredit.
+avkodning och AVPlayer med en genererad ton. Native-listläsaren visar versens
+början nära toppen efter långt hopp, återstart, upprepning och senare läsning.
+Femsekunderskraven och skärmbilden är kontrollerade; navigation ger ingen läskredit.
 
 Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, personlig signering och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
 

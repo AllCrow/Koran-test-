@@ -55,10 +55,12 @@ alla imaminspelningar. Transportproven använder kontrollerade svar och bevisar
 inte verklig nedladdning/offlineuppspelning på telefonen. Systemets filväljare
 och externa filproviders för backup behöver också ett manuellt prov.
 
-[Körning 40164031500](https://github.com/AllCrow/Koran-test-/actions/runs/40164031500)
+[Körning 40165021106](https://github.com/AllCrow/Koran-test-/actions/runs/40165021106)
 passerar alla **56 hostade prov och fem UI-flöden** på källversion
-`09e2239ee561bbb20487506ede1ddf939dd64a42`. Resultatens head-SHA är kontrollerad;
-faktisk PR-checkout och bytejämförelse dokumenteras i [STATUS.md](../STATUS.md).
+`1ba557c3d6bed990504789caa2d01398d897e263`. Native List visar hela versbadgen
+nära toppen inom fem sekunder i de fyra positionsfallen. Bilden för 2:255
+visar även versens första textrader, utan föregående vers i skärmen. Exakt
+källa, paket och historisk MP3-baslinje dokumenteras i [STATUS.md](../STATUS.md).
 
 Apples [uppladdningskrav](https://developer.apple.com/news/upcoming-requirements/)
 kontrollerades 2026-10-25: App Store Connect kräver Xcode26+/iOS26 SDK sedan

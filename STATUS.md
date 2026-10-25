@@ -3,7 +3,7 @@
 Uppdaterat **2026-10-25**. Native-app för personligt iPhone-prov, iOS 17+.
 Ljud, inspelningslivstid, offlinefiler, läsdata och textberedning har härdats.
 Direkt vershopp och säkerhetskopiering av läsdata är tillagda.
-**Långt vershopp och samtliga 61 native-prov har passerat Mac-CI.** Personlig signering,
+**Native-listläsaren, skärpta positionstester och samtliga 61 native-prov har passerat.** Personlig signering,
 fysisk installation och en offentlig apprelease är inte verifierade.
 
 ## MP3-verifiering och läsflöden
@@ -18,23 +18,30 @@ ljudnotiser, gamla händelser och en ospelbar fil. Ingen röst, mikrofon eller
 extern ljudförfrågan används. De bevisar inte kvalitet eller rättigheter för
 imaminspelningarna, riktig nättransport eller fysisk energi/ljudrutter.
 
-Huvudgrenens arbete är integrerat med bevarad Git-historik. UI-proven hittade
-ett långt hopp som landade kring 2:239 i stället för 2:255. Rättningen i
-`7657e3a` binder kapitlet före LazyVStack så att varje vers exponeras direkt
-som scrollTargetLayout-mål. Samma strikta UI-krav och femsekundersgräns
-passerar nu: exakt målvers, återstart, upprepat hopp, senare läsposition och
-korrekt läskredit. Äldre misslyckade körningar är inte releasegodkännanden.
+Huvudgrenens och MP3-grenens arbete är integrerat med bevarad Git-historik.
+Den första gröna vershoppssviten klarade rätt versnummer, återstart, upprepat
+hopp, senare position och läskredit. Bildgranskningen visade dock 2:255 nära
+nederkanten medan föregående vers fyllde skärmen. Läsaren använder därför nu
+native List-celler och samma fyra kontroller kräver hela versbadgen nära
+toppen inom fem sekunder. Inga godtyckliga sleeps eller längre timeout införs.
+Den starkare verifieringen passerar nu och bilden visar 2:255 direkt under
+navigationsfältet med versens början tydligt läsbar. Föregående vers syns inte.
 
 ## Aktuell källversion och verifiering
 
-[Den samlade körningen 40164031500](https://github.com/AllCrow/Koran-test-/actions/runs/40164031500)
-är **completed/success** på branchkälla
+[Huvudgrenskörningen 40165021106](https://github.com/AllCrow/Koran-test-/actions/runs/40165021106)
+är **completed/success** på exakt app-/testversion **1ba557c3d6bed990504789caa2d01398d897e263**.
+Den förenar List-läsaren, skärpta positionstester och samtliga MP3-prov.
+Alla fyra jobb är success. Senare ändringar av enbart Markdown ändrar inte
+appkod, testkod eller bygginställningar.
+
+**Tidigare verifierad MP3-baslinje:** [40164031500](https://github.com/AllCrow/Koran-test-/actions/runs/40164031500)
+var **completed/success** på branchkälla
 **09e2239ee561bbb20487506ede1ddf939dd64a42**. GitHubs faktiska PR-checkout
 är **35a26792f457828306e420607f73e33aa4b6c045**; den är hämtad och dess
 kompletta filträd är byteidentiskt med branchkällan. Jobbloggar och
-artefakternas head-SHA har lästs. Den efterföljande integrationen av huvudgrenens
-dokumentation och denna resultatuppdatering ändrar bara Markdown, ingen
-appkod, testkod eller bygginställning. Ingen ny Mac-körning påstås för dokumentationen.
+artefakternas head-SHA har lästs. Detta bevarar MP3-grenens faktiska resultat;
+den nyare List-läsaren har sin separat verifierade huvudgrenskörning ovan.
 Mac-miljön använder Xcode 16.4 och iPhone 16 Pro/iOS 18.5-simulator, arm64.
 
 | Kontroll | Observerat resultat | Omfattning |
@@ -42,11 +49,11 @@ Mac-miljön använder Xcode 16.4 och iPhone 16 Pro/iOS 18.5-simulator, arm64.
 | Fysiskt iPhone-bygge | **Godkänt** | Release, iPhoneOS/arm64. Enhetsbygge innebär inte enhetsprov eller signering. |
 | Simulatorbygge | **Godkänt** | Riktig Apple SDK, SwiftUI, AVFoundation och lokala paket. |
 | Portabla Swift-tester | **67 macOS / 65 Linux passerade** | 23 kärn-, 19 data- och 23 gemensamma övningsprov samt två Darwin-prov av stor respons och avbruten överföring. Linux storlekskontroll sker efter buffring; ingen hård överföringsgräns påstås där. |
-| Hostade native-/UI-prov | **61 av 61 passerade** | 56 hostade prov och samtliga fem UI-flöden, noll fel. Långt vershopp, återstart och senare läsposition passerar. |
+| Hostade native-/UI-prov | **61 av 61 passerade** | 56 hostade och fem UI-flöden. Versbörjan nära toppen inom fem sekunder vid hopp, återstart, upprepning och senare position; även visuellt kontrollerat. |
 | Backendtester | **32 passerade** | Riktig ffmpeg-avkodning av M4A/AAC/WAV, kontrakt, referenser, gränser och avbrytning. ResourceWarning som fel. Ingen akustisk kvalitetsmätning. |
 | Koran/övningsreferenser/font | **Godkända** | 114 suror, 6 236 referenser, exakt källtext, hashmanifest och fonem-/fontkontroller. Ingen arabisk lästext ändrad. |
 | Xcode-projekt | **Deterministiskt** | 14 appfiler, sex hostade testfiler, en UI-testfil och tre lokala bibliotek. |
-| Beständig ägarnedladdning | **Verifierat releaseutkast för bygge 23** | Main-körning 40163850515 är success. Utkastet personal-build-23-1 har isDraft=true och källmål 7657e3a. Ingen publik apprelease. |
+| Beständig ägarnedladdning | **Verifierat releaseutkast för bygge 26** | personal-build-26-1, isDraft=true, källmål 1ba557c. Uppladdad IPA-storlek och SHA256 matchar det återkontrollerade paketet. Ingen publik apprelease. |
 | Fysisk iPhone/signering/energi | **Inte provat** | Mikrofon, verkligt nät/offlineljud, ljudrutter, filväljare, värme och batteri återstår. |
 
 Native-sviterna består av 12 AppStore-, 13 AudioLibrary-, nio PracticeRecorder-,
@@ -58,12 +65,12 @@ EveryAyah-nedladdning. UI-flöden provar läsmarkering, bokmärken, surasökning
 beständigt tajweedval. [Omfattning](docs/IOS_VERIFICATION.md) och
 [evidens](docs/evidence/readiness-verification-2026-10-25.md).
 
-CI-artefakter för den samlade körningen lagras till 2026-11-01:
-native-resultat **12587593518**, skärmbilder **12587248929**,
-simulatorapp **12587324023** och fysisk osignerad IPA **12588100162**.
+CI-artefakter för den aktuella körningen lagras till 2026-11-01:
+native-resultat **12588860715**, skärmbilder **12588436510**,
+simulatorapp **12588386763** och fysisk osignerad IPA **12588770110**.
 Simulatorappen går inte att installera på fysisk iPhone.
 
-Den separat hämtade IPA:n från samma körning är **0.1.0 (24)**,
+**Historiskt MP3-paket:** den separat hämtade IPA:n från PR-körningen 40164031500 är **0.1.0 (24)**,
 **3 104 771 byte**, SHA256
 `45d4a0d433edf6b4ce7eb260529380d7192393179dac46ee7c92e47a6ea6129a`.
 ZIP-integritet, iPhoneOS/arm64, iOS17-minimum, källrapport och frånvaro av
@@ -78,12 +85,15 @@ TestFlight-/App Store-distribution. Den personliga installationsvägen kvarstår
 
 ## Installation när en dator finns
 
-En riktig osignerad **iPhoneOS/arm64-IPA, version 0.1.0 (23)** är byggd och hämtad:
+En riktig osignerad **iPhoneOS/arm64-IPA, version 0.1.0 (26)** är byggd och hämtad:
 
-- Fil: Sakina-iPhone-unsigned.ipa, **3 104 771 byte**, iOS **17.0+**.
-- SHA256: **e9d1a927d131656e92f91eaffc8aacc8dbb41d4bb277eaf259323b572c1d911e**.
-- Artefakt: Sakina-iPhone-personal-unsigned, ID **12586829932**,
-  i [körning 40163850515](https://github.com/AllCrow/Koran-test-/actions/runs/40163850515).
+- Fil: Sakina-iPhone-unsigned.ipa, **3 108 088 byte**, iOS **17.0+**.
+- SHA256: **39c86f27d566869783815576e615b42892b8f6277b0198b10c82a1c28325e480**.
+- Artefakt: Sakina-iPhone-personal-unsigned, ID **12588770110**,
+  i [körning 40165021106](https://github.com/AllCrow/Koran-test-/actions/runs/40165021106).
+- Beständig hämtning: [releaseutkast för bygge 26](https://github.com/AllCrow/Koran-test-/releases).
+  Logga in som AllCrow. Utkastet är verifierat opublicerat och bevarar IPA:n
+  efter CI-artefakternas sjudagarsgräns.
 
 Det hämtade paketets ZIP, plist, arm64 Mach-O, exekverbara rättigheter och
 plattform **IOS** är återkontrollerade. Alla 115 koran-JSON-filer, fonten och
@@ -106,7 +116,8 @@ Användaren har valt att behålla native-appen och avstått från Safari/PWA.
 - **Läsning:** begränsad cache för tajweedberedning med exakta UTF-8-nycklar,
   återanvända färger och förberedd sökindexering. Upprepade sparningar och
   omräkningar av streak undviks. Sökning hittar Fatiha/Faatiha, Ikhlas/Ikhlaas
-  och arabiska namn/siffror utan ändrad källtext.
+  och arabiska namn/siffror utan ändrad källtext. Native-listceller återanvänds
+  och ger exakt versbörjan vid långa hopp med bevarad sammanhängande sura.
 - **Vershopp:** validerat nummerfält med arabiska/västerländska siffror i
   läsmenyn. Global versidentitet och sparad position utan läskredit.
   Senare uttrycklig läsning ersätter den gamla positionen.

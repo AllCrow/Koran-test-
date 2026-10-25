@@ -64,8 +64,9 @@ RecitationPlayer and text/search/navigation. Audio validation uses synthetic MPE
 frames; PCM player tests perform real muted playback of generated local WAVs.
 OfflineMP3PlaybackTests also decode and play a generated quiet MP3 through
 AudioLibrary with the system session enabled. Both use generated test content,
-not reciter recordings. The combined run 40164031500 passed 56 hosted tests
-and all five UI flows; see STATUS.md for the exact head/check-out sources.
+not reciter recordings. Combined main run 40165021106 passed 56 hosted tests
+and five UI flows, including the four stronger near-top position assertions.
+The resulting 2:255 image was inspected. See STATUS.md for the exact source.
 Controlled download responses and permission callbacks do not establish real
 network transfer, physical microphone behavior, audio routes or device energy.
 The parent accessibility identifier had masked child buttons; do not put an

@@ -18,7 +18,8 @@ enhetsprov. Äldre modell-/REA-rapporter och Git-historik har bevarats.
   Alla **49 hostade tester och fyra av fem UI-flöden passerade**, inklusive
   stortextprovet med beständigt tajweedval. Det nya hopptestet hittade en
   verklig felposition efter hopp till 2:255: felhierarkin visar 2:200–206.
-  Rättning pågår; kraven på exakt mål, omstart och senare läsposition behålls.
+  Felet ledde vidare till nästa rättning; kraven på exakt mål, omstart och
+  senare läsposition behölls.
   Release för fysisk iPhone, simulatorbygge, 67 Mac-pakettester och 32
   backendtester passerade. Ingen godkänd releaseutkast-nedladdning skapades.
 - [Rättningskörning 40161887485](https://github.com/AllCrow/Koran-test-/actions/runs/40161887485),
@@ -47,6 +48,17 @@ enhetsprov. Äldre modell-/REA-rapporter och Git-historik har bevarats.
   att 2:255-badgen ligger nära nederkanten medan 2:254 fyller skärmen.
   Hittability-kravet räckte därför inte för ett bra läsläge. Nästa rättning
   använder native-listceller och skärper kravet till versnumret nära toppen.
+- [Integrerad List-/MP3-körning 40165021106](https://github.com/AllCrow/Koran-test-/actions/runs/40165021106),
+  källversion `1ba557c3d6bed990504789caa2d01398d897e263`: **success**.
+  Native List återanvänder samma kort med individuella globala rad-ID:n,
+  sammanhängande sura och scrollkommando efter stängd versväljare. Alla fyra
+  positionsprov kräver hela badgen nära toppen inom fem sekunder, med aktuella
+  nav-/tabbargränser. De sju parallellt färdigställda MP3-proven från PR #2
+  är integrerade med bevarad historik. **56 hostade och samtliga fem UI-flöden
+  passerade**, liksom 67 Mac-pakettester, 32 backendtester och båda Applebyggena.
+  Alla fyra jobb är success. Bilden A764D9DD-F9BE-4DD9-9CAA-8328108987FE.png
+  visar 2:255 direkt under navigationsfältet med första textraderna läsbara;
+  2:254 syns inte. Även Fatiha, stor text och backupkontroller har bildgranskats.
 - Lokalt: **65 Swift-tester på Linux och 32 backendtester passerade**.
   Swift 6.0.3 använder paketets Swift 5-språkläge. Backendproven kördes med
   `ResourceWarning` som fel och riktig ffmpeg-avkodning av M4A/AAC/WAV.
@@ -55,18 +67,17 @@ enhetsprov. Äldre modell-/REA-rapporter och Git-historik har bevarats.
 
 ## Oberoende kontroll av den hämtade iPhone-filen
 
-Från artefakt **12586829932**, körning **40163850515**, hämtades byggnummer **23**.
-Paketkontroller och den automatiska sviten är godkända. Den fortsatta
-positionsförbättringen ovan återstår innan paketet rekommenderas som senaste:
+Från artefakt **12588770110**, körning **40165021106**, hämtades byggnummer **26**.
+Paketkontroller och den samlade native-/UI-körningen är godkända:
 
 | Fält | Observerat |
 | --- | --- |
-| Version | 0.1.0 (23) |
+| Version | 0.1.0 (26) |
 | Plattform | iPhoneOS, Release, arm64, iOS 17.0+ |
-| Källcommit | `7657e3ad31c58a49f99d19b0db8f37913d249ee2` |
-| IPA-storlek | 3 104 771 byte |
-| IPA SHA256 | `e9d1a927d131656e92f91eaffc8aacc8dbb41d4bb277eaf259323b572c1d911e` |
-| CI-arkivets SHA256 | `d092045da15332223296d8cd7e43c7f650fc1b78aa1bc084c6ca30ba14f1cf33` |
+| Källcommit | `1ba557c3d6bed990504789caa2d01398d897e263` |
+| IPA-storlek | 3 108 088 byte |
+| IPA SHA256 | `39c86f27d566869783815576e615b42892b8f6277b0198b10c82a1c28325e480` |
+| CI-arkivets SHA256 | `708099f767f8d25b80f99c7bbb7e15e2a19bb6e9fe44ff6a72346151dac42516` |
 | Signering/installation | Osignerad; personlig signering och fysisk installation återstår |
 
 Det hämtade arkivets och IPA-filens ZIP-integritet är godkända. Appens plist,
@@ -76,6 +87,12 @@ fonten och **118 övningsresurser** matchar källfilerna exakt. Inga inbäddade
 testpaket, utvecklarprofiler eller externa dylib/framework-binärer finns.
 Analysen är fortfarande avstängd och serveradressen tom i den faktiska appfilen.
 Detta verifierar paketets innehåll, inte signering eller körning på telefonen.
+
+Det verifierade [releaseutkastet](https://github.com/AllCrow/Koran-test-/releases)
+har ID **423168520**, tagg **personal-build-26-1**, draft=true och källmål
+**1ba557c3d6bed990504789caa2d01398d897e263**. API-metadata bekräftar att både
+uppladdad IPA och byggrapport har samma storlek och SHA256 som de lokalt
+återkontrollerade filerna. Det är en ägarnedladdning, ingen publik apprelease.
 
 ## Begränsad kontroll av externa källor
 
