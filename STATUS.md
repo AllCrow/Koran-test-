@@ -401,3 +401,28 @@ anpassas till observerad beröringsmarginal. Läsvyn mäter också höjd och
 safe-area-marginaler tillsammans så att rader bakom navigations-, flik-
 eller uppspelningsfält inte väljs som synlig läsplats. Nollmarginaler behåller
 tidigare geometri. Korantexten och ljud-/inventeringskoden är oförändrade.
+
+Körning 40227891265 på daecfa3 avslutades underkänd utan att ersättas
+under pågående prov. Alla tre varianter passerade 143 hostade fall. Alla
+36 exekveringar av de tolv äldre UI-fallen passerade. Hela UI-utfallet var 15/18 på båda iOS18-varianterna och 17/18 på
+iOS26 (47/54 totalt). Automatisk läsplats misslyckades överallt: verklig
+rullning och synlig2:2 passerade, men startvyn visade Börja läsa/Öppna Koranen,
+vilket bevisar att lastRead var nil. Rapport och uttrycklig läsplats missade
+faktisk klickbarhet på båda iOS18-varianterna. iOS26-kontrollerna fungerade.
+Runner-omstarter i felloggarna gör inte detta till rena godkända sviter.
+Fulla loggar, metadata och bilder är sparade separat från appkoden.
+
+Nästa implementation ersätter SwiftUI-listpreferenser och separat draggest
+med svaga native-radprober i den befintliga UIScrollView, en KVO-observation
+och dess befintliga panigenkännare. Ingen scroll-delegate eller gest ersätts.
+En kapitelankare binder före första versen utan att förfalska en versrad.
+Generationer, referenser, synliga vyhierarkier och explicit återkallad dragavsikt
+kontrolleras; tomma/automatiska förflyttningar ger aldrig ny användaravsikt.
+En vanlig44-punktsknapp öppnar en separat versvalsvy; rapporten presenteras
+först när den vyn stängts. Ljudkontroller återkallar äldre väntande sparning
+synkront. Återupptagning av samma pausade vers sparar dess uttryckliga plats.
+Den tvetydiga lastRead-observationen tas bort så egna sparningar inte kan
+misstas för en senare navigering. Sju nya hostade native-prov omfattar även
+en verklig SwiftUI-lista, ankare, dolda/reparerade rader, programmatisk
+rullning och sena callbacks. Ett ytterligare UI-fall provar ljudavsikt efter
+passiv läsning. Dessa nya prov är ännu inte körda.

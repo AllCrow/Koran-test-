@@ -47,6 +47,46 @@ final class ReadingImprovementsTests: XCTestCase {
         assertNoReadingCredit()
     }
 
+    func testResumingTheSamePausedVerseReplacesLaterPassiveReadingPosition() {
+        app.tabBars.buttons["Koranen"].tap()
+        let listen = app.buttons["reader.listen.1.1"]
+        scrollFullyIntoView(listen)
+        listen.tap()
+        let toggle = app.buttons["reader.playback.toggle"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        XCTAssertTrue(waitForLabel("Pausa", on: toggle))
+        scrollFullyIntoView(toggle)
+        toggle.tap()
+        XCTAssertTrue(waitForLabel("Spela", on: toggle))
+
+        // The selected native audio remains paused on1:1 while ordinary
+        // reading moves elsewhere. No reading-completion action is used.
+        XCTAssertTrue(dragVerseNearTop("reader.verse.1.3"))
+        XCTAssertTrue(waitUntilVerseStartsNearTop("reader.verse.1.3"))
+        app.tabBars.buttons["Idag"].tap()
+        XCTAssertTrue(waitForLabel("Sura 1 · vers 3", on: element("home.readingPosition")))
+        assertNoReadingCredit()
+        app.tabBars.buttons["Koranen"].tap()
+        XCTAssertTrue(waitUntilVerseStartsNearTop("reader.verse.1.3"))
+        XCTAssertTrue(waitForLabel("Spela", on: toggle))
+        scrollFullyIntoView(toggle)
+        toggle.tap()
+        // End the process immediately after explicit resume. The eight-second
+        // fixture must not advance naturally while we inspect Home. Native
+        // playback/EOF fidelity is independently covered by hosted audio tests.
+        relaunch()
+        XCTAssertTrue(waitForLabel("Sura 1 · vers 1", on: element("home.readingPosition")))
+        assertNoReadingCredit()
+        app.buttons["home.continue"].tap()
+        XCTAssertTrue(waitUntilVerseStartsNearTop("reader.verse.1.1"))
+        attachScreenshot("Reader-explicit-audio-resume-wins-after-relaunch")
+    }
+
+    private func waitForLabel(_ expected: String, on control: XCUIElement) -> Bool {
+        let predicate = NSPredicate { _, _ in control.exists && control.label == expected }
+        return XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: nil)], timeout: 5) == .completed
+    }
+
     func testClearingSearchRemovesOldResultsAndNonmatchStaysEmpty() {
         app.tabBars.buttons["Koranen"].tap()
         openVerseSearch()
@@ -127,6 +167,7 @@ final class ReadingImprovementsTests: XCTestCase {
         menuControl.tap()
         let save = app.buttons["reader.savePosition.1.3"]
         XCTAssertTrue(save.waitForExistence(timeout: 5))
+        scrollFullyIntoView(save)
         XCTAssertTrue(save.isEnabled && save.isHittable)
         save.tap()
         app.tabBars.buttons["Idag"].tap()
@@ -156,6 +197,7 @@ final class ReadingImprovementsTests: XCTestCase {
         menuControl.tap()
         let reportAction = app.buttons["reader.report.1.1"]
         XCTAssertTrue(reportAction.waitForExistence(timeout: 5))
+        scrollFullyIntoView(reportAction)
         XCTAssertTrue(reportAction.isHittable)
         reportAction.tap()
         let reference = element("contentIssue.reference")
@@ -389,7 +431,7 @@ final class ReadingImprovementsTests: XCTestCase {
         var top = app.navigationBars.firstMatch.frame.maxY
         // A page-sheet's navigation bar can sit below the presenting reader's
         // bar. Use the active screen's bar for real control visibility checks.
-        for title in ["Granska innehåll", "Sök i verser", "Källor och textutgåvor"] {
+        for title in ["Granska innehåll", "Versalternativ", "Sök i verser", "Källor och textutgåvor"] {
             let bar = app.navigationBars[title]
             if bar.exists, !bar.frame.isEmpty { top = bar.frame.maxY; break }
         }
