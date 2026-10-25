@@ -1,0 +1,67 @@
+{
+  "case_id": "alafasy-112-2-onset",
+  "prepared_on_utc": "2026-10-25",
+  "review_status": "unreviewed",
+  "purpose": "Prepare the existing unresolved functional-smoke indication for independent expert review; no new inference or quality score.",
+  "reference": {
+    "surah_id": 112,
+    "ayah_number": 2,
+    "source": "quran-transcript-0.6.4",
+    "file": "Sources/QuranPractice/Resources/PracticeReferences/112.json",
+    "file_sha256": "af19ae835fe2cffdb980cabd91e14ba7b93b707248576ca7c7b53cc67d7c79cb",
+    "text_utf8_sha256": "a30b680c0f56ff9a29c1384eac94f728f9cfd0e8f1d3798a2e4916d91e57f57e",
+    "unicode_scalar_count": 17,
+    "include_basmala": false,
+    "original_source_notice": "Read and retain the _notice in the exact referenced file; no edition offsets may be transferred."
+  },
+  "baseline_model_observation": {
+    "report": "docs/evidence/model-baseline-2026-10-24.json",
+    "report_sha256": "cfadb904d48badfd34c26b6269a58d31ff98dab0dad631472ef7b45b6be2c76a",
+    "zero_based_clip_index": 8,
+    "source_url": "https://everyayah.com/data/Alafasy_128kbps/112002.mp3",
+    "converted_upload_sha256": "35b7b49e10fb3c295c7ec076403e241714c8cc75a72c2d909f145a62b47a2f6d",
+    "converted_upload_bytes": 21619,
+    "model": "obadx/muaalem-model-v3_2",
+    "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+    "engine_version": "0.2.2",
+    "backend_engine_sha256": "8b3e996a5d44b641d9ede4c5a45b77e9d51af15766b8a64ab6c2ca109185b032",
+    "assumptions": [
+      "Hafs an Asim",
+      "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+      "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+      "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+    ],
+    "issue": {
+      "kind": "normal",
+      "category": "delete",
+      "start_scalar": 0,
+      "end_scalar": 1,
+      "expected": "ءَ",
+      "observed": "",
+      "message": "Modellen indikerar en möjlig skillnad i uttalet."
+    },
+    "classification": "A normal/phonetic deletion indication, not an expert-confirmed tajweed error."
+  },
+  "later_source_file_observation": {
+    "report": "docs/evidence/recitation-source-audit-2026-10-25.json",
+    "report_sha256": "6ce5c7e1df5c51de3c264a1d11e40bd00d5e86704215fc559a01711841792f63",
+    "checked_at_utc": "2026-10-25T09:49:58.951710+00:00",
+    "source_url": "https://everyayah.com/data/Alafasy_128kbps/112002.mp3",
+    "raw_mp3_sha256": "52fd57829c924926152df2175343d115aecbf3b83632f853cb94356697421eee",
+    "raw_mp3_bytes": 41087,
+    "publisher_md5_matched": true,
+    "decoded_pcm_sha256": "93470833d241b5369ebb33a5a5f3489bc9a0b0d2d514c01aef6adfbde1495c73",
+    "decoded_pcm_seconds": 2.4858125,
+    "relation_to_baseline": "Same source URL, retrieved later. Original MP3 bytes were not hashed in the saved baseline report. Byte identity with the original baseline source/conversion is not established by URL equality."
+  },
+  "human_adjudication": null,
+  "expert_accuracy_metrics": null,
+  "tarteel_comparison": null,
+  "review_steps": [
+    "Recover the exact converted baseline input from an authorized local archive and verify its saved SHA256, or explicitly mark a newly prepared input as a different case; do not claim byte identity from the URL.",
+    "Have two qualified Hafs reviewers listen independently before seeing the model indication. Record clip onset/end completeness, wasl/waqf context, permitted variation and any uncertainty.",
+    "Then review the indicated initial scalar/expected phoneme in this exact practice edition. Separate recording-boundary effects, reference/phonetic alignment and ASR differences from real pronunciation/tajweed findings.",
+    "Adjudicate disagreements. Keep an inconclusive status if expertise, context or input identity is insufficient; do not turn an unreviewed case into a precision/recall result.",
+    "Any new model run must pin current engine/model/reference hashes and use an explicitly selected input within the existing authorized scope. Never upload user recordings automatically or add audio to Git."
+  ]
+}
