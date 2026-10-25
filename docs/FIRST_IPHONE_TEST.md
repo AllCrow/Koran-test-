@@ -31,6 +31,7 @@ för din telefon innan den kan öppnas.
    Mikrofonfrågan ska komma först när du väljer att spela in. Byt lässura och
    återvänd till övningen: tagningens vers och Basmala-val ska vara kvar.
    Inspelning och egen återlyssning ska stanna när appen lämnas eller låses.
+   Tagningen är tillfällig och tas bort vid nästa appstart.
 7. Prova recitation med låst skärm, ljudkontroller och hörlurar. Koppla ur
    hörlurarna under egen återlyssning; den ska stoppa. Telefonsamtal och
    Bluetooth behöver också provas på den verkliga telefonen.

@@ -126,8 +126,8 @@ final class ReadingFlowTests: XCTestCase {
         XCTAssertTrue(open.isEnabled)
         open.tap()
         let verse = app.staticTexts["reader.verse.2.255"]
-        XCTAssertTrue(verse.waitForExistence(timeout: 5))
-        XCTAssertTrue(verse.isHittable, "A jump must reveal the target's global verse identity")
+        let targetIsVisible = waitUntilHittable(verse)
+        XCTAssertTrue(targetIsVisible, "A jump must reveal the target's global verse identity")
         attachScreenshot("Reader-Baqara-255")
         app.tabBars.buttons["Idag"].tap()
         let progress = app.descendants(matching: .any).matching(identifier: "home.dailyProgress").firstMatch
@@ -136,8 +136,7 @@ final class ReadingFlowTests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.tabBars.buttons["Koranen"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Koranen"].tap()
-        XCTAssertTrue(verse.waitForExistence(timeout: 5))
-        XCTAssertTrue(verse.isHittable, "The saved verse position must survive relaunch")
+        XCTAssertTrue(waitUntilHittable(verse), "The saved verse position must survive relaunch")
         // Selecting the same saved position must still execute a jump, and a
         // later explicit reading action must replace that position on return.
         app.buttons["Läsinställningar"].tap()
@@ -146,8 +145,7 @@ final class ReadingFlowTests: XCTestCase {
         number.tap()
         number.typeText("255")
         open.tap()
-        XCTAssertTrue(verse.waitForExistence(timeout: 5))
-        XCTAssertTrue(verse.isHittable)
+        XCTAssertTrue(waitUntilHittable(verse))
         let markRead = app.buttons["reader.markRead.2.256"]
         scrollTo(markRead)
         XCTAssertTrue(markRead.isEnabled)
@@ -156,8 +154,7 @@ final class ReadingFlowTests: XCTestCase {
         XCTAssertEqual(progress.value as? String, "1 av 3 verser lästa")
         app.tabBars.buttons["Koranen"].tap()
         let laterVerse = app.staticTexts["reader.verse.2.256"]
-        XCTAssertTrue(laterVerse.waitForExistence(timeout: 5))
-        XCTAssertTrue(laterVerse.isHittable, "A later read must replace the previous jump position on tab return")
+        XCTAssertTrue(waitUntilHittable(laterVerse), "A later read must replace the previous jump position on tab return")
     }
 
     func testLargeTextReadingAndLocalPreferencesRemainUsable() {
@@ -204,6 +201,21 @@ final class ReadingFlowTests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    private func waitUntilHittable(_ element: XCUIElement) -> Bool {
+        let visible = NSPredicate(format: "exists == true AND hittable == true")
+        let expectation = XCTNSPredicateExpectation(predicate: visible, object: element)
+        let ready = XCTWaiter.wait(for: [expectation], timeout: 5) == .completed
+        if !ready {
+            attachScreenshot("Reader-position-not-visible")
+            let target = element.exists ? "Target frame: \(element.frame)\n\(element.debugDescription)" : "Target does not exist"
+            let diagnostic = XCTAttachment(string: "\(target)\n\(app.debugDescription)")
+            diagnostic.name = "Reader-target-frame-and-hierarchy"
+            diagnostic.lifetime = .keepAlways
+            add(diagnostic)
+        }
+        return ready
     }
 
     private func scrollTo(_ element: XCUIElement) {
