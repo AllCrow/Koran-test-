@@ -50,6 +50,28 @@ final class ChapterLoadingTests: XCTestCase {
         let third: QuranChapter
     }
 
+    @MainActor
+    private final class ControlledIndexLoader {
+        private var continuation: CheckedContinuation<ContentIndex, Error>?
+        var requested: (() -> Void)?
+
+        func load() async throws -> ContentIndex {
+            try await withCheckedThrowingContinuation { continuation in
+                self.continuation = continuation
+                requested?()
+            }
+        }
+
+        func complete(with index: ContentIndex) {
+            guard let continuation else {
+                XCTFail("The controlled index request must exist before completion")
+                return
+            }
+            self.continuation = nil
+            continuation.resume(returning: index)
+        }
+    }
+
     private func fixture() async throws -> Fixture {
         let repository = QuranRepository()
         let first = try await repository.loadChapter(id: 1)
@@ -99,6 +121,56 @@ final class ChapterLoadingTests: XCTestCase {
         XCTAssertFalse(store.isLoading)
         XCTAssertNil(store.errorMessage)
         XCTAssertEqual(fixture.storage.data(forKey: "sakina.reading-state.v1"), before)
+    }
+
+    func testSupersededColdStartRetainsCatalogueWithoutSettlingNewerChapterRequest() async throws {
+        let catalogue = try await QuranRepository().loadIndex()
+        for chapterFinishesFirst in [true, false] {
+            let fixture = try await fixture()
+            let chapters = ControlledLoader()
+            let index = ControlledIndexLoader()
+            let store = AppStore(defaults: fixture.storage,
+                                 chapterLoader: { try await chapters.load($0) },
+                                 indexLoader: { try await index.load() })
+            let indexStarted = expectation(description: "Cold start waits for its catalogue")
+            index.requested = { indexStarted.fulfill() }
+            let coldStart = Task { await store.load() }
+            await fulfillment(of: [indexStarted], timeout: 2)
+
+            let chapterStarted = expectation(description: "An explicit chapter supersedes cold start")
+            chapters.requested = { id in XCTAssertEqual(id, 2); chapterStarted.fulfill() }
+            let selection = Task { await store.openSurah(2) }
+            await fulfillment(of: [chapterStarted], timeout: 2)
+            if chapterFinishesFirst {
+                chapters.complete(0, with: .success(fixture.second))
+                await selection.value
+            }
+            XCTAssertNil(store.index, "The controlled catalogue has not returned yet")
+            let selectedBeforeIndex = store.selectedSurahID
+            let chapterBeforeIndex = store.chapter
+            let loadingBeforeIndex = store.isLoading
+            let savedBeforeIndex = fixture.storage.data(forKey: "sakina.reading-state.v1")
+
+            index.complete(with: catalogue)
+            await coldStart.value
+            XCTAssertEqual(store.index, catalogue)
+            XCTAssertEqual(store.index?.surahs.count, 114, "The sura picker must retain its catalogue")
+            XCTAssertEqual(store.selectedSurahID, selectedBeforeIndex)
+            XCTAssertEqual(store.chapter, chapterBeforeIndex)
+            XCTAssertEqual(store.isLoading, loadingBeforeIndex,
+                           "An older index result must not settle a newer pending chapter")
+            XCTAssertNil(store.errorMessage)
+            XCTAssertEqual(fixture.storage.data(forKey: "sakina.reading-state.v1"), savedBeforeIndex)
+
+            if !chapterFinishesFirst {
+                chapters.complete(0, with: .success(fixture.second))
+                await selection.value
+            }
+            XCTAssertEqual(store.index, catalogue)
+            XCTAssertEqual(store.selectedSurahID, 2)
+            XCTAssertEqual(store.chapter, fixture.second)
+            XCTAssertFalse(store.isLoading)
+        }
     }
 
     func testCancellationClearsLoadingWithoutWaitingForLoaderAndPreservesSavedBytes() async throws {

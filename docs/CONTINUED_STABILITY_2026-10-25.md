@@ -26,10 +26,10 @@ bygget 46. Det paketet och dess fullständiga historik/backup bevaras.
 
 ## Prov och status före Mac-körningen
 
-Tio nya hostade regressioner tillförs: två för ljudtjänstförlust, två för
+Elva nya hostade regressioner tillförs: två för ljudtjänstförlust, två för
 importgränser och sex för laddning/cancellation. De två sena laddningsproven
 provar både framgång och fel från den gamla laddningen. Förväntad native-svit
-är nu **90 hostade + åtta UI-fall per simulator**. Det är ett förväntat antal,
+är nu **91 hostade + åtta UI-fall per simulator**. Det är ett förväntat antal,
 inte ett godkänt Mac-utfall.
 
 Innehålls-, referens-, font- och ikonvalidering passerade lokalt. Projektet
@@ -45,3 +45,9 @@ inget nytt påstående om Tarteels kvalitet görs.
 
 Senaste fullständigt godkända personliga paket och tidigare verifiering finns
 i [STATUS.md](../STATUS.md) och [underlaget för bygge 46](evidence/premium-readiness-2026-10-25.md).
+
+En separat granskning av den första kandidaten hittade att ett sent giltigt
+katalogsvar kunde tappas när ett nyare suraval redan hade börjat. Katalogen
+lagras nu efter cancellation-kontroll men före kapitelgenerationens kontroll.
+Det sjunde laddningsprovet täcker både nyare färdigt och pågående kapitel.
+Den ersatta körningen räknas inte som godkännande för denna rättade källa.

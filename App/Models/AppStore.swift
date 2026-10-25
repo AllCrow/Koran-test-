@@ -8,6 +8,7 @@ import UIKit
 final class AppStore: ObservableObject {
     nonisolated static let maximumReadingBackupBytes = 4 * 1_024 * 1_024
     typealias ChapterLoader = @MainActor @Sendable (Int) async throws -> QuranChapter
+    typealias IndexLoader = @MainActor @Sendable () async throws -> ContentIndex
 
     enum ArabicTextSize: String, CaseIterable, Identifiable {
         case small, standard, large, extraLarge
@@ -122,6 +123,7 @@ final class AppStore: ObservableObject {
 
     private let repository: QuranRepository
     private let chapterLoader: ChapterLoader
+    private let indexLoader: IndexLoader
     private let defaults: UserDefaults
     private let now: () -> Date
     private let calendar: () -> Calendar
@@ -139,9 +141,10 @@ final class AppStore: ObservableObject {
     init(repository: QuranRepository = QuranRepository(), defaults: UserDefaults = .standard,
          now: @escaping () -> Date = Date.init, calendar: @escaping () -> Calendar = { .current },
          readingDataByteLimit: Int = AppStore.maximumReadingBackupBytes,
-         chapterLoader: ChapterLoader? = nil) {
+         chapterLoader: ChapterLoader? = nil, indexLoader: IndexLoader? = nil) {
         self.repository = repository
         self.chapterLoader = chapterLoader ?? { id in try await repository.loadChapter(id: id) }
+        self.indexLoader = indexLoader ?? { try await repository.loadIndex() }
         self.defaults = defaults
         self.now = now
         self.calendar = calendar
@@ -178,13 +181,16 @@ final class AppStore: ObservableObject {
             isLoading = true
             let loaded = await withTaskCancellationHandler {
                 do {
-                    let loadedIndex = try await repository.loadIndex()
-                    guard chapterRequestID == requestID else { return false }
+                    let loadedIndex = try await indexLoader()
                     guard !Task.isCancelled else {
                         cancelChapterRequest(requestID)
                         return false
                     }
-                    index = loadedIndex
+                    // The immutable catalogue remains useful even when a
+                    // newer explicit chapter request supersedes cold start.
+                    // Publish it without settling that newer request's state.
+                    if index == nil { index = loadedIndex }
+                    guard chapterRequestID == requestID else { return false }
                     return true
                 } catch {
                     guard chapterRequestID == requestID else { return false }
