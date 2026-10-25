@@ -8,7 +8,7 @@ import XCTest
 /// Real AVFoundation playback of a generated tone, never a recording or a network URL.
 /// Notifications are simulated; these tests do not establish physical audio-route behavior.
 @MainActor
-final class RecitationPlayerTests: XCTestCase {
+final class OfflineMP3PlaybackTests: XCTestCase {
     func testSavedMP3DecodesAndEveryReciterUsesItsOwnOfflineFile() async throws {
         let verse = try reference(1)
         let context = try fixture(references: [verse])
