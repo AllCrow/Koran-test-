@@ -36,6 +36,15 @@ API credentials, signing material, cached weights and voice recordings out of Gi
 The app must not require a monthly subscription. Server inference and Apple
 distribution can still have operating costs; do not promise otherwise.
 
+`docs/CONTENT_RIGHTS.md` separates explicit text grants from unresolved tafsir/
+EveryAyah rights. The opt-in `scripts/audit_recitation_sources.py` downloads
+only its fixed public references, verifies publisher checksums and decodes whole
+files locally. It does not run in the app or normal CI. Keep audio out of Git.
+Its Linux evidence does not establish iOS playback, religious correctness,
+rights clearance or word timings. Do not transfer AlQuran Cloud's audio grant
+to EveryAyah's different files. Do not classify 112:2's model indication from
+successful MP3 decoding alone.
+
 ## Checks
 
 ### Parallel work and a stable delivery candidate

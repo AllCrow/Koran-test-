@@ -107,6 +107,13 @@ Läsdata och lokala övningsinspelningar sparas på telefonen. Tidigare öppnad 
 
 Korantextens proveniens och hashmanifest finns i [CONTENT_SOURCES.json](CONTENT_SOURCES.json) och [textnotiserna](App/Resources/Quran/NOTICE.txt). Fontens källa och licens finns i [fontnotisen](App/Resources/Fonts/SOURCE.md). Rättigheter för ljuddistribution och övrigt externt innehåll behöver slutföras före offentlig release.
 
+[Innehålls- och ljudgranskningen](docs/CONTENT_RIGHTS.md) dokumenterar de
+faktiskt lästa villkoren och de kvarvarande glappen för EveryAyah och tafsir.
+Alla 6 236 versfilnamn listas för var och en av appens tre recitatörer.
+Femton hela MP3-filer har matchat utgivarens checksummor och avkodats med
+ffmpeg på Linux. Detta är källspårbarhet, inte native-uppspelning eller
+sakkunnigt godkänd recitationskvalitet.
+
 [REA](https://github.com/morluto/rea) finns separat och har faktiskt inspekterat Muaalems hämtade viktfil: 816 F32-tensorer, 605 754 251 deklarerade element och verifierad fullfilshash. Se [REA-evidensen](docs/REA_MODEL_INSPECTION.md). Det är inget beroende i appen. Tarteels app eller servrar har inte analyserats. Modellvikterna ligger i en extern cache och ingår inte i Git eller iPhone-appen.
 
 Användaren har skapat [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-) och uttryckligen godkänt att repot är **publikt tills vidare**. Det ersätter det tidigare önskemålet om privat lagring för den aktuella uppladdningen. Ändring av synlighet nekas fortfarande integrationen (403) och behöver göras av ägaren. All lokal Git-historik bevaras. Faktisk uppladdning, byggresultat och återstående releasekrav redovisas i [STATUS.md](STATUS.md).

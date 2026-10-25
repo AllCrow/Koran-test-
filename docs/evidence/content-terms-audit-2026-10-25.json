@@ -1,0 +1,191 @@
+{
+  "observed_on_utc": "2026-10-25",
+  "scope": "Public upstream pages reviewed for this exact content configuration; no request to rights holders was sent.",
+  "interpretation": "Record explicit grants and unresolved scope; public accessibility is not redistribution permission.",
+  "sources": [
+    {
+      "key": "everyayah",
+      "url": "https://everyayah.com/",
+      "finalURL": "https://everyayah.com/",
+      "status": 200,
+      "bytes": 4217,
+      "sha256": "01aac4855b891fcff017f6de38738941e1e97a2323a57f2d272bb5c046e7c195"
+    },
+    {
+      "key": "everyayah_data",
+      "url": "https://everyayah.com/data/",
+      "finalURL": "https://everyayah.com/data/",
+      "status": 200,
+      "bytes": 61073,
+      "sha256": "fc0ed8704ae3e5b9c9749b7410eff98a9565c01b5f9eb7e4d6ec0bdb8b22b6b5"
+    },
+    {
+      "key": "alquran_terms",
+      "url": "https://alquran.cloud/terms-and-conditions",
+      "finalURL": "https://alquran.cloud/terms-and-conditions",
+      "status": 200,
+      "bytes": 114534,
+      "sha256": "48321b7b0d146c26c3ae7dfc57455c5fb5f2d84c9ebcab6af1f5797be5e4d829"
+    },
+    {
+      "key": "tanzil_license",
+      "url": "https://tanzil.net/docs/text_license",
+      "finalURL": "https://tanzil.net/docs/text_license",
+      "status": 200,
+      "bytes": 7903,
+      "sha256": "4d13f480c0b67cc4beecfb828d52d9d4a0af65a40720041594ea78d8e3f5e155"
+    },
+    {
+      "key": "everyayah_old",
+      "url": "https://everyayah.com/old_index.html",
+      "finalURL": "https://everyayah.com/old_index.html",
+      "status": 200,
+      "bytes": 4645,
+      "sha256": "4edd437ab74c13a72367a3412e0ea96fc42fdda6723837a05f2cf33a14418024"
+    },
+    {
+      "key": "everyayah_download",
+      "url": "https://everyayah.com/src/getfile.html",
+      "finalURL": "https://everyayah.com/src/getfile.html",
+      "status": 200,
+      "bytes": 20632,
+      "sha256": "66e9d5306c29418712bb1e9ac3a15ccb974454246470e0dfb5c365af4934a61e"
+    },
+    {
+      "key": "everyayah_ayat",
+      "url": "https://everyayah.com/recitations_ayat.html",
+      "finalURL": "https://everyayah.com/recitations_ayat.html",
+      "status": 200,
+      "bytes": 51015,
+      "sha256": "9eeb9dd60f6d34d6d047b16f0bf7fbf04cca22026e8e9dddfc2456e5269b6c56"
+    },
+    {
+      "key": "everyayah_catalogue",
+      "url": "https://everyayah.com/data/recitations.js",
+      "finalURL": "https://everyayah.com/data/recitations.js",
+      "status": 200,
+      "bytes": 10907,
+      "sha256": "cde8cc62f7a6d830bd61934d279d8c4ab890d9db440087d1db51a9bd55864ee6"
+    },
+    {
+      "key": "everyayah_alafasy",
+      "url": "https://everyayah.com/data/Alafasy_128kbps/",
+      "finalURL": "https://everyayah.com/data/Alafasy_128kbps/",
+      "status": 200,
+      "bytes": 3537567,
+      "sha256": "fae96b099bbd57811c79579f0b637e9706c5bb8d2af26c886c42a190e08156ba",
+      "fileCount": 6348,
+      "first": [
+        "001001.mp3",
+        "001002.mp3",
+        "001003.mp3",
+        "001004.mp3",
+        "001005.mp3",
+        "001006.mp3",
+        "001007.mp3",
+        "002000.mp3"
+      ],
+      "last": [
+        "114003.mp3",
+        "114004.mp3",
+        "114005.mp3",
+        "114006.mp3"
+      ]
+    },
+    {
+      "key": "everyayah_husary",
+      "url": "https://everyayah.com/data/Husary_128kbps/",
+      "finalURL": "https://everyayah.com/data/Husary_128kbps/",
+      "status": 200,
+      "bytes": 3470837,
+      "sha256": "610370a11f71f231a0df8f3a7f5103aa45d7b6dbe71359792aa47f6bd8905fda",
+      "fileCount": 6237,
+      "first": [
+        "001000.mp3",
+        "001001.mp3",
+        "001002.mp3",
+        "001003.mp3",
+        "001004.mp3",
+        "001005.mp3",
+        "001006.mp3",
+        "001007.mp3"
+      ],
+      "last": [
+        "114003.mp3",
+        "114004.mp3",
+        "114005.mp3",
+        "114006.mp3"
+      ]
+    },
+    {
+      "key": "everyayah_minshawi",
+      "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/",
+      "finalURL": "https://everyayah.com/data/Minshawy_Murattal_128kbps/",
+      "status": 200,
+      "bytes": 3599930,
+      "sha256": "5b5e5e2eec38578534c14dcb53e0269485ce4c6de5dffba1a1bb5809d6801be3",
+      "fileCount": 6349,
+      "first": [
+        "001000.mp3",
+        "001001.mp3",
+        "001002.mp3",
+        "001003.mp3",
+        "001004.mp3",
+        "001005.mp3",
+        "001006.mp3",
+        "001007.mp3"
+      ],
+      "last": [
+        "114003.mp3",
+        "114004.mp3",
+        "114005.mp3",
+        "114006.mp3"
+      ]
+    },
+    {
+      "key": "tafsir_metadata",
+      "url": "https://api.alquran.cloud/v1/edition/type/tafsir",
+      "finalURL": "https://api.alquran.cloud/v1/edition/type/tafsir",
+      "status": 200,
+      "bytes": 1108,
+      "sha256": "8fd47bb09847256ae85749d279f6711ac5f9c22b39e2eb3e2f828f1cded51620"
+    }
+  ],
+  "verified_short_excerpts": [
+    {
+      "source": "https://tanzil.net/docs/text_license",
+      "quote": "Permission is granted to copy and distribute verbatim copies of this text, but CHANGING IT IS NOT ALLOWED.",
+      "scope": "Tanzil text preservation"
+    },
+    {
+      "source": "https://tanzil.net/docs/text_license",
+      "quote": "This Quran text can be used in any website or application, provided that its source (Tanzil Project) is clearly indicated, and a link is made to tanzil.net to enable users to keep track of changes.",
+      "scope": "Text attribution"
+    },
+    {
+      "source": "https://alquran.cloud/terms-and-conditions",
+      "quote": "You may reproduce, embed, store and display the text freely, for any non-commercial purpose.",
+      "scope": "Service Arabic Quran text, Section II"
+    },
+    {
+      "source": "https://alquran.cloud/terms-and-conditions",
+      "quote": "Recitations are licensed to us by the reciters or their estates for free, non-commercial redistribution at the bitrates we publish. You may stream, embed and download them for personal and educational use.",
+      "scope": "AlQuran Cloud recitations, not the EveryAyah files used by Sakina"
+    }
+  ],
+  "tafsir_api_identity": {
+    "identifier": "ar.muyassar",
+    "language": "ar",
+    "name": "تفسير المیسر",
+    "englishName": "King Fahad Quran Complex",
+    "format": "text",
+    "type": "tafsir",
+    "direction": "rtl"
+  },
+  "unresolved": [
+    "No explicit EveryAyah recording licence was found in the reviewed home, old home, ayat list, download selector or catalogue pages. This does not prove that no licence exists elsewhere.",
+    "AlQuran Cloud Section IV does not establish permission for EveryAyah-hosted copies.",
+    "No edition-specific ar.muyassar storage/redistribution grant or tafsir-specific grant was identified in the reviewed API metadata and general text/translation terms.",
+    "No independent annotation-specific grant for quran-tajweed was identified. Preserve source terms and attribution; do not infer permission for unrelated editions."
+  ]
+}
