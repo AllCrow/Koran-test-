@@ -7,7 +7,22 @@ inte dessa prov. **Ingen fysisk iPhone eller personlig signering är verifierad.
 
 ## Automatiska prov på macOS
 
-**Aktuell källa `c907121e59eab81ae8848e2ca0311ab54f2aa6ec` passerar [huvudkörning 51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)**
+**Aktuell källa `e1bb2625136277beb8f4eab78f17576acc3d56e5` passerar [huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)**
+med **96 hostade + åtta UI-prov per variant**, 85 separata portabla Swift-prov
+per Mac-variant och 57 backendprov, inklusive 21 utvärderingsverktygsprov.
+Alla sex jobb och ägarutkastet är godkända. Fem nya hostade fall består av
+tre AudioLibrary- och två verkliga loopback-HTTP-regressioner. Tre nya portabla
+tafsirfall ingår i Mac-antalet. Det är 104 unika native-/UI-fall och
+312 exekveringar över tre konfigurationer. Se
+[omgångens underlag](OFFLINE_QUALITY_2026-10-25.md) och
+[leveransbeviset](evidence/offline-quality-delivery-53-2026-10-25.json).
+
+**Historiskt bygge51 och dess separata källprov:**
+
+Det tidigare EveryAyah-provet är inte omkört med denna omgångs ändrade
+AudioLibrary; det är historiskt underlag, skilt från dagens ordinarie svit.
+
+**Historisk källa `c907121e59eab81ae8848e2ca0311ab54f2aa6ec` passerar [huvudkörning 51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)**
 med **91 hostade + åtta UI-prov per variant**, 82 separata portabla
 Swift-prov per Mac-variant och 36 backendprov. Alla sex jobb inklusive
 ägarutkastet är godkända. Elva nya native-regressioner täcker ljudtjänstförlust,
@@ -82,12 +97,12 @@ en osignerad fysisk iPhone-IPA; efter alla godkända jobb bevaras den som ett
 | --- | --- |
 | AppStore | Unika uttryckliga läsmarkeringar, återstart, kalender-/systemklockebyten, måländring, bokmärken, tajweedval och korrupt sparad data. Sju dagars historik med stabila civila datum, intjänade mål och inga påhittade versantal. Fyra textstorlekar, äldre/okända sparvärden och bevarat storleksval vid import. Export/import sammanfogar läsdata idempotent; ogiltiga eller för stora filer ändrar inga data. |
 | ChapterLoading | Sju kontrollerade async-prov: föravbruten öppning/kallstart, prompt avbrytning med bibehållna sparade byte, sena lyckade/felaktiga resultat efter nyare färdig eller pågående laddning, korrekt återförsöksmål och bevarad katalog under överlappande kallstart. Loaders ignorerar avsiktligt cancellation tills provet svarar. |
-| AudioLibrary | Vers/sura/recitatör, MPEG-/ID3-validering, diskåteröppning, avgränsad radering, felaktig lagring och lagringsfel. Kontrollerad nedladdning provar exakt URL, fortsättning efter avbrott, avbrytning, sena svar, HTTP/MIME/storleksfel och städning av temporära filer. |
+| AudioLibrary | 16 fall, inklusive nytt återförsök efter lagringsfel i samma instans, reparation av trasig vers med orörda färdiga byte samt sena svar efter radering/nytt jobb. Vers/sura/recitatör, MPEG-/ID3-validering, diskåteröppning, avgränsad radering, felaktig lagring och lagringsfel. Kontrollerad nedladdning provar exakt URL, fortsättning efter avbrott, avbrytning, sena svar, HTTP/MIME/storleksfel och städning av temporära filer. |
 | RecitationPlayer | Riktig AVPlayer-uppspelning av egna korta PCM-WAV-filer: start, naturligt slut, automatisk nästa vers, surans sista vers och enstaka övningsvers. Även trasig lokal fil/återförsök, sena händelser, sparade inställningar och uppskjuten laddning vid pausat recitatörsbyte. Simulerad omstart av ljudtjänsten behåller valet, förnyar spelaren och kräver uttrycklig återupptagning. Ett separat långt WAV-prov framtvingar sen native-uppspelning efter paus och kräver riktig motorpaus utan naturligt slut samt fungerande uttrycklig återupptagning. |
 | OfflineMP3Playback | Sju prov av verklig MP3-till-PCM-avkodning och AVPlayer med AudioLibrary:s lokala filval för alla tre recitatörer, aktiverad systemljudsession, paus/återstart, naturligt versslut/autospelning, enstaka övningsvers, simulerade avbrotts-/hörlursnotiser, gamla händelser och en ospelbar fil. En genererad svag ton används, inga externa ljudförfrågningar eller röster. |
-| AudioDownloadTransport | Fem prov från det integrerade arbetet i [PR #3](https://github.com/AllCrow/Koran-test-/pull/3): riktiga URLSession-download tasks över loopback HTTP. Tre recitatörers lagring och MP3-avkodning, återöppning från disk, HTTP-fel/återupptagning, avbruten kropp och storleksgränser från riktiga download-delegate-callbacks. Överstorleksproven kräver avbrytning före ett öppet svars slut. Begärd HTTPS-adress återställs bara i testets svarsmetadata; extern TLS och verkligt recitationsinnehåll ingår inte. |
+| AudioDownloadTransport | Sju fall: två nya regressioner för en för tidigt avbruten kropp efter giltiga MP3-ramar och radering/nytt recitatörsjobb under riktig pågående överföring. De fem tidigare proven kommer från [PR #3](https://github.com/AllCrow/Koran-test-/pull/3): riktiga URLSession-download tasks över loopback HTTP. Tre recitatörers lagring och MP3-avkodning, återöppning från disk, HTTP-fel/återupptagning, avbruten kropp och storleksgränser från riktiga download-delegate-callbacks. Överstorleksproven kräver avbrytning före ett öppet svars slut. Begärd HTTPS-adress återställs bara i testets svarsmetadata; extern TLS och verkligt recitationsinnehåll ingår inte. |
 | PracticeRecorder | Fördröjd mikrofonbehörighet, avbrytning, sena besked, överlappande försök, ljudavbrott/hörlursnotiser, otillgänglig lagring och städning som bevarar andra filer. Simulerad förlust/omstart av ljudtjänsten avbryter väntande behörighet utan automatisk inspelningsstart. Inget prov spelar in från simulatorns mikrofon eller verifierar den synliga minuträknaren mot en verklig tagning. |
-| TafsirRepository (portabla prov) | Käll-/versvalidering, JSON-innehållstyp, bevarade arabiska UTF-8-byte och återöppning av diskcache utan nät. Fel utgåva/referens, skadade filer, lagringsfel, LRU, fil-/bytegränser och länkar provas i isolerade temporära kataloger. Provar ingen extern AlQuran Cloud-förbindelse eller fysisk flygplansläge-användning. |
+| TafsirRepository (portabla prov) | 23 fall, inklusive borttagen cachemapp, ersättande rotlänk med skydd av externa filer och rotbyte under nätväntan. Käll-/versvalidering, JSON-innehållstyp, bevarade arabiska UTF-8-byte och återöppning av diskcache utan nät. Fel utgåva/referens, skadade filer, lagringsfel, LRU, fil-/bytegränser och länkar provas i isolerade temporära kataloger. Provar ingen extern AlQuran Cloud-förbindelse eller fysisk flygplansläge-användning. |
 | Textberedning och sökning | Exakta UTF-8-sekvenser även för kanoniskt likvärdiga strängar, nästlade tajweedregler, säker fallback och begränsad cache. Arabisk tangentbordssökning, alternativa latinska vokalstavningar och validering av vershoppets siffror/intervall. |
 | UI-flöden | Läsmarkering och återstart, beständigt bokmärke, surasökning och korrekta kontrollreferenser efter surabyte. Hopp till 2:255 med arabiska siffror, ingen navigationskredit, återstart och senare läsposition. Största tillgänglighetstext, beständigt tajweed-/textstorleksval, veckohistorik och synliga backupkontroller. Även mörkt läge och nästa sura fram till an-Nas utan påhittad nästa sura eller läskredit. |
 

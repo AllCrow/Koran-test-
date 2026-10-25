@@ -7,12 +7,31 @@ analysserver är konfigurerad och Tarteel-kvalitetsmålet är inte uppfyllt.**
 
 ## Senaste fortsättningsrunda
 
-**Ny kandidat under verifiering:** offlineåterhämtning för ljudlagring och
-tafsircache, fem ytterligare hostade nät-/filregressioner samt ett separat
-[utvärderingsverktyg för tajweed](docs/TAJWEED_EVALUATION.md). Linux-Swiftens
-83 fall och innehållskontrollerna passerar; native-körningen återstår.
-[Omgångens omfattning](docs/OFFLINE_QUALITY_2026-10-25.md).
-Bygge51 nedan är fortfarande den senast fullständigt godkända nedladdningen.
+Offlineomgången är **godkänd i [huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)**:
+**96 hostade + åtta UI-fall per simulator**, **85 separata portabla Mac-fall**
+och **57 backendfall**, varav **21 utvärderingsverktygsprov**. Alla sex jobb
+passerade, inklusive det osignerade iPhone-bygget och sparandet av ägarutkastet.
+Det är **104 unika native-/UI-fall och 312 exekveringar över tre varianter**.
+
+- Ljudlagring kan återhämtas vid uttryckligt återförsök i samma appsession.
+- Färdiga verser bevaras vid fel; trasiga versfiler repareras och sena svar får inte påverka ett nyare jobb.
+- Tafsircachen återhämtar en borttagen mapp och avvisar ersättande länkar även efter nätväntan.
+- Ett separat [verktyg för tajweedutvärdering](docs/TAJWEED_EVALUATION.md) kan jämföra modellindikationer med sakkunnigas bedömningar. Det ogranskade arkivfallet får fortsatt inga kvalitetsmått.
+
+Källa: `e1bb2625136277beb8f4eab78f17576acc3d56e5`. Faktisk PR-checkout `6897dba0e03072d18c79e14a74d165d5c219232b` har samma
+Git-träd `4a769740e82380a90c0b63fc04fe172ffd893fad`. [Ändringar och provgränser](docs/OFFLINE_QUALITY_2026-10-25.md)
+och [leveransbevis](docs/evidence/offline-quality-delivery-53-2026-10-25.json) anger exakt omfattning.
+
+Aktuellt paket är **0.1.0 (53)**, **3 271 185 byte**,
+iPhoneOS/arm64, minsta iOS17.0 och bygg-SDK26.2. IPA SHA256:
+`159cbb58cde06dca919b956b8a4b918339c7d79ec1266de1a31682a404c2c6eb`.
+Releaseutkast **423396167**, tagg **personal-build-53-1**, är verifierat
+mot rätt källa och samtliga tre nedladdade filers storlekar och SHA256.
+Hämta under [Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad
+som **AllCrow**, och följ [installationsguiden](docs/PERSONAL_IPHONE_INSTALL.md).
+Personlig signering och fysisk iPhone-provning återstår; automatisk analys är av.
+
+## Historiskt bygge 51
 
 Fortsättningsrundan är **godkänd i huvudkörning 51**: **91 hostade + åtta UI-prov på var och en av tre simulatorer**, samt **82 portabla Swift-prov per Mac-variant och 36 backendprov**. **Personligt bygge 51** är sparat som ägaråtkomligt releaseutkast. Personlig signering och fysisk iPhone-provning återstår.
 
@@ -29,10 +48,10 @@ Ett separat [native-källprov](docs/LIVE_RECITATION_AUDIT.md) passerade dessutom
 tre fall på iPhone16e/iOS26.2: tolv riktiga EveryAyah-filer hämtades och
 avkodades, och en hashkontrollerad lokal 112:2 spelades till native-slut för
 varje recitatör utan fallback. De tre opt-in-fallen räknas inte in i 99/297.
-Senare tillägg av detta verktyg/test/workflow ligger utanför appens och den
-ordinarie verifieringens indata; de levererade runtime-indata är oförändrade.
+Detta är historiskt underlag för bygge51. EveryAyah-provet är inte omkört
+med denna omgångs ändrade AudioLibrary och är inget nytt källprov.
 
-Aktuellt paket är **0.1.0 (51)**, **3 269 813 byte**,
+Det historiska paketet är **0.1.0 (51)**, **3 269 813 byte**,
 iPhoneOS/arm64, minsta iOS 17.0 och SDK 26.2. IPA SHA256:
 `279803799a1f3d72626c42ab7e7a651e3859cb528a80625e0c5ef26de5e6854b`.
 Releaseutkast **423341980**, tagg **personal-build-51-1**, är verifierat

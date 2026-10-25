@@ -1,0 +1,169 @@
+{
+  "verified_on_utc": "2026-10-25",
+  "source_commit": "e1bb2625136277beb8f4eab78f17576acc3d56e5",
+  "source_tree": "4a769740e82380a90c0b63fc04fe172ffd893fad",
+  "pr_run_id": 40191800468,
+  "pr_url": "https://github.com/AllCrow/Koran-test-/actions/runs/40191800468",
+  "actual_pr_checkout": "6897dba0e03072d18c79e14a74d165d5c219232b",
+  "pr_checkout_tree_equals_main_source_tree": true,
+  "current_runtime_input_paths_checked": [
+    "App",
+    "Sources",
+    "Tests",
+    "AppTests",
+    "AppUITests",
+    "backend",
+    "Sakina.xcodeproj",
+    "Package.swift",
+    ".github",
+    "scripts",
+    "Verification"
+  ],
+  "current_runtime_inputs_equal_successful_main_and_pr_checkout": true,
+  "normal_ci": {
+    "run_id": 40192974053,
+    "url": "https://github.com/AllCrow/Koran-test-/actions/runs/40192974053",
+    "status": "completed",
+    "conclusion": "success",
+    "variants": [
+      {
+        "label": "ios18",
+        "device": "iPhone 16 Pro",
+        "ios": "18.5",
+        "xcode": "26.2",
+        "job_id": 121167743062,
+        "hosted_cases": 96,
+        "ui_cases": 8,
+        "portable_mac_cases": 85,
+        "individual_cases_read_and_equal_across_variants": true
+      },
+      {
+        "label": "compact",
+        "device": "iPhone SE (3rd generation)",
+        "ios": "18.5",
+        "xcode": "16.4",
+        "job_id": 121167742973,
+        "hosted_cases": 96,
+        "ui_cases": 8,
+        "portable_mac_cases": 85,
+        "individual_cases_read_and_equal_across_variants": true
+      },
+      {
+        "label": "ios26",
+        "device": "iPhone 16e",
+        "ios": "26.2",
+        "xcode": "26.2",
+        "job_id": 121167742804,
+        "hosted_cases": 96,
+        "ui_cases": 8,
+        "portable_mac_cases": 85,
+        "individual_cases_read_and_equal_across_variants": true
+      }
+    ],
+    "backend": {
+      "job_id": 121167743187,
+      "cases": 57,
+      "evaluation_tool_cases_within_total": 21,
+      "individual_cases_read": true
+    },
+    "physical_package_job_id": 121167742985,
+    "save_owner_draft_job_id": 121171477446,
+    "unique_native_and_ui_cases": 104,
+    "native_ui_executions_across_three_variants": 312,
+    "all_six_actual_jobs_completed_successfully": true,
+    "raw_log_sha256": {
+      "ios18": "b90253ea2678750cc49306e8ba04cca2d971c5ca411a301040d13fd65a865927",
+      "compact": "825f86b99d8b5d3d6ab1f10b996ac9a21b91305aef14db27903f558555366c68",
+      "ios26": "51b1c94f4d5b6a263b3aa49b7bdf89aab9917fda01fcd11c057438c83b63f7db",
+      "backend": "822165a7ce9554ac2f90dbbde5390e2a13f28c57177908c43ae22749e4892401",
+      "package": "642ce3be16164e7e643794616aa736cf735d98fdb4976f07340501e146b77682",
+      "release": "7f513a3fa06a9922dd3cf05a3d658f137fea94a520d6215534a7a562e912ad38"
+    }
+  },
+  "artifact": {
+    "id": 12599105394,
+    "source_commit": "e1bb2625136277beb8f4eab78f17576acc3d56e5",
+    "zip_sha256": "fb1b14b7bf0240f21f93f1701292ceeef15105d7b8b57d10c2030027dd6afe40",
+    "expired_at_check": false
+  },
+  "package": {
+    "version": "0.1.0",
+    "build": "53",
+    "bytes": 3271185,
+    "sha256": "159cbb58cde06dca919b956b8a4b918339c7d79ec1266de1a31682a404c2c6eb",
+    "platform": "iPhoneOS",
+    "architectures": [
+      "arm64"
+    ],
+    "minimum_ios": "17.0",
+    "sdk": "26.2",
+    "personal_signing_required": true,
+    "physical_iphone_tested": false,
+    "analysis_enabled": false,
+    "analysis_server_url": "",
+    "quran_json_files_exact": 115,
+    "practice_files_exact": 118,
+    "font_exact": true,
+    "profiles_or_tests_embedded": false,
+    "independent_verification_report_sha256": "f29b7db5fa11c9cff54ab922b7f70290b9377706c7a4a8b8877176a830669b1d",
+    "build_report_sha256": "e1d6f7562da6039dc3bd7861767b3606f2c626d2d071708c40844eb3e5f70b95"
+  },
+  "release": {
+    "id": 423396167,
+    "tag": "personal-build-53-1",
+    "target": "e1bb2625136277beb8f4eab78f17576acc3d56e5",
+    "draft": true,
+    "prerelease": true,
+    "assets": [
+      {
+        "id": 675019229,
+        "name": "iPhone-build-info.json",
+        "bytes": 741,
+        "sha256": "e1d6f7562da6039dc3bd7861767b3606f2c626d2d071708c40844eb3e5f70b95"
+      },
+      {
+        "id": 675019230,
+        "name": "PERSONAL_IPHONE_INSTALL.md",
+        "bytes": 5451,
+        "sha256": "0085c8f846d3dfdf2a47decce983845cb93f7a0589d88f76b7c6cbb301a6cd3b"
+      },
+      {
+        "id": 675019231,
+        "name": "Sakina-iPhone-unsigned.ipa",
+        "bytes": 3271185,
+        "sha256": "159cbb58cde06dca919b956b8a4b918339c7d79ec1266de1a31682a404c2c6eb"
+      }
+    ],
+    "all_three_asset_sizes_and_digests_match_downloaded_files": true
+  },
+  "evaluation": {
+    "report": "docs/evidence/evaluation-pending-112-2-report.json",
+    "report_sha256": "c4fd318a8615922d4903d7688174bee2eaf0ba7b8f37cd5520cf9adfe416b091",
+    "evaluator_source_sha256": "7df1d093695da07d1f981eee1e00d21ed5345e0fb2ce9032a237edac737d2ca1",
+    "input_file_sha256": {
+      "corpus": "743f683900cd6f830527208b97122704a8ac85fe2be2702a42b0eb67c4551ea8",
+      "predictions": "e8f77879f51a73c1698cbca309d8310b2124bc3678e0340656502c377c6702ef"
+    },
+    "pending_cases": 1,
+    "adjudicated_cases": 0,
+    "review_coverage": 0,
+    "quality_metrics": null,
+    "original_audio_identity_rechecked_locally": true,
+    "new_model_inference_performed": false,
+    "audio_committed": false
+  },
+  "historical_build51": {
+    "source_commit": "c907121e59eab81ae8848e2ca0311ab54f2aa6ec",
+    "run_id": 40186048325,
+    "package_and_history_preserved": true,
+    "real_source_native_audit_is_historical_not_rerun_for_changed_audio_library": true,
+    "evidence": "docs/evidence/delivery-51-2026-10-25.json"
+  },
+  "remaining": [
+    "Personal signing and physical iPhone installation.",
+    "Physical microphone, radio/offline switching, audio routes, file protection and Files providers.",
+    "Physical VoiceOver, energy, temperature and battery measurements.",
+    "Content/audio/tafsir rights and expert reciter/clip-boundary review.",
+    "Representative expert-labelled learner accuracy, full sifat assessment and Tarteel comparison."
+  ]
+}
