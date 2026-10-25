@@ -33,6 +33,61 @@ final class RecitationPlayerTests: XCTestCase {
         XCTAssertEqual(rig.service.requestedReference, verse)
     }
 
+    func testLateNativePlayCannotOverrideAnExplicitPause() async throws {
+        let source = try wave(seconds: 8)
+        let verse = try reference(3)
+        var requests: [AyahReference] = []
+        let rig = try makePlayer { reference, _ in requests.append(reference); return source }
+        defer { rig.service.stop() }
+        let began = expectation(description: "The real player begins the selected verse")
+        let beganToken = rig.service.$activeReference.first(where: { $0 == verse }).sink { _ in began.fulfill() }
+        defer { beganToken.cancel() }
+        rig.service.playOnce(reference: verse, chapterVerseCount: 7)
+        await fulfillment(of: [began], timeout: 12)
+        let item = try XCTUnwrap(rig.engine.currentItem)
+
+        rig.service.pause()
+        // Model the measured late AVFoundation restart explicitly. Waiting for
+        // its positive native rate prevents the original pause's zero-rate
+        // acknowledgement from satisfying the recovery assertion by itself.
+        let attemptedRestart = expectation(description: "A late native play sets a positive rate")
+        let restartToken = rig.engine.publisher(for: \.rate, options: [.initial, .new])
+            .first(where: { $0 > 0 }).sink { _ in attemptedRestart.fulfill() }
+        defer { restartToken.cancel() }
+        rig.engine.play()
+        await fulfillment(of: [attemptedRestart], timeout: 2)
+
+        let paused = expectation(description: "The latest pause intent wins on the actual engine")
+        let pauseToken = rig.engine.publisher(for: \.rate, options: [.initial, .new])
+            .combineLatest(rig.engine.publisher(for: \.timeControlStatus, options: [.initial, .new]))
+            .first(where: { $0.0 == 0 && $0.1 == .paused }).sink { _ in paused.fulfill() }
+        defer { pauseToken.cancel() }
+        await fulfillment(of: [paused], timeout: 2)
+
+        XCTAssertEqual(rig.engine.rate, 0)
+        XCTAssertEqual(rig.engine.timeControlStatus, .paused)
+        XCTAssertFalse(rig.service.isPlaying)
+        XCTAssertFalse(rig.service.isBuffering)
+        XCTAssertFalse(rig.service.hasFinishedVerse, "Natural EOF must not satisfy this pause regression")
+        XCTAssertLessThan(rig.engine.currentTime().seconds, 6, "The eight-second recording must still have audio left")
+        XCTAssertEqual(rig.service.requestedReference, verse)
+        XCTAssertEqual(rig.service.activeReference, verse)
+        XCTAssertTrue(rig.engine.currentItem === item)
+        XCTAssertEqual(requests, [verse], "Enforcing a pause must not load another recording")
+        XCTAssertNil(rig.service.errorMessage)
+
+        let resumed = expectation(description: "A later explicit resume remains allowed")
+        let resumeToken = rig.engine.publisher(for: \.rate, options: [.initial, .new])
+            .combineLatest(rig.engine.publisher(for: \.timeControlStatus, options: [.initial, .new]))
+            .first(where: { $0.0 > 0 && $0.1 == .playing }).sink { _ in resumed.fulfill() }
+        defer { resumeToken.cancel() }
+        rig.service.resume()
+        await fulfillment(of: [resumed], timeout: 2)
+        XCTAssertTrue(rig.engine.currentItem === item)
+        XCTAssertEqual(requests, [verse])
+        XCTAssertEqual(rig.service.requestedReference, verse)
+    }
+
     func testRealPlaybackStartsAndNaturalEndAdvancesToTheExactNextVerse() async throws {
         let short = try wave(seconds: 0.8)
         let long = try wave(seconds: 8)

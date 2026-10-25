@@ -42,6 +42,7 @@ final class RecitationPlayer: ObservableObject {
     private var generation = UUID()
     private var itemStatusObservation: NSKeyValueObservation?
     private var playbackObservation: NSKeyValueObservation?
+    private var rateObservation: NSKeyValueObservation?
     private var itemNotifications: [NSObjectProtocol] = []
     private var interruptionNotification: NSObjectProtocol?
     private var routeNotification: NSObjectProtocol?
@@ -121,6 +122,7 @@ final class RecitationPlayer: ObservableObject {
     deinit {
         itemStatusObservation?.invalidate()
         playbackObservation?.invalidate()
+        rateObservation?.invalidate()
         for token in itemNotifications {
             NotificationCenter.default.removeObserver(token)
         }
@@ -286,6 +288,17 @@ final class RecitationPlayer: ObservableObject {
             }
         }
 
+        rateObservation = player.observe(\.rate, options: [.initial, .new]) { [weak self, weak item] _, _ in
+            // A late native play acknowledgement can change rate without a new
+            // time-control state. Resolve it on the actor, after the AVPlayer
+            // setter returns, and enforce the latest explicit user intent.
+            Task { @MainActor [weak self, weak item] in
+                guard let self, let item,
+                      self.isCurrent(item, generation: itemGeneration) else { return }
+                self.updatePlaybackState(item: item, reference: reference)
+            }
+        }
+
         itemNotifications.append(NotificationCenter.default.addObserver(
             forName: AVPlayerItem.didPlayToEndTimeNotification,
             object: item,
@@ -356,6 +369,17 @@ final class RecitationPlayer: ObservableObject {
     }
 
     private func updatePlaybackState(item: AVPlayerItem, reference: AyahReference) {
+        guard wantsToPlay else {
+            // AVFoundation can acknowledge an earlier play after a pause or
+            // headphone interruption. Publishing a paused flag is insufficient:
+            // enforce that intent on the actual engine too. A zero rate needs
+            // no further setter, avoiding a pause/KVO feedback loop.
+            if player.rate != 0 { player.pause() }
+            isPlaying = false
+            isBuffering = false
+            updateNowPlaying()
+            return
+        }
         guard item.status != .failed else { return }
         switch player.timeControlStatus {
         case .playing:
@@ -474,6 +498,8 @@ final class RecitationPlayer: ObservableObject {
         itemStatusObservation = nil
         playbackObservation?.invalidate()
         playbackObservation = nil
+        rateObservation?.invalidate()
+        rateObservation = nil
         for token in itemNotifications {
             NotificationCenter.default.removeObserver(token)
         }

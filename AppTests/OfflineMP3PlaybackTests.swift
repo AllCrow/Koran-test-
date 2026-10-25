@@ -179,11 +179,14 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         // engine instead of assuming that a published UI flag settles its rate.
         let paused = expectation(description: "AVPlayer acknowledges the pause before the tone ends")
         let token = context.engine.publisher(for: \.rate, options: [.initial, .new])
-            .first(where: { $0 == 0 }).sink { _ in paused.fulfill() }
+            .combineLatest(context.engine.publisher(for: \.timeControlStatus, options: [.initial, .new]))
+            .first(where: { $0.0 == 0 && $0.1 == .paused }).sink { _ in paused.fulfill() }
         defer { token.cancel() }
         await fulfillment(of: [paused], timeout: 2)
         XCTAssertEqual(context.engine.rate, 0)
+        XCTAssertEqual(context.engine.timeControlStatus, .paused)
         XCTAssertFalse(context.player.isPlaying)
+        XCTAssertFalse(context.player.isBuffering)
         XCTAssertFalse(context.player.hasFinishedVerse, "Natural completion must not satisfy a pause probe")
         XCTAssertLessThan(context.engine.currentTime().seconds, 2.5,
                           "The generated three-second tone must still have audio left after a pause")
