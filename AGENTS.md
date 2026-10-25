@@ -18,6 +18,38 @@ can be borrowed for initial setup/recovery. The user expects access to a compute
 confirmed. See `docs/PERSONAL_IPHONE_INSTALL.md`; no signing or device install is
 verified, and never request passwords or pairing files in chat.
 
+## Latest continued verification
+
+Main run 40186048325 passed on c907121e59eab81ae8848e2ca0311ab54f2aa6ec: 91 hosted and eight UI
+cases on each of three configurations, 82 portable Mac cases per variant and
+36 backend cases. The owner draft personal-build-51-1 is confirmed; older
+build46 evidence remains historical. See STATUS.md for the exact tested inputs.
+
+Keep chapter loads transactional. Cancellation preserves the last settled chapter,
+selection, error and saved bytes. A stale request must not clear newer progress.
+Retain a valid immutable index after Task cancellation checks even if a newer
+chapter generation superseded cold start; only chapter/progress settlement is
+generation-dependent. Preserve real failed targets for explicit retry.
+
+Reading imports must serialize and bound BOTH proposed persisted state and export
+before publishing or writing. Retain the default4MiB limit and zero-mutation
+rejection. The lower internal budget seam exercises the same admission/read/write
+paths for exact-boundary native tests; never raise the production bound in tests.
+
+Media-service loss must quiesce the native player immediately, invalidate old
+callbacks and keep exact selection. Do not construct/load replacement media until
+reset, and never resume automatically. Simulated notifications do not establish
+physical-device audio, microphone or energy behavior.
+
+Native MP3 interruption probes must observe before commands and prove positive
+current native rate plus playing before each interruption, including after
+explicit resume. KVO is a wakeup to inspect current getters on the actor, not
+a buffered acknowledgement. Keep2s, real3sMP3, noEOF, clock<2.5, native0+paused,
+same-item/asset and explicit-resume requirements; retain bounded failure traces.
+Read reader-position bounds/target from one coherent native snapshot, retaining
+5s, full finite bounds, unique exact reference/label and foreground. The separate
+fresh-application-object alternative is preserved history, not adopted code.
+
 ## Ownership and data
 
 - `QuranCore`: validated references, calendar streaks, lossless tajweed parsing.
@@ -214,11 +246,8 @@ and its saved JSON evidence. Verification/EveryAyahLiveSourceTests.swift stays
 outside AppTests; staging adds it only in the isolated audit checkout, so
 normal CI remains deterministic. No audio is attached or committed. This is
 one simulator configuration, no physical/offline-radio/rights/expert proof.
-Main51 completed successfully on c907121: all six job logs were read with
-91 hosted + eight UI cases on every variant, 82 portable cases/Mac, backend36
-and both builds. Owner draft51 is release423341980, personal-build-51-1; all
-three asset sizes/digests match the independently retrieved CI artifact12596352350.
-IPA51 is unsigned iPhoneOS/arm64, 3269813 bytes, SHA256
-279803799a1f3d72626c42ab7e7a651e3859cb528a80625e0c5ef26de5e6854b.
-See docs/evidence/delivery-51-2026-10-25.json. Older owner drafts remain
-preserved; this does not establish personal signing or a physical installation.
+Main51 subsequently passed all six jobs and saved the verified owner draft51.
+Read STATUS.md for that actual result; build46 remains historical.
+The independently downloaded build51 artifact, all three release assets and
+239 packaged source resources are bound in docs/evidence/delivery-51-2026-10-25.json.
+These checks establish package provenance, not personal signing or physical behavior.

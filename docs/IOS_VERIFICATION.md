@@ -7,15 +7,26 @@ inte dessa prov. **Ingen fysisk iPhone eller personlig signering är verifierad.
 
 ## Automatiska prov på macOS
 
-Den aktuella kandidaten passerade [PR-körning50](https://github.com/AllCrow/Koran-test-/actions/runs/40184479157)
-på alla tre varianter. Huvudgrenens integration
-`c907121e59eab81ae8848e2ca0311ab54f2aa6ec` passerade också
-[huvudkörning51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)
-med **alla sex jobb godkända**, inklusive ägarnedladdningen. Varje variant
-utförde **91 hostade + åtta UI-prov**, samt **82 unika portabla Swift-prov**.
-Backendjobbet har **36 godkända prov**. Alla faktiska loggar har lästs.
-[Leverans-/paketbevis](evidence/delivery-51-2026-10-25.json) kompletterar
-[STATUS.md](../STATUS.md); äldre44/46-resultat bevaras i historiken.
+**Aktuell källa `c907121e59eab81ae8848e2ca0311ab54f2aa6ec` passerar [huvudkörning 51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)**
+med **91 hostade + åtta UI-prov per variant**, 82 separata portabla
+Swift-prov per Mac-variant och 36 backendprov. Alla sex jobb inklusive
+ägarutkastet är godkända. Elva nya native-regressioner täcker ljudtjänstförlust,
+importgränser och avbrutna/överlappande laddningar. Se
+[fortsättningsunderlaget](CONTINUED_STABILITY_2026-10-25.md).
+[Det oberoende leveransbeviset](evidence/delivery-51-2026-10-25.json)
+knyter jobben till releaseutkastets tre filer, IPA-hash och paketerade källresurser.
+
+**Historisk baslinje för bygge 46:**
+
+Den samlade kandidaten har passerat [PR-körning 44](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
+på alla tre varianter. Huvudgrenens byteidentiska källa
+`8cd977c4f2063e51784cc0b7c3fbca75b1760ec3` passerade också
+[slutkörning 46](https://github.com/AllCrow/Koran-test-/actions/runs/40176707574)
+med alla sex jobb godkända, inklusive ägarnedladdningen.
+Varje variant utförde **80 hostade + åtta UI-prov**, samt separat
+**82 portabla Swift-prov**. Backendjobbet har **36 godkända prov**.
+Exakta utfall finns i [STATUS.md](../STATUS.md) och
+[verifieringsunderlaget](evidence/premium-readiness-2026-10-25.md).
 
 | Variant | Byggverktyg / simulator | Enhet |
 | --- | --- | --- |
@@ -36,20 +47,16 @@ bevarar `HostedTests.xcresult` och, när tjänsterna passerat,
 `UITestResults.xcresult`. Skärmbilder exporteras från UI-resultatet, eller
 från tjänsteresultatet om körningen stannade där.
 [Körning45](https://github.com/AllCrow/Koran-test-/actions/runs/40176541522)
-verifierade först denna konfiguration med 80 hostade och åtta UI-flöden.
-Artefakt12593107496 har båda kompletta resultatbundlarna. PR7 är integrerad
-somd6d73e5. Senare50/51 har samma upplägg med 91 hostade och åtta UI-fall;
-dessa nya resultat ska inte blandas ihop med äldre paket46.
+har verifierat denna konfiguration på samtliga tre varianter: 80 hostade
+prov följs av åtta UI-flöden, alla godkända. Artefakt12593107496 har båda
+kompletta resultatbundlarna. PR7 är integrerad somd6d73e5; app- och testkod
+är samma som i det godkända personliga main-bygget46.
 
 Det genererade Xcode-projektet har tre mål: `Sakina`, `SakinaTests` och
 `SakinaUITests`. Schemat `Sakina` kopplar båda testmålen till appen.
 De hostade proven använder isolerade inställningar, temporära filer, kontrollerad
 transport och egna korta PCM-/MP3-ljud. Inga privata inspelningar eller hämtade
-recitationsfiler ingår i den ordinarie matrisen eller repot. Ett separat
-[opt-in-prov](LIVE_RECITATION_AUDIT.md) har faktiskt hämtat12 riktiga
-recitationsfiler och spelat hashpinnad112:2 från lokal lagring för alla tre
-recitatörer. Det körs utanför den vanliga matrisen; rått ljud sparas inte i Git
-eller resultatartefakten. Fysiska ljud-/radioprov och sakkunnig kontroll återstår.
+recitationsfiler ingår i testerna eller repot.
 
 På en Mac med Xcode och en installerad iPhone-simulator:
 
@@ -74,6 +81,7 @@ en osignerad fysisk iPhone-IPA; efter alla godkända jobb bevaras den som ett
 | Testgrupp | Avsikt |
 | --- | --- |
 | AppStore | Unika uttryckliga läsmarkeringar, återstart, kalender-/systemklockebyten, måländring, bokmärken, tajweedval och korrupt sparad data. Sju dagars historik med stabila civila datum, intjänade mål och inga påhittade versantal. Fyra textstorlekar, äldre/okända sparvärden och bevarat storleksval vid import. Export/import sammanfogar läsdata idempotent; ogiltiga eller för stora filer ändrar inga data. |
+| ChapterLoading | Sju kontrollerade async-prov: föravbruten öppning/kallstart, prompt avbrytning med bibehållna sparade byte, sena lyckade/felaktiga resultat efter nyare färdig eller pågående laddning, korrekt återförsöksmål och bevarad katalog under överlappande kallstart. Loaders ignorerar avsiktligt cancellation tills provet svarar. |
 | AudioLibrary | Vers/sura/recitatör, MPEG-/ID3-validering, diskåteröppning, avgränsad radering, felaktig lagring och lagringsfel. Kontrollerad nedladdning provar exakt URL, fortsättning efter avbrott, avbrytning, sena svar, HTTP/MIME/storleksfel och städning av temporära filer. |
 | RecitationPlayer | Riktig AVPlayer-uppspelning av egna korta PCM-WAV-filer: start, naturligt slut, automatisk nästa vers, surans sista vers och enstaka övningsvers. Även trasig lokal fil/återförsök, sena händelser, sparade inställningar och uppskjuten laddning vid pausat recitatörsbyte. Simulerad omstart av ljudtjänsten behåller valet, förnyar spelaren och kräver uttrycklig återupptagning. Ett separat långt WAV-prov framtvingar sen native-uppspelning efter paus och kräver riktig motorpaus utan naturligt slut samt fungerande uttrycklig återupptagning. |
 | OfflineMP3Playback | Sju prov av verklig MP3-till-PCM-avkodning och AVPlayer med AudioLibrary:s lokala filval för alla tre recitatörer, aktiverad systemljudsession, paus/återstart, naturligt versslut/autospelning, enstaka övningsvers, simulerade avbrotts-/hörlursnotiser, gamla händelser och en ospelbar fil. En genererad svag ton används, inga externa ljudförfrågningar eller röster. |
