@@ -7,13 +7,15 @@ inte dessa prov. **Ingen fysisk iPhone eller personlig signering är verifierad.
 
 ## Automatiska prov på macOS
 
-Den samlade [körningen 40175540017](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
-passerar 80 hostade prov och åtta UI-flöden i var och en av följande tre
-varianter, samt 82 portabla Swift-prov och 36 backendprov. Källan är
-3511431, faktisk Apple-checkout 8ded616d och mergad main 8cd977c har samma
-kompletta filträd. Jobbloggar, artefakternas head-SHA och alla tre bilder
-av 2:255 har kontrollerats. Exakta versioner/paket och senare körningar
-redovisas i [STATUS.md](../STATUS.md).
+Den samlade kandidaten har passerat [PR-körning 44](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
+på alla tre varianter. Huvudgrenens byteidentiska källa
+`8cd977c4f2063e51784cc0b7c3fbca75b1760ec3` passerade också
+[slutkörning 46](https://github.com/AllCrow/Koran-test-/actions/runs/40176707574)
+med alla sex jobb godkända, inklusive ägarnedladdningen.
+Varje variant utförde **80 hostade + åtta UI-prov**, samt separat
+**82 portabla Swift-prov**. Backendjobbet har **36 godkända prov**.
+Exakta utfall finns i [STATUS.md](../STATUS.md) och
+[verifieringsunderlaget](evidence/premium-readiness-2026-10-25.md).
 
 | Variant | Byggverktyg / simulator | Enhet |
 | --- | --- | --- |
@@ -56,7 +58,7 @@ en osignerad fysisk iPhone-IPA; efter alla godkända jobb bevaras den som ett
 | --- | --- |
 | AppStore | Unika uttryckliga läsmarkeringar, återstart, kalender-/systemklockebyten, måländring, bokmärken, tajweedval och korrupt sparad data. Sju dagars historik med stabila civila datum, intjänade mål och inga påhittade versantal. Fyra textstorlekar, äldre/okända sparvärden och bevarat storleksval vid import. Export/import sammanfogar läsdata idempotent; ogiltiga eller för stora filer ändrar inga data. |
 | AudioLibrary | Vers/sura/recitatör, MPEG-/ID3-validering, diskåteröppning, avgränsad radering, felaktig lagring och lagringsfel. Kontrollerad nedladdning provar exakt URL, fortsättning efter avbrott, avbrytning, sena svar, HTTP/MIME/storleksfel och städning av temporära filer. |
-| RecitationPlayer | Riktig AVPlayer-uppspelning av egna korta PCM-WAV-filer: start, naturligt slut, automatisk nästa vers, surans sista vers och enstaka övningsvers. Även trasig lokal fil/återförsök, sena händelser, sparade inställningar och uppskjuten laddning vid pausat recitatörsbyte. Simulerad omstart av ljudtjänsten behåller valet, förnyar spelaren och kräver uttrycklig återupptagning. |
+| RecitationPlayer | Riktig AVPlayer-uppspelning av egna korta PCM-WAV-filer: start, naturligt slut, automatisk nästa vers, surans sista vers och enstaka övningsvers. Även trasig lokal fil/återförsök, sena händelser, sparade inställningar och uppskjuten laddning vid pausat recitatörsbyte. Simulerad omstart av ljudtjänsten behåller valet, förnyar spelaren och kräver uttrycklig återupptagning. Ett separat långt WAV-prov framtvingar sen native-uppspelning efter paus och kräver riktig motorpaus utan naturligt slut samt fungerande uttrycklig återupptagning. |
 | OfflineMP3Playback | Sju prov av verklig MP3-till-PCM-avkodning och AVPlayer med AudioLibrary:s lokala filval för alla tre recitatörer, aktiverad systemljudsession, paus/återstart, naturligt versslut/autospelning, enstaka övningsvers, simulerade avbrotts-/hörlursnotiser, gamla händelser och en ospelbar fil. En genererad svag ton används, inga externa ljudförfrågningar eller röster. |
 | AudioDownloadTransport | Fem prov från det integrerade arbetet i [PR #3](https://github.com/AllCrow/Koran-test-/pull/3): riktiga URLSession-download tasks över loopback HTTP. Tre recitatörers lagring och MP3-avkodning, återöppning från disk, HTTP-fel/återupptagning, avbruten kropp och storleksgränser från riktiga download-delegate-callbacks. Överstorleksproven kräver avbrytning före ett öppet svars slut. Begärd HTTPS-adress återställs bara i testets svarsmetadata; extern TLS och verkligt recitationsinnehåll ingår inte. |
 | PracticeRecorder | Fördröjd mikrofonbehörighet, avbrytning, sena besked, överlappande försök, ljudavbrott/hörlursnotiser, otillgänglig lagring och städning som bevarar andra filer. Simulerad förlust/omstart av ljudtjänsten avbryter väntande behörighet utan automatisk inspelningsstart. Inget prov spelar in från simulatorns mikrofon eller verifierar den synliga minuträknaren mot en verklig tagning. |
@@ -66,8 +68,8 @@ en osignerad fysisk iPhone-IPA; efter alla godkända jobb bevaras den som ett
 
 UI-testerna använder en egen `UserDefaults`-suite per test. Endast Debug-byggen
 accepterar det avgränsade testargumentet. Tester raderar inte normala läsdata,
-kontaktar ingen analystjänst och ber inte om mikrofonbehörighet. Den historiskt godkända
-UI-körningen matar in arabiska siffror, öppnar sura 112, kontrollerar att den
+kontaktar ingen analystjänst och ber inte om mikrofonbehörighet. Den aktuellt godkända
+PR-körningen matar in arabiska siffror, öppnar sura 112, kontrollerar att den
 föregående surans kontroller har ersatts och markerar/bokmärker 112:1. Den
 sparade bokmärkesreferensen verifieras också i inställningarna. Proven
 kontrollerar inte fysisk mikrofon, ljudrutter eller energiförbrukning. Ljudproven
@@ -77,22 +79,25 @@ kontrollerade svar och riktiga lokala HTTP-överföringar, men bevisar inte
 externa TLS-förbindelser eller nedladdning/offlineuppspelning på telefonen. Systemets filväljare
 och externa filproviders för backup behöver också ett manuellt prov.
 
-**Historisk baslinje:** [körning 40165021106](https://github.com/AllCrow/Koran-test-/actions/runs/40165021106)
-passerar alla **56 hostade prov och fem UI-flöden** på källversion
-`1ba557c3d6bed990504789caa2d01398d897e263`. Native List visar hela versbadgen
-nära toppen inom fem sekunder i de fyra positionsfallen. Bilden för 2:255
-visar även versens första textrader, utan föregående vers i skärmen. Exakt
-källa, paket och historisk MP3-baslinje dokumenteras i [STATUS.md](../STATUS.md).
-Det är utfallet före textstorlek, veckohistorik, beständig tafsircache,
-ljudtjänståterhämtning och den nya HTTP-transporten. Antalen ska inte användas
-som resultat för den aktuella källversionen eller den nya CI-matrisen.
+De fyra långa positionsfallen kräver inom fem sekunder rätt global
+versreferens, hela läsetiketten nära toppen och inom läsytans bredd samt appen
+i förgrunden. Den icke-interaktiva etiketten behöver ingen aktiveringspunkt;
+alla knappar och reglage kräver fortsatt hittability och verkliga tryck.
+Skärmbilder granskas också: 2:255 ska visa första textraderna utan föregående
+vers, och mörkt läge ska vara verkligt mörkt. Bakgrund och textkontrast
+provas separat. Native ljudkvittens använder aktuella AVPlayer-värden på
+huvudkön, inte enbart appflaggor eller ett cachat CombineLatest-par.
+
+Den äldre baslinjens 56 hostade prov och fem UI-flöden redovisas i
+[statushistoriken](STATUS_HISTORY_PREMIUM_2026-10-25.md). Den är inte resultat
+för dagens utökade källa.
 
 Apples [uppladdningskrav](https://developer.apple.com/news/upcoming-requirements/)
-kontrollerades 2026-10-25: App Store Connect kräver Xcode26+/iOS 26 SDK sedan
-28 april 2026. Den nya konfigurationen använder Xcode 26.2/iOS 26.2 SDK för
-iPhone-paketet och en av simulatorvarianterna. Ett lyckat osignerat bygge
+kontrollerades 2026-10-25: App Store Connect kräver Xcode26+/iOS26 SDK sedan
+28 april 2026. Den nya konfigurationen använder Xcode26.2/iOS26.2 SDK för
+iPhone-paketet och två av simulatorvarianterna. Ett lyckat osignerat bygge
 eller simulatorprov ersätter inte signering och en faktisk godkänd
-App Store Connect-uppladdning. Minsta stödda iOS 17 är en annan inställning
+App Store Connect-uppladdning. Minsta stödda iOS17 är en annan inställning
 än bygg-SDK:n. Personlig installation på aktuell
 fysisk telefon behöver fortfarande provas.
 

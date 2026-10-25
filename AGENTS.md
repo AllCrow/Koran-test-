@@ -14,7 +14,7 @@ REJECTED a Safari/PWA rewrite. Preserve the native app. A separate CI job prepar
 an unsigned physical-iPhone IPA for subsequent personal signing; this is distinct
 from the simulator artifact and cannot be installed by tapping it in Files.
 SideStore with an ordinary Apple account is a possible free route if a computer
-can be borrowed for initial setup/recovery. That computer availability is not yet
+can be borrowed for initial setup/recovery. The user expects access to a computer later; the computer platform is not yet
 confirmed. See `docs/PERSONAL_IPHONE_INSTALL.md`; no signing or device install is
 verified, and never request passwords or pairing files in chat.
 
@@ -73,19 +73,22 @@ project whenever App Swift files or resource groups change. Local package produc
 are wired by `scripts/generate_project.py`; no external Swift dependencies.
 The scheme also contains hosted `AppTests` and `AppUITests`; use an actual
 available iPhone simulator destination with `xcodebuild test`. See `STATUS.md`
-for the exact latest tested source, run and counts. Mac CI selects Xcode 26.2/
-iOS18.5 on iPhone 16 Pro, Xcode16.4/iOS18.5 on compact iPhone SE3, and
-Xcode 26.2/iOS 26.2 on iPhone 16e. The first job specifically verifies a build
+for the exact latest tested source, run and counts. Mac CI selects Xcode26.2/
+iOS18.5 on iPhone16Pro, Xcode16.4/iOS18.5 on compact iPhoneSE3, and
+Xcode26.2/iOS26.2 on iPhone16e. The first job specifically verifies a build
 linked to the current SDK on the earlier operating-system runtime.
-The physical unsigned package uses Xcode 26.2. Configuration is not a passing run;
+The physical unsigned package uses Xcode26.2. Configuration is not a passing run;
 read the actual jobs/results before claiming compatibility. Native suites cover AppStore, AudioLibrary, PracticeRecorder,
 RecitationPlayer and text/search/navigation. Audio validation uses synthetic MPEG
 frames; PCM player tests perform real muted playback of generated local WAVs.
 OfflineMP3PlaybackTests also decode and play a generated quiet MP3 through
 AudioLibrary with the system session enabled. Both use generated test content,
-not reciter recordings. Historical main run 40165021106 passed 56 hosted tests
-and five UI flows, including the four stronger near-top position assertions.
-The resulting 2:255 image was inspected. See STATUS.md for the exact source.
+not reciter recordings. The verified PR candidate passed 80 hosted tests and
+eight UI flows on each of three simulator variants, with 82 portable Mac tests
+and 36 backend tests. Main run 40176707574 passed all six jobs for the
+byte-identical integrated source 8cd977c4f2063e51784cc0b7c3fbca75b1760ec3,
+including the gated owner draft personal-build-46-1. Read STATUS.md for
+precise evidence and remaining physical-device limits. Do not reuse the older 56 + five historical counts.
 The five AudioDownloadTransportTests exercise actual URLSessionDownloadTask over
 loopback HTTP, including advertised/chunked over-limit bodies that remain open.
 Keep the delegate bridge, lock order and temporary-file ownership: the earlier
@@ -113,31 +116,15 @@ filled the screen. The reader now uses reusable native List rows with matching
 global String data/row IDs and ScrollViewReader commands after dismissal.
 Keep continuous reading and cell reuse. The four long-jump/relaunch/repeat/later
 position assertions require the entire target badge near the viewport's top
-within five seconds; mere existence or hittability is insufficient. Inspect
+within five seconds, horizontally contained, with the app in the foreground.
+For this read-only badge use geometry and exact global identity; iOS26 may
+report no activation point for readable noninteractive text. Interactive controls
+still require hittability and real taps. Mere existence is insufficient. Inspect
 the resulting screenshots as well as test results. Actual latest verification
 is recorded in STATUS.md; do not describe an unrun change as verified.
 
-Run 40175540017 on 3511431 passed 80 hosted plus eight UI tests on each of
-the three configurations, 82 portable Swift tests and 36 backend tests.
-The actual checkout 8ded616d, source 3511431 and merged main 8cd977c have identical
-whole trees. All three 2:255 images were inspected. A tall iOS 26 List cell
-reported its read-only badge as non-hittable despite a fully visible frame.
-Keep the strict five-second complete vertical/horizontal bounds, exact
-reference label and foreground app check for that label. Interactive controls
-still require hittability and real value-changing taps. Do not replace the
-native List reader to repair that XCTest activation-point mismatch.
-
-Native pause intent must stop a late engine start, not just publish a paused
-UI flag. Rate and time-control observers enforce the current intent after
-the setter returns on the actor; a zero rate needs no repeated pause setter.
-Pause test waiters must validate current engine values on the main queue,
-because a buffered KVO tuple can already be stale. Keep the two-second
-deadline, both native pause signals and the remaining-audio assertion.
-The saved native-state-trace-alternative branch is diagnostic history;
-do not apply it over the verified waiter without new failure evidence.
-
-Apple requirements checked 2026-10-25 require Xcode26+/iOS 26 SDK for App Store
-Connect uploads since 2026-04-28. Successful SDK 26.2 builds are not upload
+Apple requirements checked 2026-10-25 require Xcode26+/iOS26 SDK for App Store
+Connect uploads since 2026-04-28. Successful SDK26.2 builds are not upload
 acceptance proof. Personal signing remains the current priority.
 
 ArabicText's selectable base size comes from EnvironmentValues.quranTextSize;
@@ -184,3 +171,16 @@ Verify remote commits and actual CI outcomes before claiming upload/build succes
 The previous attempt to create private `AllCrow/koran-ios` was denied (403),
 and changing repository visibility is also denied to this integration. A later
 switch to private must be performed by the owner or an authorized connection.
+
+Native AVPlayer pause intent must survive late rate/timeControlStatus changes.
+Observe both with current-item/generation guards; pause only if native rate is
+nonzero to avoid callback loops. Tests must wake on the main queue and re-read
+current native getters, rather than assert against a cached CombineLatest pair.
+Keep both actual MP3 interruption/route checks and the dedicated late-native-
+start WAV regression, bounded latency, no-EOF, same-resource and explicit-resume
+assertions. Do not replace native engine checks with published application flags.
+
+PR7 separately evaluates building tests once and splitting hosted/UI CI feedback.
+It is not part of tested main46; read its actual outcomes before any workflow
+integration. Preserve both result bundles and keep production app/test inputs
+unchanged unless a reproduced defect justifies a new verified candidate.

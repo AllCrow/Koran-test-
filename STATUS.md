@@ -1,139 +1,188 @@
 # Sakina – utvecklingsstatus
 
-Uppdaterat **2026-10-25**. Verifierad native-grund för ett personligt iPhone-prov,
-**iOS 17+**. Personlig signering, fysisk enhet och färdig tajweedkvalitet återstår.
+Uppdaterat **2026-10-25**. Native-app för personligt iPhone-bruk, **iOS 17+**.
+Läskomfort, veckohistorik, offline-tafsir, ljudåterhämtning och verkliga
+HTTP-nedladdningar har förbättrats. Den samlade kandidaten har passerat på
+tre iPhone-simulatorer. **Huvudgrenens slutkörning 46 är godkänd och
+bygge 46 finns som ägaråtkomligt releaseutkast.**
+Personlig signering och fysisk iPhone-provning är inte verifierade.
 
-## Verifierad kod och testresultat
+**Automatisk tajweedbedömning är fortsatt experimentell och avstängd. Ingen
+analysserver är konfigurerad och Tarteel-kvalitetsmålet är inte uppfyllt.**
 
-[PR #6](https://github.com/AllCrow/Koran-test-/pull/6) är mergad som
-`8cd977c4f2063e51784cc0b7c3fbca75b1760ec3`. Den bevarar båda pausgrenarnas
-historik, inklusive `ecd130a` och `03cf72d`; PR5 stängdes som sammanförd
-dubblett. PR3:s HTTP-brygga och PR4:s MP3-prov ingår också.
+## Aktuell verifiering
 
-[Mac-körning 40175540017](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
-är **completed/success** på
-`35114317d7faa690fcd6fee641e88eaa6eccc4cb`.
-Faktisk Apple-checkout `8ded616d03e3ca0a512b1979580d0730d78dfdb3`,
-branchkällan och mergad main 8cd977c har **byteidentiska kompletta filträd**:
-`bb29ae36fce16da46c05b35535f30257adab2152`. Jobbloggar, artefakternas
-head-SHA, paket och bilder har lästs/kontrollerats.
+[PR #6:s körning 44](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
+har passerat alla tre simulatorvarianter, backendjobbet och det osignerade
+iPhone-bygget. Källkandidaten är
+`35114317d7faa690fcd6fee641e88eaa6eccc4cb`; GitHubs faktiska PR-checkout är
+`8ded616d03e3ca0a512b1979580d0730d78dfdb3`.
 
-| Simulator | Byggverktyg | Hostade prov | UI-flöden | Portabla Swift-prov |
-| --- | --- | --- | --- | --- |
-| iPhone SE, 3:e generationen / iOS 18.5 | Xcode 16.4 | **80/80** | **8/8** | **82/82** |
-| iPhone 16 Pro / iOS 18.5 | Xcode 26.2 | **80/80** | **8/8** | **82/82** |
-| iPhone 16e / iOS 26.2 | Xcode 26.2 | **80/80** | **8/8** | **82/82** |
-
-Det är **88 native-prov per variant**, inte 264 olika prov. Swift-loggarna
-innehåller 82 unika körda fall vardera. **36 backendprov** passerar med
-ResourceWarning som fel och riktig ffmpeg-avkodning. Simulatorbyggen,
-fysiskt iPhoneOS-bygge, alla innehålls-/font-/referenskontroller och
-deterministisk projektgenerering passerar. Projektet har 15 appfiler,
-sju hostade testfiler, en UI-testfil och tre lokala bibliotek.
-Detta är Mac-resultat; ingen aktuell Linux-Swift-körning påstås.
-
-Den automatiska efterföljande
-[main-körningen 40176707574](https://github.com/AllCrow/Koran-test-/actions/runs/40176707574)
-på 8cd977c behöver sitt eget faktiska slutresultat och ägarnedladdningsjobb.
-Identisk appkod mot den godkända PR-körningen är verifierad; en separat
-main-success eller ny beständig nedladdning påstås inte i förväg.
-
-## Vad som rättats och faktiskt provats
-
-- **Paus:** sena native rate-/tillståndshändelser får inte hålla motorn igång
-  efter användarens paus. Båda observertyperna kontrollerar aktuell
-  item/generation på huvudaktorn. Ingen ytterligare pausesetter vid rate0,
-  inga timers eller pollning. Ett riktigt åttasekunders WAV-prov tvingar en
-  positiv sen start, kräver rate0 + paused inom två sekunder före EOF,
-  bevarar samma item/vers/filval och verifierar uttrycklig återstart.
-- **MP3:** sju prov av verklig MP3-till-PCM-avkodning och AVPlayer genom
-  AudioLibrary för tre recitatörsval, naturligt versslut/autospelning,
-  enstaka övningsvers, simulerade avbrotts-/hörlursnotiser och sena händelser.
-  Väntarna tar emot KVO på huvudkön och kräver även motorns aktuella värden.
-  Samma tvåsekundersgräns och kvarvarande ljud behålls. Genererad svag ton,
-  inga mänskliga inspelningar eller mikrofonprov.
-- **Nedladdning:** fem riktiga URLSessionDownloadTask-prov mot 127.0.0.1
-  kontrollerar lagring/MP3-avkodning för alla tre val, diskåteröppning,
-  HTTP-fel/återupptagning, avbruten kropp och storleksavbrott före EOF.
-  Sessionens download-delegate driver 32 MiB-gränsen och en temporär fil
-  bevaras innan Foundations callback återvänder. Testet återställer begärd
-  HTTPS-adress i svarsmetadata; extern TLS/EveryAyah ingår inte.
-- **Läsning:** kontinuerlig native List med återanvända celler och globala
-  vers-ID:n. Fyra positionskontroller kräver hela badgen nära toppen inom
-  fem sekunder vid 2:255, återstart, upprepat hopp och senare läsposition.
-  Ingen navigationskredit. Bilderna för 2:255 har granskats på alla tre
-  varianter: rätt badge och versbörjan syns direkt under navigeringen.
-- **Tillgänglighet och lokala val:** åtta verkliga UI-flöden täcker också
-  bokmärke/surabyte, största Dynamic Type, sparad arabisk textstorlek,
-  sparat mörkt läge, veckohistorik, backupkontroller och nästa sura fram
-  till an-Nas. Interaktiva kontroller kräver hela nåbara 44pt-mål och
-  faktiska värdeändringar/omstarter.
-
-iOS 26:s read-only badge kunde rapporteras som ej hittable trots att
-felbilden och diagnostiken visade hela 2:255 vid y129–155 inom krävda y101–251.
-Positionsprovet mäter därför full ändlig vertikal/horisontell synlighet,
-exakt etikett/global referens och app i förgrunden. Ingen tapppunkt krävs på
-läsetiketten. Krav och deadlines för interaktiva kontroller är kvar.
-Det är en rättning av verifieringen, ingen ny läsarimplementation.
-
-## Paket och installationsväg
-
-Den godkända PR-körningens paket är **Sakina 0.1.0(44)**, Release,
-**iPhoneOS/arm64**, Xcode 26.2/17C52, SDK iphoneos26.2 och minsta iOS 17.
-
-- IPA-storlek: **3257523 byte**.
-- SHA256: `71b52b07f67c0a2b74df39747b771ed6c3b968eec0da0403e8663dbb105f72a0`.
-- Faktisk Mach-O bekräftar iOS-plattform 2, arm64, minOS 17 och SDK 26.2.
-- Paketrapporten anger verklig checkout 8ded616d; ingen provisioningprofil.
-- Fysisk IPA-artefakt: **12591659073**, matchande head3511431.
-  Samtliga körning 44-artefakter lagras till **2026-11-01**.
-
-Paketet är **osignerat**, inte installerat på en telefon och inte en
-TestFlight-/App Store-release. Det kan inte öppnas som en app från Filer.
-En simulatorapp är en annan produkt än denna iPhoneOS-IPA.
-
-Följ [personlig installation](docs/PERSONAL_IPHONE_INSTALL.md) och
-[första telefonprovet](docs/FIRST_IPHONE_TEST.md). SideStore med vanligt
-Apple-konto och lånad Mac/Windows är den förberedda gratisvägen.
-Datoråtkomst finns ännu inte; ingen ny rutinfråga om detta behövs.
-Appleuppgifter, parkopplingsfil och röster ska inte till chatt/Git.
-Den äldre återkontrollerade ägardraften26 finns kvar som historisk
-återställningspunkt; en ny beständig draft kräver godkänt main-jobb.
-
-Apples officiellt kontrollerade uppladdningskrav är Xcode26+/iOS 26SDK
-sedan 28 april 2026. Bygg-SDK 26.2 är nu faktiskt använd, även mot iOS18.5.
-Det bevisar inte accepterad uppladdning eller personlig signering.
-
-## Funktioner och återstående färdigkriterier
-
-| Del | Implementerat/verifierat i denna miljö | Kvar före färdig produkt |
+| Simulator | Byggverktyg / Mac | Observerat resultat i körning 44 och 46 |
 | --- | --- | --- |
-| Koranläsning | 114 suror/6 236 ayat offline, byteexakta käll-/övningsutgåvor, Amiri Quran med källnotiser, valbar tajweed och textstorlek. | Fysisk återgivning, VoiceOver/Switch Control och längre läspass. |
-| Läsdata | Position, bokmärken, eget mål, uppmuntrande streak, sju dagars historik och additiv läsbackup. | Fysisk filväljare, ominstallation/återställning och verkliga kalenderbyten. |
-| Tafsir | Källangiven arabisk al-Muyassar, validerad bounded cache av tidigare öppnade förklaringar. | Verkligt nät/flygplansläge och användningsvillkor. Nya förklaringar kräver nät, ingen fullständig offline-tafsir eller svensk förklaring. |
-| Recitation | Tre val, lokala filer föredras, faktisk spelarhändelse styr versmarkering, robusta syntetiska native-prov. | Riktiga imaminspelningar, extern TLS/nedladdning, fysisk offlineuppspelning, ljudrutter/samtal/låsskärm och rättigheter. Ingen ordtidssynkning. |
-| Egen röst | Lokal vald tagning/återlyssning, högst 60 s, skyddad livscykel och ljudsessionsägarskap. | Riktig mikrofon, inspelningslängd, ljudavbrott och bakgrundsåterhämtning på telefon. |
-| Tajweedanalys | Separat experimentell Muaalem-backend/native-klient och dokumenterade verkliga CPU-funktionsprov. Avstängd i standardbygget, ingen publik server. | Expertetiketter, stödda regler/sifat, representativa elevklipp, precision/recall, drift och Tarteel-jämförelse. **Kvalitetsmålet är inte uppnått.** |
-| Energi/leverans | Lätta händelsestyrda läs-/ljudflöden, avgränsade cacher, SDK 26.2-byggen och personlig installationsguide. | Fysisk värme/batteri/minne, signering/installation och säker uppdatering. Serverdrift kan kosta trots avsaknad av obligatorisk månadsavgift. |
+| iPhone 16 Pro / iOS 18.5 | Xcode 26.2 / macOS 15 | **80 hostade + 8 UI-prov och 82 portabla Swift-prov: godkända** |
+| iPhone SE (3:e generationen) / iOS 18.5 | Xcode 16.4 / macOS 15 | **80 hostade + 8 UI-prov och 82 portabla Swift-prov: godkända** |
+| iPhone 16e / iOS 26.2 | Xcode 26.2 / macOS 26 | **80 hostade + 8 UI-prov och 82 portabla Swift-prov: godkända** |
 
-De 18 nya verkliga modellfunktionsproven och tidigare 35 indata beskrivs i
-[modellrapporten](docs/MODEL_SMOKE_RESULTS.md). Alla sju kodhashar i den nya
-evidensen har matchats mot backendkoden; alla 18 svarade assessed utan
-presenterade indikationer. Det är inte sakkunnig bedömning av deras innehåll
-eller bevis på vilka elevfel som missas. Fallet al-Afasy 112:2 och de ännu
-oanvända sifat-huvudena kvarstår. Modellvikter och ljud finns inte i Git/app.
-[REA-inspektionen](docs/REA_MODEL_INSPECTION.md) gäller modellartefakten,
-inte Tarteels privata motor eller akustisk kvalitetsparitet.
+Det är **88 unika native-/UI-prov**, utförda på tre varianter:
+**264 godkända native-provexekveringar**. De hostade sviterna består av
+23 AppStore-, 11 text-/färgprov, fem HTTP-transport-, 13 AudioLibrary-, sju
+MP3-, 11 inspelnings- och tio spelarprov. Det är inte 264 olika testfall.
+De portabla proven är separata från native-proven.
 
-## Fortsatt arbete och historik
+Backendjobbet passerade **36 prov**, inklusive riktig ffmpeg-avkodning av
+M4A/AAC/WAV; `ResourceWarning` behandlas som fel. Innehålls-, referens-,
+font- och projektkontroller passerade också. De **80 Linux-Swift-proven**
+kördes tidigare på `1eb0b9688657b73e107a3065b21da99f9585d82d`; deras portabla
+indata är byteidentiska med den aktuella källan. macOS har dessutom två
+Darwin-specifika överföringsprov, vilket ger 82.
 
-[PR #7](https://github.com/AllCrow/Koran-test-/pull/7) verifierar separat
-kortare CI-återkoppling: bygg testmålen en gång, kör hostade prov före UI och
-bevara båda resultatbundlarna. App- och testkod är oförändrad; den nya
-workflow-layouten behöver sitt verkliga Mac-resultat före integration.
+Arbetet är integrerat med bevarad historik på huvudgrenen:
+`8cd977c4f2063e51784cc0b7c3fbca75b1760ec3`.
+Kandidaten, PR-checkouten och huvudgrenens integration har **byteidentiska
+Git-filträd**. [Huvudgrenens körning 46](https://github.com/AllCrow/Koran-test-/actions/runs/40176707574)
+är **avslutad med godkänt utfall i alla sex jobb**, inklusive samtliga tre
+native-varianter och sparandet av ägarnedladdningen. Antalen ovan har
+verifierats även i huvudkörningens faktiska loggar. Exakta loggar och
+paketkontroller redovisas i
+[verifieringsunderlaget](docs/evidence/premium-readiness-2026-10-25.md).
 
-[Tidigare status och verifieringsförlopp](docs/STATUS_HISTORY_2026-10-25.md)
-bevarar tidigare fulltext, godkända baslinjer, de faktiskt misslyckade
-körningarna och avbrutna kandidater. Inget gammalt failure/cancelled blir
-success genom kodjämförelse. Fortsätt på arbetsgrenar medan kandidat verifieras.
-Publik synlighet är godkänd tills vidare och full Git-historik är bevarad.
+## Förbättringar som nu ingår
+
+- **Läskomfort:** fyra sparade arabiska textstorlekar med källtrogen
+  förhandsvisning, Dynamic Type och val mellan att följa iPhone, ljust eller
+  mörkt läge. Tajweedfärgernas numeriska kontrast mot läspapperet provas till
+  minst 4,5:1, och minst 7:1 vid ökad kontrast. Huvudknappens text och
+  symboler provas också. Fysisk återgivning och VoiceOver återstår.
+- **Läsvana:** sju civila läsdagar, faktiska unika markeringar och intjänade
+  dagsmål. Datum och läsdata bevaras bättre vid tidszonsbyten och korrigerad
+  systemklocka; saknade versdetaljer ger inga påhittade antal.
+- **Navigation:** kontinuerlig läsning i återanvända native-celler, direkt
+  vershopp och nästa sura utan läskredit. Navigationen slutar vid an-Nas.
+  Långa versers början placeras nära toppen även vid uppspelning.
+- **Tafsir:** tidigare öppnade al-Muyassar-förklaringar kan läsas efter
+  omstart utan nät. Den validerade cachen prioriterar nyligen öppnade poster:
+  högst 64, totalt 4 MiB och 128 KiB per fil. Skadade eller felrefererade
+  poster visas inte. Nya förklaringar behöver internet; ingen fullständig
+  offline-tafsir eller svensk tafsir ingår.
+- **Nedladdning:** riktiga URLSession-download tasks med avbrytning från
+  nedladdningsdelegaten före en för stor överförings slut. Färdiga verser
+  bevaras vid fel och återupptagning hämtar saknade verser. Fem loopback-prov
+  använder verklig lokal HTTP och avkodningsbara MP3-filer. De provar inte
+  extern TLS, EveryAyah eller rättigheterna till imaminspelningarna.
+- **Ljud:** omstart av iOS ljudtjänst förnyar spelaren, behåller valet och
+  kräver uttrycklig återupptagning. Sena native-händelser får inte återstarta
+  ljudet när användarens senaste avsikt är paus. Proven inväntar verklig
+  AVPlayer-KVO på huvudkön och kontrollerar även motorns aktuella tillstånd;
+  en publicerad appflagga ensam räcker inte.
+- **Övning och läsdata:** synlig inspelningstid upp till en minut med
+  uppdatering en gång per sekund endast under en aktiv tagning. Fördröjd
+  mikrofonbehörighet och ljudavbrott hanteras utan automatisk inspelningsstart.
+  Bokmärken och läshistorik kan exporteras/importeras via Filer, validerat
+  och utan dubblering. Exporten innehåller inte röst, ljud eller inställningar.
+
+De fyra långa positionsfallen kräver rätt global versreferens, hela
+läsbadgen nära toppen och inom läsytans bredd samt appen i förgrunden inom
+fem sekunder. Badgen är en läsetikett. Interaktiva kontroller måste fortsatt
+vara nåbara och användas med verkliga tryck. Koranens arabiska lästext är
+oförändrad. [Provens omfattning](docs/IOS_VERIFICATION.md).
+
+## Personligt iPhone-paket och installation
+
+**Bygge 46 är byggt, hämtat och oberoende paketkontrollerat efter
+huvudkörningens samtliga godkända verifieringsjobb:**
+
+- `Sakina-iPhone-unsigned.ipa`, **0.1.0 (46)**, **3 257 522 byte**.
+- SHA256: `c9844553d63bd8bfa1917472614f118062f6ed33f10ddfa69e77a507f64d5d6f`.
+- CI-artefakt **12593165562**, källa **8cd977c4f2063e51784cc0b7c3fbca75b1760ec3**.
+- iPhoneOS, arm64 Mach-O, minsta iOS **17.0**, bygg-SDK **26.2**.
+- Alla **115 koran-JSON-filer, fonten och 118 övningsresurser** matchar
+  källfilerna exakt. Inga provisioneringsprofiler, testpaket eller externa
+  biblioteksbinärer ingår. Analysflaggan är avstängd och serveradressen tom.
+
+Paketets yttre artefakt-ZIP har SHA256
+`d6b279db457815d392d77c0e93f3b09feea853dab01c9a3af7923293b52ac6a7`.
+Releaseutkast **423266346**, tagg **personal-build-46-1**, är bekräftat
+med `draft=true`, `prerelease=true` och rätt källcommit. Dess IPA, byggrapport
+och installationsguide har jämförts mot de hämtade filernas storlek och
+SHA256; samtliga matchar. Hämta **Sakina – privat testbygge 46** under
+[Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som
+**AllCrow**. Utkastet är inte offentligt publicerat. Tidigare paket och
+resultat bevaras i historiken.
+
+En osignerad IPA kan inte installeras genom att trycka på den i Filer.
+[SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md) beskriver en personlig
+gratisväg med vanligt Apple-konto och **Mac eller Windows** för första
+installationen. Användaren har för närvarande bara iPhone och väntar på
+datoråtkomst. Förnyelse behövs normalt före sju dagar med Wi-Fi och
+LocalDevVPN; en dator kan behövas igen vid återställning. Ingen signering
+eller SideStore-installation är provad. Safari/PWA har uttryckligen valts bort.
+
+[Det första telefonprovet](docs/FIRST_IPHONE_TEST.md) omfattar läsning och
+textstorlek, tre recitatörer, nedladdat ljud i flygplansläge, återöppnad
+tafsircache, egen tagning och läskopia via Filer. **Fysisk mikrofon, nät,
+headset/Bluetooth, samtal, filproviders, VoiceOver, temperatur och batteri
+återstår.** Ingen låg värme eller färdig fysisk stabilitet påstås från
+simulatorresultaten.
+
+Ett aktuellt bygg-SDK godkänner inte i sig en Apple-distribution. Signering
+och faktisk App Store Connect-/TestFlight-uppladdning är inte verifierade.
+Minsta körversion iOS 17 är en annan inställning än bygg-SDK:n. Inget betalt
+Developer-medlemskap krävs för den personliga vägen; TestFlight kräver en
+signerande utgivare.
+
+## Automatisk tajweedhjälp och REA
+
+Standardbygget har `SAKINA_ENABLE_EXPERIMENTAL_ANALYSIS=false` och tom
+`SAKINA_ANALYSIS_URL`. Lokal inspelning och återlyssning är implementerade,
+men ingen automatisk uttalslärare är levererad. Analys kräver ett separat
+aktiverat testbygge, konfigurerad tjänst och uttrycklig uppladdningsåtgärd.
+Läsning startar ingen tung lokal modell.
+
+Det tidigare verkliga CPU-provet omfattade **35 indata**: 33 referensklipp
+från två suror och tre recitatörer, annan vers och tystnad. 32 referensklipp
+gav noll indikationer; al-Afasy 112:2 gav en indikation som fortfarande är
+ogranskad av sakkunnig. Ett nytt CPU-/API-prov omfattar **18 klipp från sex
+ytterligare suror med alla tre recitatörer**. Alla returnerade `assessed`
+med noll presenterade indikationer. Detta är funktionsprov; noll indikationer
+mäter inte korrekthet eller missade elevfel. Expertetiketter, generell
+noggrannhet, full sifat-bedömning och Tarteel-jämförelse saknas.
+[Resultat och begränsningar](docs/MODEL_SMOKE_RESULTS.md),
+[de 18 nya svaren med hash- och källmetadata](docs/evidence/model-expanded-smoke-2026-10-25.json).
+
+Modellrevisionen är fixerad till
+`01a1ef9fbe40d144ef845101e89ff924aed3fef5` med quran-muaalem 0.2.2 och
+quran-transcript 0.6.4. Modellvikter och ljudprov ligger utanför Git och
+iPhone-paketet. [REA-inspektionen](docs/REA_MODEL_INSPECTION.md) verifierar
+modellartefakten, inte akustisk kvalitet. Tarteels app eller servrar har
+inte analyserats.
+
+## Bevarande och återstående produktkrav
+
+All kod, [kravlistan](KRAV.md) och Git-historik bevaras i
+[AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-). Användaren har
+uttryckligen godkänt **publikt tills vidare**, vilket ersätter det tidigare
+privatkravet för detta repo. En senare privatändring behöver utföras av
+ägaren; integrationen har nekats den åtgärden. Inga signeringsnycklar,
+Apple-lösenord, parkopplingsfiler, modellvikter eller röstinspelningar ska
+läggas i Git.
+
+Läsning och tajweed finns lokalt utan konto, annonser eller obligatoriskt
+abonnemang. Nytt ljud och ny tafsir kontaktar EveryAyah respektive AlQuran
+Cloud; sparat innehåll används lokalt. Tafsircachen utesluts från systemets
+säkerhetskopiering. Serverinferens och distribution kan ändå ha driftkostnader.
+Textens [proveniens](CONTENT_SOURCES.json) och fontlicens bevaras;
+ljudrättigheter och övriga villkor inför offentlig release är inte avslutade.
+
+Före en färdig produkt återstår personlig installation, fysiska funktions-/energi-/
+tillgänglighetsprov, sakkunnig recitationsutvärdering som styrker
+kvalitetsanspråken samt vald distribution och innehållsrättigheter.
+[PR #7](https://github.com/AllCrow/Koran-test-/pull/7) utvärderar separat
+kortare CI-återkoppling med separata hostade/UI-resultat. Den ändringen
+ingår inte i den verifierade huvudkörningen 46 och ska invänta eget utfall.
+Den parallella dokumentationscommitten `fbf1dca` och dess status bevaras
+i historiken.
+
+Tidigare fullständiga statusar och felsökningsbelägg finns i
+[denna omgångs historik](docs/STATUS_HISTORY_PREMIUM_2026-10-25.md)
+och [den äldre historiken](docs/STATUS_HISTORY_2026-10-25.md).

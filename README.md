@@ -2,7 +2,7 @@
 
 Pågående native-app i SwiftUI för **iOS 17 eller senare**. Sakina är arbetsnamnet. Målet är en lugn koranapp med låg värme- och batteribelastning, uppmuntrande läsning och utan obligatorisk månadsprenumeration.
 
-Utvecklingen fortsätter självständigt enligt användarens senaste instruktion om ytterligare stabilisering och en genomarbetad premiumkänsla inför det första dator-/iPhone-provet. Koden, kraven och verifieringsläget bevaras i projektet. Appen är ännu inte en signerad, fysiskt enhetstestad eller publicerad produkt.
+Den utökade stabilitetsrundan förbättrar läskomfort, veckohistorik, offline-tafsir, nedladdningar och återhämtning vid ljudavbrott. Källkoden, kraven och verifieringsläget bevaras här. Appen behöver fortfarande personlig signering och provning på en fysisk iPhone.
 
 ## Nuvarande funktioner
 
@@ -23,7 +23,7 @@ Utvecklingen fortsätter självständigt enligt användarens senaste instruktion
 
 Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline. Ny tafsir kräver nät; lokalt sparade förklaringar kan öppnas även efter appstart utan nät. Cachen prioriterar nyligen öppnade förklaringar och omfattar högst 64 poster, 4 MiB totalt och 128 KiB per sparad post. Hela tafsiren är inte paketerad för offlinebruk. Ljudproven omfattar kontrollerad transport och riktiga URLSession-överföringar över lokal HTTP; nät och ljud på fysisk iPhone återstår.
 
-**Tarteel-kvalitetsmålet är inte uppnått eller verifierat.** Analysvägen ger inga övergripande uttalsbetyg och laddar inte automatiskt upp inspelningar. Ingen publik analystjänst är driftsatt. Verklig CPU-inferens har körts genom API:t, senast med 35 indata: 33 referensklipp från al-Fatiha och al-Ikhlas med tre recitatörer samt annan-vers- och tystnadskontroller. 32 referensklipp gav inga indikationer; en indikation i al-Afasys 112:2 behöver sakkunnig källklippsgranskning och är inte klassificerad som rätt eller fel. Detta är funktionsprov utan uppmätt generell träffsäkerhet. Se [resultaten](docs/MODEL_SMOKE_RESULTS.md).
+**Tarteel-kvalitetsmålet är inte uppnått eller verifierat.** Analysvägen ger inga övergripande uttalsbetyg och laddar inte automatiskt upp inspelningar. Ingen publik analystjänst är driftsatt. Verklig CPU-inferens har körts genom API:t: ett tidigare prov med 35 indata och ett senare prov med **18 hela referensklipp från sex ytterligare suror**, med samtliga tre recitatörer. De 18 nya klippen gav inga presenterade indikationer. Ett tidigare fall i al-Afasys 112:2 behöver fortfarande sakkunnig granskning och har inte klassificerats som rätt eller fel. Proven mäter inte generell träffsäkerhet eller vilka elevfel som missas. Se [resultaten](docs/MODEL_SMOKE_RESULTS.md).
 
 Se [kraven](KRAV.md), [aktuell status](STATUS.md), [modellundersökningen](docs/RECITATION_RESEARCH.md) och [backendens installations- och driftguide](backend/README.md).
 
@@ -59,19 +59,22 @@ med Xcode 16.4, samt iOS 26.2 på iPhone 16e med Xcode 26.2. Därmed provas
 även en app byggd med den aktuella SDK:n på en äldre iOS-körmiljö.
 Konfigurerade jobb eller ett lyckat osignerat bygge bevisar inte att en
 TestFlight-/App Store-uppladdning accepteras. Signering och faktisk uppladdning
-behöver fortfarande verifieras. Minsta körversion iOS 17 är en annan
+behöver fortfarande verifieras. Minsta körversion iOS17 är en annan
 inställning än bygg-SDK:n. Den personliga installationsvägen
 beskrivs i [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
-**Aktuell verifiering:** [Mac-körning40175540017](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
-passerar **82 portabla Swift-prov,36 backendprov och80 hostade + 8 UI per
-simulatorvariant** på iPhone SE3/iOS18.5/Xcode16.4, iPhone 16 Pro/iOS18.5/Xcode 26.2
-och iPhone 16e/iOS 26.2/Xcode 26.2. Båda byggena är godkända. App-/test-/byggkällan
-i mergad main 8cd977c är byteidentisk med godkänd branch 3511431 och faktisk
-Apple-checkout 8ded616d. Nytt pausskydd och ett verkligt sen-start-regressionstest
-passerar; alla fyra strikta femsekundersprov av versposition är kvar.
-Bilderna av 2:255 har granskats på alla tre varianter. Se [STATUS.md](STATUS.md)
-för exakta källor, paket, historik och kvarvarande färdigkriterier.
+**Aktuell verifiering:** [PR-körning 44](https://github.com/AllCrow/Koran-test-/actions/runs/40175540017)
+passerade **80 hostade iOS-prov och åtta UI-flöden på var och en av tre
+simulatorvarianter**, samt **82 portabla Mac-prov och 36 backendprov**.
+Det är 88 unika native-/UI-fall och 264 exekveringar över matrisen.
+Den integrerade huvudgrenens filträd är byteidentiskt med kandidaten.
+[Huvudkörning 46](https://github.com/AllCrow/Koran-test-/actions/runs/40176707574)
+är också **godkänd i alla sex jobb** med samma testantal. **Bygge 46** är
+sparat som ett ägaråtkomligt utkast under
+[Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som AllCrow.
+Den osignerade IPA:n är oberoende kontrollerad mot källan; fysisk
+installation och värme/batteri återstår.
+Se [aktuell status](STATUS.md) och [exakt verifieringsunderlag](docs/evidence/premium-readiness-2026-10-25.md).
 
 Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, personlig signering och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
 
