@@ -380,3 +380,24 @@ JSONSerialization, även vid en giltig Unicode-escape. Nästa kandidat använder
 JSONDecoder som byte-orakel och behåller exakta UTF-8-kravet; JSONSerialization
 används fortsatt för oberoende kontroll av schema/källor/referenser. Detta
 rättar provmetoden utifrån native-bevis och godkänner inte den fallerade körningen.
+
+PR-körning 40225286761 på 8899735 avslutades underkänd. Kompakt iOS18
+passerade 143 hostade fall men hade fyra UI-fel: ett äldre tabbyte nådde inte
+läsfliken, två nya prov valde Menys icke klickbara omslag och ett nytt prov
+krävde onödig pixelprecision efter verklig rullning. iOS26 passerade samtliga
+143 hostade fall; dess individuella UI-rader visar 17 godkända och ett fel i
+samma rullningshjälpare. En rapporterad runner-omstart gör att dessa inte
+redovisas som en ren godkänd UI-svit. Sökning, exakt träff/omstart, källor,
+rapport vid XXXL och uttrycklig läsplats har faktisk godkänd iOS26-evidens.
+iPhone16Pro missade ett äldre inventeringsprovs START-registrering inom
+10 sekunder (143 fall, ett fel); senare faser kördes inte i det provet.
+
+Nästa kandidat behåller alla äldre testklasser och tidsbudgetar. De nya
+UI-proven väljer endast den referensbundna Menys unika, synliga, faktiskt
+klickbara native-knapp inom samma 44-punktsram. Rullning måste fortfarande
+ske på riktigt, målversen ligga helt nära toppen inom fem sekunder och rätt
+vers överleva omstart utan läskredit. Hjälparens oavsiktliga pixelkrav
+anpassas till observerad beröringsmarginal. Läsvyn mäter också höjd och
+safe-area-marginaler tillsammans så att rader bakom navigations-, flik-
+eller uppspelningsfält inte väljs som synlig läsplats. Nollmarginaler behåller
+tidigare geometri. Korantexten och ljud-/inventeringskoden är oförändrade.

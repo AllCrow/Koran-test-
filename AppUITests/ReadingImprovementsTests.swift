@@ -121,10 +121,10 @@ final class ReadingImprovementsTests: XCTestCase {
         let options = app.buttons["reader.verseOptions.1.3"]
         // Reach the later verse with real scrolling. Its accessible menu lets
         // the user choose that exact verse even when another row is at the top.
-        scrollFullyIntoView(options)
+        let menuControl = scrollFullyIntoView(options)
         XCTAssertGreaterThanOrEqual(options.frame.width, 44)
         XCTAssertGreaterThanOrEqual(options.frame.height, 44)
-        options.tap()
+        menuControl.tap()
         let save = app.buttons["reader.savePosition.1.3"]
         XCTAssertTrue(save.waitForExistence(timeout: 5))
         XCTAssertTrue(save.isEnabled && save.isHittable)
@@ -151,9 +151,9 @@ final class ReadingImprovementsTests: XCTestCase {
         XCTAssertTrue(app.tabBars.buttons["Koranen"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Koranen"].tap()
         let options = app.buttons["reader.verseOptions.1.1"]
-        scrollFullyIntoView(options)
+        let menuControl = scrollFullyIntoView(options)
         XCTAssertGreaterThanOrEqual(options.frame.height, 44)
-        options.tap()
+        menuControl.tap()
         let reportAction = app.buttons["reader.report.1.1"]
         XCTAssertTrue(reportAction.waitForExistence(timeout: 5))
         XCTAssertTrue(reportAction.isHittable)
@@ -281,6 +281,7 @@ final class ReadingImprovementsTests: XCTestCase {
     }
 
     private func dragVerseNearTop(_ identifier: String) -> Bool {
+        var performedDrag = false
         for _ in 0..<12 {
             guard let observation = readerObservation(identifier) else { return false }
             let height = observation.bottom - observation.top
@@ -288,14 +289,23 @@ final class ReadingImprovementsTests: XCTestCase {
             var delta = height * 0.4
             if let frame = observation.badge, finite(frame) {
                 delta = frame.minY - desired
-                if abs(delta) <= 8 { return true }
+                let upperLimit = observation.top + min(150, height / 4)
+                let fullyNearTop = frame.minY >= observation.top && frame.maxY <= upperLimit
+                    && frame.minX >= observation.window.minX && frame.maxX <= observation.window.maxX
+                // UIKit's drag slop can consume the last few points of a
+                // small correction. The actual contract is the complete
+                // badge near the top, followed by exact saved-reference and
+                // relaunch checks; a sub-8pt alignment is not that contract.
+                if performedDrag && fullyNearTop && abs(delta) <= 24 { return true }
             }
+            if !performedDrag && abs(delta) < 24 { delta = 32 }
             let drag = min(height * 0.4, max(-height * 0.4, delta))
             let center = (observation.top + observation.bottom) / 2
             let origin = app.coordinate(withNormalizedOffset: .zero)
             let start = origin.withOffset(CGVector(dx: observation.window.midX, dy: center + drag / 2))
             let end = origin.withOffset(CGVector(dx: observation.window.midX, dy: center - drag / 2))
             start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.1)
+            performedDrag = true
         }
         diagnostic("Reader-manual-position-not-reached", details: identifier)
         return false
@@ -319,7 +329,8 @@ final class ReadingImprovementsTests: XCTestCase {
         XCTFail("The requested source or preview text must be present")
     }
 
-    private func scrollFullyIntoView(_ control: XCUIElement) {
+    @discardableResult
+    private func scrollFullyIntoView(_ control: XCUIElement) -> XCUIElement {
         var direction: CGFloat = 1
         for _ in 0..<12 {
             let viewport = contentViewport()
@@ -330,10 +341,11 @@ final class ReadingImprovementsTests: XCTestCase {
             if control.exists, finite(control.frame) {
                 let frame = control.frame
                 if frame.minY >= top && frame.maxY <= bottom {
-                    XCTAssertTrue(control.isHittable)
+                    let target = operableControl(for: control, frame: frame)
+                    XCTAssertTrue(target.isHittable)
                     XCTAssertGreaterThanOrEqual(frame.minX, app.frame.minX)
                     XCTAssertLessThanOrEqual(frame.maxX, app.frame.maxX)
-                    return
+                    return target
                 }
                 let overflow = frame.minY < top ? frame.minY - top - 8 : frame.maxY - bottom + 8
                 direction = overflow < 0 ? -1 : 1
@@ -348,6 +360,29 @@ final class ReadingImprovementsTests: XCTestCase {
         }
         diagnostic("New-reading-control-not-visible", details: control.debugDescription)
         XCTFail("The actual control must be fully visible and operable")
+        return control
+    }
+
+    private func operableControl(for control: XCUIElement, frame: CGRect) -> XCUIElement {
+        if control.isHittable { return control }
+        let parts = control.identifier.split(separator: ".")
+        guard parts.count == 4, parts[0] == "reader", parts[1] == "verseOptions",
+              let surah = Int(parts[2]), let verse = Int(parts[3]),
+              control.label == "Versalternativ för \(surah):\(verse)",
+              frame.width >= 44, frame.height >= 44 else { return control }
+        // SwiftUI Menu exposes a reference-labelled wrapper and its actual
+        // native button at the same bounds. Resolve only that wrapper's unique
+        // child, retaining full geometry and a real hittable-button tap.
+        let buttons = control.descendants(matching: .button)
+        guard buttons.count == 1 else { return control }
+        let button = buttons.element(boundBy: 0)
+        let childFrame = button.frame
+        guard finite(childFrame), abs(childFrame.minX - frame.minX) <= 0.5,
+              abs(childFrame.minY - frame.minY) <= 0.5,
+              abs(childFrame.width - frame.width) <= 0.5,
+              abs(childFrame.height - frame.height) <= 0.5,
+              button.isHittable else { return control }
+        return button
     }
 
     private func contentViewport() -> (top: CGFloat, bottom: CGFloat) {

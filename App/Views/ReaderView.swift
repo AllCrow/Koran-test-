@@ -19,7 +19,7 @@ struct ReaderView: View {
     @State private var isReaderVisible = false
     @State private var tracksManualScrolling = false
     @State private var manualCandidate: AyahReference?
-    @State private var viewportHeight: CGFloat = 0
+    @State private var viewport = ReaderViewportMetrics.zero
     @State private var verseFrames: [ReadingVerseFrame] = []
     @State private var tafsirReference: AyahReference?
     @State private var showVerseJump = false
@@ -193,11 +193,15 @@ struct ReaderView: View {
             .coordinateSpace(name: "reader.viewport")
             .background {
                 GeometryReader { geometry in
-                    Color.clear.preference(key: ReaderViewportHeightKey.self, value: geometry.size.height)
+                    Color.clear.preference(key: ReaderViewportMetricsKey.self, value: ReaderViewportMetrics(
+                        height: geometry.size.height,
+                        topInset: geometry.safeAreaInsets.top,
+                        bottomInset: geometry.safeAreaInsets.bottom
+                    ))
                 }
             }
-            .onPreferenceChange(ReaderViewportHeightKey.self) { height in
-                viewportHeight = height
+            .onPreferenceChange(ReaderViewportMetricsKey.self) { metrics in
+                viewport = metrics
                 updateManualCandidate()
             }
             .onPreferenceChange(ReaderVerseFramesKey.self) { frames in
@@ -353,8 +357,14 @@ struct ReaderView: View {
 
     private func updateManualCandidate() {
         guard tracksManualScrolling, mayTrackManualPosition, let chapter = store.chapter else { return }
-        manualCandidate = ReadingViewport.leadingReference(in: verseFrames, surahID: chapter.surah.id,
-                                                           height: Double(viewportHeight))
+        // List may extend beneath navigation/tab/playback bars. Use the
+        // measured safe interval, never an assumed bar height or row offset.
+        let topInset = Double(viewport.topInset)
+        let safeFrames = verseFrames.map {
+            ReadingVerseFrame(reference: $0.reference, minY: $0.minY - topInset, maxY: $0.maxY - topInset)
+        }
+        manualCandidate = ReadingViewport.leadingReference(in: safeFrames, surahID: chapter.surah.id,
+            height: Double(viewport.height - viewport.topInset - viewport.bottomInset))
     }
 
     private func saveManualPosition() {
@@ -565,9 +575,16 @@ private struct ReaderVerseFramesKey: PreferenceKey {
     }
 }
 
-private struct ReaderViewportHeightKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+private struct ReaderViewportMetrics: Equatable {
+    let height: CGFloat
+    let topInset: CGFloat
+    let bottomInset: CGFloat
+    static let zero = ReaderViewportMetrics(height: 0, topInset: 0, bottomInset: 0)
+}
+
+private struct ReaderViewportMetricsKey: PreferenceKey {
+    static let defaultValue = ReaderViewportMetrics.zero
+    static func reduce(value: inout ReaderViewportMetrics, nextValue: () -> ReaderViewportMetrics) { value = nextValue() }
 }
 
 private struct ReaderRowStyle: ViewModifier {
