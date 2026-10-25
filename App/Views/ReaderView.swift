@@ -21,6 +21,7 @@ struct ReaderView: View {
         let id = UUID()
         let targetID: String
         let anchor: UnitPoint
+        let remainingCorrections: Int
     }
 
     var body: some View {
@@ -53,8 +54,30 @@ struct ReaderView: View {
                 }
                 .scrollTargetLayout()
                 .padding(20)
+                .background {
+                    GeometryReader { layout in
+                        Color.clear.preference(key: ReaderContentHeightKey.self,
+                                               value: layout.size.height.rounded(.up))
+                    }
+                }
             }
             .scrollPosition(id: $scrollPosition, anchor: scrollAnchor)
+            .onPreferenceChange(ReaderContentHeightKey.self) { _ in
+                guard let request = scrollRequest,
+                      request.targetID != "chapter-heading",
+                      request.remainingCorrections > 0,
+                      !showVerseJump, !showSurahs, tafsirReference == nil else { return }
+                // Lazy rows revise the estimated content height as Arabic text
+                // is measured. Reapply the semantic target after that layout
+                // event, with a hard limit and no timer or background polling.
+                requestScroll(to: request.targetID, anchor: request.anchor,
+                              remainingCorrections: request.remainingCorrections - 1)
+            }
+            .simultaneousGesture(DragGesture(minimumDistance: 1).onChanged { _ in
+                // Manual navigation always wins over pending layout correction.
+                scrollRequest = nil
+            })
+            .onDisappear { scrollRequest = nil }
             .onChange(of: scrollPosition) { previous, next in
                 #if DEBUG
                 if CommandLine.arguments.contains("--ui-test-suite") {
@@ -182,8 +205,9 @@ struct ReaderView: View {
         return nil
     }
 
-    private func requestScroll(to targetID: String, anchor: UnitPoint) {
-        scrollRequest = ScrollRequest(targetID: targetID, anchor: anchor)
+    private func requestScroll(to targetID: String, anchor: UnitPoint, remainingCorrections: Int = 8) {
+        scrollRequest = ScrollRequest(targetID: targetID, anchor: anchor,
+                                      remainingCorrections: remainingCorrections)
     }
 
     private func verseCard(_ ayah: Ayah, chapter: QuranChapter) -> some View {
@@ -248,6 +272,11 @@ struct ReaderView: View {
             RoundedRectangle(cornerRadius: 24).strokeBorder(active ? Palette.green : .clear, lineWidth: 2)
         }
     }
+}
+
+private struct ReaderContentHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
 private extension Ayah {

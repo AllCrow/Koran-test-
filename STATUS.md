@@ -17,9 +17,16 @@ vers, simulerade ljudnotiser, gamla händelser och en ospelbar fil. Ingen röst,
 mikrofon eller extern ljudförfrågan används. De sju proven har passerat i de
 tidigare integrerade Mac-körningarna; de ersätter inte fysisk iPhone-provning.
 
-Main-rättningarna till och med `bc304a0` har integrerats. Rättningen av långt
-vershopp och den samlade versionen måste fortfarande godkännas i aktuell CI
-före merge. Tidigare misslyckade UI-körningar får inte beskrivas som godkända.
+Main-rättningarna till och med `bc304a0` har integrerats.
+[Körning 40162823918](https://github.com/AllCrow/Koran-test-/actions/runs/40162823918),
+branchkälla `5ce9e08f3a93395d9db33cb1112d631e4657e4b8`, klarade 56 hostade
+prov och fyra UI-flöden men stannade kring 2:239 efter önskat hopp till 2:255.
+En ny begränsad, händelsestyrd korrigering reagerar på ändrad innehållshöjd i
+läsaren, behåller den semantiska målversen och avbryts vid manuell rullning
+eller när läsaren lämnas. Den använder högst åtta korrigeringar per begäran,
+utan tidspollning. Samma strikta UI-krav och femsekundersgräns behålls.
+**Den rättningen och hela versionen behöver fortfarande godkänd Mac-CI före
+merge.** Tidigare misslyckade UI-körningar är inte godkända leveranser.
 
 ## Aktuell källversion och verifiering
 
