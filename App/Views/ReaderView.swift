@@ -36,7 +36,7 @@ struct ReaderView: View {
         let anchor: UnitPoint
     }
 
-    var body: some View {
+    private var readerContent: some View {
         ScrollViewReader { proxy in
             trackedReaderList
             .task(id: store.chapter?.surah.id) {
@@ -87,6 +87,10 @@ struct ReaderView: View {
                 }
             }
         }
+    }
+
+    private var readerNavigation: some View {
+        readerContent
         .background(Palette.background)
         .onAppear { isReaderVisible = true }
         .onDisappear {
@@ -98,40 +102,14 @@ struct ReaderView: View {
             if phase != .active { saveManualPosition(); prepareExplicitReaderAction() }
         }
         .navigationTitle("Koranen").navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button { prepareExplicitReaderAction(); showSurahs = true } label: { Label("Välj sura", systemImage: "list.bullet") }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    Button { prepareExplicitReaderAction(); searchSelection = nil; showVerseSearch = true } label: {
-                        Label("Sök i korantexten", systemImage: "magnifyingglass")
-                    }
-                    .accessibilityIdentifier("reader.search.present")
-                    Button { prepareExplicitReaderAction(); pendingJumpReference = nil; showVerseJump = true } label: {
-                        Label("Gå till vers", systemImage: "number")
-                    }
-                    .disabled(store.chapter == nil)
-                    .accessibilityIdentifier("reader.jump.present")
-                    Button { prepareExplicitReaderAction(); showRepeatPlayback = true } label: {
-                        Label("Repetera verser", systemImage: "repeat")
-                    }
-                    .disabled(store.chapter == nil)
-                    .accessibilityIdentifier("reader.repeat.present")
-                    Picker("Arabisk textstorlek", selection: Binding(get: { store.arabicTextSize }, set: { store.setArabicTextSize($0) })) {
-                        ForEach(AppStore.ArabicTextSize.allCases) { size in
-                            Text(size.displayName).tag(size)
-                        }
-                    }
-                    Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: { store.setTajweedEnabled($0) }))
-                    Toggle("Visa färgförklaring", isOn: $showLegend)
-                    Toggle("Fortsätt till nästa vers", isOn: $player.autoplay)
-                } label: { Label("Läsinställningar", systemImage: "slider.horizontal.3") }
-            }
-        }
+        .toolbar { readerToolbar }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if player.requestedReference != nil { PlaybackBar() }
         }
+    }
+
+    var body: some View {
+        readerNavigation
         .sheet(isPresented: $showSurahs) {
             SurahPicker { surah in
                 recorder.stopAll()
@@ -141,7 +119,7 @@ struct ReaderView: View {
         }
         .sheet(item: $tafsirReference) { TafsirSheet(reference: $0) }
         .sheet(item: $issueAyah) { ayah in
-            ContentIssueReportView(ayah: ayah, tajweedEnabled: store.tajweedEnabled, reciter: player.reciter)
+            ContentIssueReportView(ayah: ayah, tajweedEnabled: store.tajweedEnabled, reciter: player.selectedReciter)
         }
         .sheet(isPresented: $showVerseSearch, onDismiss: {
             guard let reference = searchSelection else { return }
@@ -173,7 +151,40 @@ struct ReaderView: View {
         }
     }
 
-    private var trackedReaderList: some View {
+    @ToolbarContentBuilder
+    private var readerToolbar: some ToolbarContent {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { prepareExplicitReaderAction(); showSurahs = true } label: { Label("Välj sura", systemImage: "list.bullet") }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button { prepareExplicitReaderAction(); searchSelection = nil; showVerseSearch = true } label: {
+                        Label("Sök i korantexten", systemImage: "magnifyingglass")
+                    }
+                    .accessibilityIdentifier("reader.search.present")
+                    Button { prepareExplicitReaderAction(); pendingJumpReference = nil; showVerseJump = true } label: {
+                        Label("Gå till vers", systemImage: "number")
+                    }
+                    .disabled(store.chapter == nil)
+                    .accessibilityIdentifier("reader.jump.present")
+                    Button { prepareExplicitReaderAction(); showRepeatPlayback = true } label: {
+                        Label("Repetera verser", systemImage: "repeat")
+                    }
+                    .disabled(store.chapter == nil)
+                    .accessibilityIdentifier("reader.repeat.present")
+                    Picker("Arabisk textstorlek", selection: Binding(get: { store.arabicTextSize }, set: { store.setArabicTextSize($0) })) {
+                        ForEach(AppStore.ArabicTextSize.allCases) { size in
+                            Text(size.displayName).tag(size)
+                        }
+                    }
+                    Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: { store.setTajweedEnabled($0) }))
+                    Toggle("Visa färgförklaring", isOn: $showLegend)
+                    Toggle("Fortsätt till nästa vers", isOn: $player.autoplay)
+                } label: { Label("Läsinställningar", systemImage: "slider.horizontal.3") }
+            }
+    }
+
+    private var measuredReaderList: some View {
         readerList
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
@@ -198,6 +209,10 @@ struct ReaderView: View {
                 tracksManualScrolling = true
                 updateManualCandidate()
             })
+    }
+
+    private var trackedReaderList: some View {
+        measuredReaderList
             .task(id: manualCandidate) {
                 guard manualCandidate != nil else { return }
                 do { try await Task.sleep(for: .milliseconds(300)) } catch { return }

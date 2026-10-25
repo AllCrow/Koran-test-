@@ -350,3 +350,10 @@ passerat, liksom 57 backendtester. Swift och Xcode saknas i denna Linuxmiljö.
 De nya Swift- och native-/UI-fallen är ännu inte körda; tidigare bygge63:s
 resultat gäller den tidigare källan. Faktiska CI-resultat ska läggas till efter
 att körningen avslutats. Se docs/READING_IMPROVEMENTS_2026-10-25.md.
+
+Första PR-körningen 40222790505 på 4ee3aa0 avvisades vid kompilering av
+ReaderView: för stort SwiftUI-typkontrolluttryck dolde även ett felaktigt
+recitatörsnamn i rapportkopplingen. Inga native-/UI-resultat godkänns från
+den körningen. Läsvyn har delats upp och kopplingen använder nu spelarens
+selectedReciter. Den tidigare körningen 40222772710 ersattes och avbröts
+när kravdokumentationen färdigställdes; den räknas inte som godkänd.
