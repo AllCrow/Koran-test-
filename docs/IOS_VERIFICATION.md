@@ -8,6 +8,9 @@ Portabla testresultat finns i [statusen](../STATUS.md).
 
 Det genererade Xcode-projektet har tre mål: `Sakina`, `SakinaTests` och
 `SakinaUITests`. Schemat `Sakina` kopplar båda testmålen till appen.
+`AppTests/AudioLibraryTests.swift` tillför sju prov av offlineljudets lokala
+filhantering. De behöver fortfarande köras i iOS; de använder syntetiska
+MPEG-ramar och testar inte verklig avkodning eller ljudrutter.
 
 På en Mac med Xcode och en installerad iPhone-simulator:
 
@@ -28,6 +31,7 @@ förberett men har inte körts i det begärda privata repot.
 | Testgrupp | Avsikt |
 | --- | --- |
 | Åtta hostade AppStore-tester | Uttryckliga, unika läsmarkeringar; persistens och återstart; midnatt/DST; systemklockans förändringsnotis; måländring; bokmärken och tajweedval; beskärd detaljhistorik; korrupt sparad data; bundlade kapitel och ogiltigt suraval. |
+| Sju hostade AudioLibrary-tester | Rätt lokalt ljud per vers/sura/recitatör; avvisning av fel-/ofullständiga filer och felaktig ID3-storlek; omvalidering av en ändrad fil; återöppning från disk; radering som bevarar andra suror/recitatörer; otillgänglig lagring utan nedladdningsstart. |
 | Tre UI-flöden | Läsmarkering utan automatisk läskredit och återstart; sparat bokmärke som öppnar sin vers; tom sökning samt arabiska siffror i surasökning. |
 
 UI-testerna använder en egen `UserDefaults`-suite per test. Endast Debug-byggen

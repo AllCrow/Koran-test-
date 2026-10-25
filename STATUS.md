@@ -2,6 +2,28 @@
 
 Uppdaterat: **2026-10-25**. Den senaste omgången fokuserar på användarens begärda finjusteringar, granskning och bevarande. Detta är en utvecklingsversion i källkod; ingen signerad eller färdigtestad iPhone-release är publicerad. Produktkraven finns i [KRAV.md](KRAV.md).
 
+## Projektledarens fortsatta verifiering
+
+Källkod och historik är nu lästa från användarens `AllCrow/Koran-test-`, med
+`eccabe79ad7405d2cb4fe5ad317e46de9416d14d` som första kontrollerade uppladdade
+commit. [Första GitHub Actions-körningen](https://github.com/AllCrow/Koran-test-/actions/runs/40152872024)
+godkände koran-/resurskontroller, de portabla Swift-testerna, backendtesterna och
+själva Xcode-bygget för simulator. Teststeget stoppades före native-proven:
+x86_64-länkningen fick ARM-bibliotek. Det är inte ett godkänt simulatorprov.
+
+Den parallella byggtrådens rättning `4645f6c3547057a6ee3f449664624af92116566b`
+behålls; Debug bygger nu bara den aktiva arkitekturen. Denna uppföljning inför
+sju separata native-prov för lokalt offlineljud: isolering per vers/sura/recitatör,
+fel- och ofullständiga filer, ID3-metadata, omvalidering efter filändring,
+ny biblioteksinstans, avgränsad radering och otillgänglig lagring. Proven använder
+egna temporära filer och syntetiska MPEG-ramar, aldrig nätverk, mikrofon eller
+verkliga inspelningar. De kontrollerar filhanteringen och fastställer inte
+ljudets avkodningskvalitet eller energiförbrukning. **De nya proven är ännu inte
+körda i iOS**; resultatet måste hämtas från den nya macOS-körningen.
+
+Lokalt passerar koran-, övningsreferens- och resurskontroller efter tillägget.
+Denna miljö saknar fortfarande Swift/Xcode; inga nya lokala Swift-resultat påstås.
+
 ## Senaste finjusteringar
 
 - Ljudfältet har större tryckytor och bättre plats för stor text. Arabisk högerjustering och VoiceOver-rubriker är rättade; startsida och suraval har adaptiv layout.
