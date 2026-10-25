@@ -1,0 +1,83 @@
+{
+  "reviewed_on_utc": "2026-10-25",
+  "failed_run": {
+    "id": 40201628843,
+    "number": 55,
+    "source_head": "42ed270ad805f01dd684dfa97bea4560abca08e6",
+    "conclusion": "failure",
+    "owner_download_created": false
+  },
+  "reviewed_jobs": [
+    {
+      "id": 121193840359,
+      "variant": "ios18",
+      "outcome": "inventory replacement setup wait exceeded2s, then missingRequest"
+    },
+    {
+      "id": 121193840404,
+      "variant": "ios18-compact",
+      "outcome": "late-native-play test observed timeControl playing after a paused acknowledgement"
+    },
+    {
+      "id": 121193840449,
+      "variant": "ios26",
+      "outcome": "138 hosted cases passed; two of twelve UI cases failed at new accessibility value assertions"
+    }
+  ],
+  "artifact": {
+    "id": 12602393247,
+    "head_sha": "42ed270ad805f01dd684dfa97bea4560abca08e6",
+    "zip_bytes": 20255137,
+    "zip_sha256": "da5d7793fd5b1bcf31e175399d289b712519acc1f4cf4a9551df23beec4c0d1a",
+    "independently_downloaded_and_checked": true
+  },
+  "visual_checks": [
+    {
+      "file": "repetition-after-selection.png",
+      "sha256": "395b92d2d273daa406983f485d044ff76200526697987e4fb75bb9b3b31a5d39",
+      "derived_from_recording": true,
+      "viewed": true,
+      "observation": "Video at24.9s shows actual first/end verse3 after the real menu tap."
+    },
+    {
+      "file": "inventory-visible.png",
+      "sha256": "96f3a4ad73dcb23efa2b42b202d5295b5cc4749f39afc6700e0be13d9331aad2",
+      "derived_from_recording": true,
+      "viewed": true,
+      "observation": "Video at19s shows saved-audio screen and the combined storage row; exact bytes are verified by the AX attachment."
+    }
+  ],
+  "inventory_accessibility_observation": {
+    "attachment": "367B9E99-A734-4F21-81CB-993AFE2D804F.txt",
+    "sha256": "03c9c9aafa75ef7401f3fb44580acde859afb2dccdb26b142109101a471fc884",
+    "label": "Lagringsutrymme, 3 kB",
+    "value": "2 502 byte",
+    "exact_byte_count": 2502,
+    "scope": "Swedish numeric grouping differed from the ungrouped test string; accounting itself was correct in this snapshot."
+  },
+  "corrected_upstream_source": "b3bf6993b585816a56b1fc429f3703063193644e",
+  "accepted_corrections": [
+    "Explicit actual values for repetition pickers and unchanged5s value checks.",
+    "Only NBSP/narrow-NBSP between decimal digits removed from test comparisons; quantities, units and other characters remain exact.",
+    "Sequential inventory outcomes tested without an artificial held response; stale/cancellation gates remain separate.",
+    "Late-native-play test requires actual positive rate and100ms quiet0/paused inside the original2s, with same item/asset, remaining8sWAV and explicit resume.",
+    "Saved playback opens matching text and preserves session ownership/newer verse on return."
+  ],
+  "normal_corrected_run": {
+    "id": 40204828944,
+    "source_head": "b3bf6993b585816a56b1fc429f3703063193644e",
+    "status_at_review": "in_progress",
+    "not_approved_from_code_review_alone": true
+  },
+  "independent_change": {
+    "commit": "b7725676b6ea578a5be4daec98c784bffb8087b1",
+    "branch": "codex/review-feature-regressions-12",
+    "scope": "Add shared AudioStorageInventory and QuranCore RecitationLoop fingerprints to existing live-audit staging; no new application/player/reader/test implementation.",
+    "local_preflight": "Python compilation and isolated staging verified all6 hashes through JSON and Swift string escaping; no production or normal project input changed."
+  },
+  "limits": [
+    "Synthetic UI/PCM fixtures and simulated native notices are not physical-device proof.",
+    "The proposed source still needs its actual final Apple job results.",
+    "No expert labels, accuracy, rights clearance, microphone recording or new model inference."
+  ]
+}

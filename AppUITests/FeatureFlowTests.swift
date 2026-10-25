@@ -388,8 +388,19 @@ final class FeatureFlowTests: XCTestCase {
                 let frame = element.frame
                 if !frame.isEmpty, frame.minY.isFinite, frame.maxY.isFinite {
                     if frame.minY >= top && frame.maxY <= bottom {
-                        XCTAssertTrue(element.isHittable, "A fully visible control must remain operable")
-                        return
+                        // A menu can publish its new value before its dismissal
+                        // animation stops covering the next control. Geometry
+                        // alone is not permission to tap through that overlay.
+                        let ready = NSPredicate { candidate, _ in
+                            guard let control = candidate as? XCUIElement,
+                                  control.exists, control.isHittable else { return false }
+                            let current = control.frame
+                            return !current.isEmpty && current.minY.isFinite && current.maxY.isFinite
+                                && current.minY >= top && current.maxY <= bottom
+                        }
+                        if XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: ready, object: element)],
+                                          timeout: 5) == .completed { return }
+                        break
                     }
                     let overflow = frame.minY < top ? frame.minY - top - 8 : frame.maxY - bottom + 8
                     direction = overflow < 0 ? -1 : 1

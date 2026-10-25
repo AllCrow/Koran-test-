@@ -129,3 +129,26 @@ paketcache och en oanvänd härledd backend-containerbild rensades; källkod,
 modellfiler, Git-historik, tidigare iPhone-paket och verifieringsunderlag
 bevarades. En avbruten skrivning till ett nytt test återställdes före fortsatt
 kontroll. Detta var ett miljöfel, inte ett godkänt eller underkänt native-prov.
+
+## Fortsatt oberoende granskning av interaktiva övergångar
+
+I körning56 på `b3bf699` passerade Pro-variantens139 hostade fall, men
+repetitionsprovet underkändes vid nästa steppers tryckbarhet. Råloggen och
+den hashkontrollerade bildartefakten12603902467 visar att menyn fortfarande
+ligger över formuläret efter att slutvärdet redan har ändrats. Provet väntar
+nu högst fem sekunder på både full synlighet och faktisk tryckbarhet innan
+trycket. Samma precisa gester, verkliga kontroller, intervall-/värdekrav och
+alla äldre läsarprov behålls. Ingen extra paus eller väntetimer införs i appen.
+Rättningen måste få nya faktiska Apple-resultat; körning56 är inget samlat
+godkännande.
+
+Den separata ljudkällgranskningen har passerat på samma appkod som `b3bf699`,
+med källpinning utökad till den gemensamma MP3-kontrollen och loopkontraktet.
+[Körning40205401991](https://github.com/AllCrow/Koran-test-/actions/runs/40205401991)
+utförde tre oförändrade opt-in-fall på iPhone16e/iOS26.2/Xcode26.2: tolv
+riktiga filer avkodades och lokal112:2 nådde native-slut för alla tre
+recitatörer utan fallback eller ny nedladdning.
+[Originalbilagor och sex kodhashar](evidence/live-recitation-native-library-2026-10-25.json)
+och [den oberoende granskningen av felkörning55](evidence/pr12-failed-55-independent-review-2026-10-25.json)
+bevarar omfattning och begränsningar. Dessa tre fall är separata från
+normalmatrisen och godkänner inte telefonens radio, energi eller tajweedkvalitet.
