@@ -117,6 +117,8 @@ kapitel före uppspelning, avbryter inaktuell navigation och visar läsaren
 med vanliga spelkontroller. En sessionsidentitet hindrar att stängning av
 vyn stoppar ett nyare uttryckligt ljudval. En avbruten öppning visar ett
 uttryckligt återförsök även när en kvarhållen vy återkommer efter flikbyte.
+Efter nästa vers följer återkomsten den nyare lyssningspositionen i stället
+för att återställa bibliotekets ursprungliga vers.
 Ett ytterligare native-prov kontrollerar faktisk
 MP3-uppspelning från en bunden lokal fil och utebliven nätfallback vid förlust.
 Det befintliga UI-biblioteksfallet utökas med ljud/textkopplingen för112/Husary;

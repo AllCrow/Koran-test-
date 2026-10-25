@@ -53,6 +53,7 @@ struct ReaderView: View {
             }
             .onChange(of: player.activeReference) { _, reference in
                 guard let reference, reference.surahID == store.chapter?.surah.id else { return }
+                prefersLatestReadingPosition = true
                 store.setLastRead(reference)
                 // Each new recitation begins at the start of its verse. A long
                 // Arabic card can exceed the viewport, so centering it would
@@ -212,7 +213,7 @@ struct ReaderView: View {
             .accessibilityRepresentation { ArabicAccessibilityLabel(text: chapter.surah.name) }
     }
 
-    /// A bookmark sets the first position. After an explicit jump, later
+    /// A bookmark sets the first position. After playback or an explicit jump, later
     /// reading/listening actions keep their newer saved position on return.
     private var preferredReference: AyahReference? {
         let chapterID = store.chapter?.surah.id

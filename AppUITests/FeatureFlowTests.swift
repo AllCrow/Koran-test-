@@ -201,7 +201,19 @@ final class FeatureFlowTests: XCTestCase {
         XCTAssertTrue(stop.waitForExistence(timeout: 5))
         XCTAssertTrue(stop.isHittable)
         attachScreenshot("Audio-library-matching-text-and-controls")
-        stop.tap()
+        let next = app.buttons["Nästa vers"]
+        XCTAssertTrue(next.exists && next.isEnabled && next.isHittable)
+        next.tap()
+        XCTAssertTrue(element("reader.verse.112.2").waitForExistence(timeout: 5))
+        XCTAssertTrue(waitUntilReadableBadgeIsInsideReader("reader.verse.112.2"))
+        app.tabBars.buttons["Idag"].tap()
+        app.tabBars.buttons["Mitt"].tap()
+        XCTAssertTrue(waitUntilReadableBadgeIsInsideReader("reader.verse.112.2"),
+                      "Returning to saved playback must retain the newer verse position")
+        attachScreenshot("Audio-library-next-verse-restores-on-return")
+        let returnedStop = app.buttons["reader.playback.stop"]
+        XCTAssertTrue(returnedStop.exists && returnedStop.isHittable)
+        returnedStop.tap()
         XCTAssertTrue(waitUntilAbsent(app.buttons["reader.playback.stop"]))
         returnFromDownloadedReader()
         XCTAssertEqual(app.buttons["downloads.surah"].value as? String, "Al-Ikhlaas",
