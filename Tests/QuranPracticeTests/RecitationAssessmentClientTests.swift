@@ -124,6 +124,46 @@ final class RecitationAssessmentClientTests: XCTestCase {
         }
     }
 
+    func testNoOpAndEmptyDifferencesAreRejected() async throws {
+        for value in ["ب", ""] {
+            var object = payloadObject()
+            var invalidIssue = issue(start: 0, end: 1)
+            invalidIssue["expected"] = value
+            invalidIssue["observed"] = value
+            object["issues"] = [invalidIssue]
+            try await assertInvalid(object)
+        }
+    }
+
+    func testDuplicateFeedbackIdentitiesAreRejected() async throws {
+        var first = issue(start: 0, end: 1)
+        first["expected"] = "أ"
+        first["observed"] = "ب"
+        var equivalent = first
+        equivalent["expected"] = "ا\u{0654}"
+        equivalent["message"] = "Another row with the same Swift identity."
+        XCTAssertEqual("أ", "ا\u{0654}")
+        XCTAssertFalse("أ".utf8.elementsEqual("ا\u{0654}".utf8))
+        for second in [first, equivalent] {
+            var object = payloadObject()
+            object["issues"] = [first, second]
+            try await assertInvalid(object)
+        }
+    }
+
+    func testDistinctScalarSpellingsInOneIssueAreNotNormalizedAway() async throws {
+        var object = payloadObject()
+        var difference = issue(start: 0, end: 1)
+        difference["expected"] = "أ"
+        difference["observed"] = "ا\u{0654}"
+        object["issues"] = [difference]
+        serve(try JSONSerialization.data(withJSONObject: object))
+        let received = try await client().assess(audioData: audio, ayah: ayah)
+        let receivedIssue = try XCTUnwrap(received.issues.first)
+        XCTAssertTrue(receivedIssue.expected.utf8.elementsEqual("أ".utf8))
+        XCTAssertTrue(receivedIssue.observed.utf8.elementsEqual("ا\u{0654}".utf8))
+    }
+
     func testPracticeBasmalaCompositionAndBOMPreserveExactScalarOffsets() {
         let firstReference = AyahReference(surahID: 1, ayahNumber: 1)!
         XCTAssertEqual(AssessmentText(text: "\u{FEFF}بِسْمِ", reference: firstReference, includeBasmala: false).text, "بِسْمِ")
@@ -243,6 +283,33 @@ final class RecitationAssessmentClientTests: XCTestCase {
             XCTAssertEqual(received, expected)
             let spans = FeedbackHighlighter.spans(text: received.referenceText, issues: received.issues)
             XCTAssertTrue(spans.map(\.text).joined().unicodeScalars.elementsEqual(received.referenceText.unicodeScalars))
+        }
+    }
+
+    func testExtendedRecordedModelResponsesKeepExactReferenceAndIssueContracts() async throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let evidenceURL = root.appendingPathComponent("docs/evidence/model-baseline-2026-10-24.json")
+        let evidence = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: evidenceURL)) as? [String: Any])
+        let clips = try XCTUnwrap(evidence["clips"] as? [[String: Any]])
+        XCTAssertEqual(clips.count, 35)
+        let wave = Data(Array("RIFF".utf8) + [0, 0, 0, 0] + Array("WAVE".utf8))
+        var chapters: [Int: QuranChapter] = [:]
+        for clip in clips {
+            let object = try XCTUnwrap(clip["assessment"] as? [String: Any])
+            let response = try JSONSerialization.data(withJSONObject: object)
+            let previous = try JSONDecoder().decode(RecitationAssessment.self, from: response)
+            let surahID = previous.reference.surahID
+            if chapters[surahID] == nil {
+                let filename = String(format: "%03d.json", surahID)
+                chapters[surahID] = try JSONDecoder().decode(QuranChapter.self, from: Data(contentsOf: root.appendingPathComponent("App/Resources/Quran/\(filename)")))
+            }
+            let ayah = try XCTUnwrap(chapters[surahID]?.ayahs.first { $0.numberInSurah == previous.reference.ayahNumber })
+            serve(response)
+            // Replay saved responses only. This test neither runs the acoustic
+            // model nor classifies its indications as correct or incorrect.
+            let received = try await client().assess(audioData: wave, format: .wav, ayah: ayah, includeBasmala: previous.includeBasmala)
+            XCTAssertEqual(received, previous)
+            XCTAssertTrue(received.referenceText.utf8.elementsEqual(previous.referenceText.utf8))
         }
     }
 

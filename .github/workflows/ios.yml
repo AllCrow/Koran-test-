@@ -17,10 +17,33 @@ concurrency:
 
 jobs:
   validate-and-build:
-    runs-on: macos-15
-    timeout-minutes: 20
+    name: Native verification (${{ matrix.label }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: ios18
+            runner: macos-15
+            xcode: /Applications/Xcode_16.4.app
+            runtime: .iOS-18-5
+            device: iPhone 16 Pro
+          - label: ios26
+            runner: macos-26
+            xcode: /Applications/Xcode_26.2.app
+            runtime: .iOS-26-2
+            device: iPhone 16e
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    env:
+      SAKINA_TEST_RUNTIME: ${{ matrix.runtime }}
+      SAKINA_TEST_DEVICE: ${{ matrix.device }}
     steps:
       - uses: actions/checkout@v4
+      - name: Select and report the verification SDK
+        run: |
+          sudo xcode-select -s '${{ matrix.xcode }}'
+          xcodebuild -version
+          xcrun --sdk iphonesimulator --show-sdk-version
       - name: Validate bundled Quran against source snapshots
         run: |
           python3 scripts/verify_content.py
@@ -41,13 +64,13 @@ jobs:
         shell: bash
         run: |
           simulator_id=$(xcrun simctl list devices available --json | python3 -c '
-          import json, sys
+          import json, os, sys
           devices = json.load(sys.stdin)["devices"]
           iphones = [device["udid"] for runtime, entries in devices.items()
-                     if ".iOS-" in runtime for device in entries
-                     if device.get("isAvailable") and device["name"].startswith("iPhone")]
+                     if runtime.endswith(os.environ["SAKINA_TEST_RUNTIME"]) for device in entries
+                     if device.get("isAvailable") and device["name"] == os.environ["SAKINA_TEST_DEVICE"]]
           if not iphones:
-              sys.exit("No available iPhone simulator was found")
+              sys.exit("The requested iPhone simulator/runtime is unavailable")
           print(iphones[0])')
           xcodebuild -project Sakina.xcodeproj -scheme Sakina \
             -configuration Debug -destination "platform=iOS Simulator,id=$simulator_id" \
@@ -56,7 +79,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Sakina-native-test-results
+          name: Sakina-native-test-results-${{ matrix.label }}
           path: TestResults.xcresult
           if-no-files-found: ignore
           retention-days: 7
@@ -70,13 +93,13 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Sakina-simulator-screenshots
+          name: Sakina-simulator-screenshots-${{ matrix.label }}
           path: SimulatorAttachments
           if-no-files-found: ignore
           retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
-          name: Sakina-simulator
+          name: Sakina-simulator-${{ matrix.label }}
           path: DerivedData/Build/Products/Debug-iphonesimulator/Sakina.app
           retention-days: 7
   backend-contracts:
@@ -95,10 +118,15 @@ jobs:
       - name: Test API contracts and real audio decoding
         run: python -W error::ResourceWarning -m unittest discover -s backend/tests -v
   personal-iphone-package:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Select and report the personal-build SDK
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.2.app
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
       - name: Build a physical iPhone app without signing credentials
         run: >-
           xcodebuild -project Sakina.xcodeproj -scheme Sakina

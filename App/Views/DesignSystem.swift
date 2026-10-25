@@ -12,26 +12,113 @@ enum Palette {
                             dark: UIColor(red: 0.91, green: 0.75, blue: 0.39, alpha: 1))
 
     private static let tajweedColors: [TajweedRule: Color] = Dictionary(
-        uniqueKeysWithValues: TajweedRule.allCases.map { ($0, makeTajweedColor($0)) }
+        uniqueKeysWithValues: TajweedRule.allCases.map { ($0, Color(uiColor: makeTajweedColor($0))) }
     )
 
     static func tajweed(_ rule: TajweedRule) -> Color {
         tajweedColors[rule] ?? .primary
     }
 
-    private static func makeTajweedColor(_ rule: TajweedRule) -> Color {
-        if [.hamzatWasl, .silent, .lamShamsiyyah, .idghamMutajanisayn, .idghamMutaqaribayn].contains(rule) {
-            return .secondary
-        }
+    private static func makeTajweedColor(_ rule: TajweedRule) -> UIColor {
         let hex = UInt32(rule.colorHex, radix: 16) ?? 0
         let source = UIColor(red: CGFloat((hex >> 16) & 255) / 255,
                              green: CGFloat((hex >> 8) & 255) / 255,
                              blue: CGFloat(hex & 255) / 255, alpha: 1)
         var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
         source.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
-        // Retain the source hue while keeping the letters legible on both backgrounds.
-        return Color(light: UIColor(hue: hue, saturation: saturation, brightness: min(brightness, 0.65), alpha: 1),
-                     dark: UIColor(hue: hue, saturation: min(saturation, 0.55), brightness: max(brightness, 0.95), alpha: 1))
+        let isNeutral = saturation == 0
+        let light = readableTajweedColor(hue: hue, saturation: saturation,
+                                        brightness: min(brightness, 0.65), style: .light, contrast: .normal)
+        let dark = readableTajweedColor(hue: hue, saturation: min(saturation, 0.55),
+                                       brightness: isNeutral ? 0.62 : max(brightness, 0.95), style: .dark, contrast: .normal)
+        let strongLight = readableTajweedColor(hue: hue, saturation: saturation,
+                                              brightness: min(brightness, 0.65), style: .light, contrast: .high)
+        let strongDark = readableTajweedColor(hue: hue, saturation: min(saturation, 0.55),
+                                             brightness: isNeutral ? 0.62 : max(brightness, 0.95), style: .dark, contrast: .high)
+        // Compute the four variants once. Resolving a colour while scrolling
+        // only selects a prepared value; it does not repeat contrast work.
+        return UIColor { traits in
+            if traits.userInterfaceStyle == .dark {
+                return traits.accessibilityContrast == .high ? strongDark : dark
+            }
+            return traits.accessibilityContrast == .high ? strongLight : light
+        }
+    }
+
+    /// Retain the source hue, including neutral annotation letters. Small
+    /// diacritics remain readable even though the containing Arabic text uses
+    /// a large font. Increased Contrast receives the stronger 7:1 variant.
+    private static func readableTajweedColor(hue: CGFloat, saturation: CGFloat, brightness: CGFloat,
+                                             style: UIUserInterfaceStyle, contrast: UIAccessibilityContrast) -> UIColor {
+        let traits = UITraitCollection(traitsFrom: [UITraitCollection(userInterfaceStyle: style),
+                                                   UITraitCollection(accessibilityContrast: contrast)])
+        let background = UIColor.secondarySystemGroupedBackground.resolvedColor(with: traits)
+        let minimum = contrast == .high ? 7.05 : 4.55
+        func color(_ saturation: CGFloat, _ brightness: CGFloat) -> UIColor {
+            UIColor(hue: hue, saturation: saturation, brightness: brightness, alpha: 1)
+        }
+        let original = color(saturation, brightness)
+        guard contrastRatio(original, background) < minimum else { return original }
+
+        if style == .light {
+            var lower: CGFloat = 0
+            var upper = brightness
+            var best = color(saturation, lower)
+            for _ in 0..<18 {
+                let candidate = (lower + upper) / 2
+                let value = color(saturation, candidate)
+                if contrastRatio(value, background) >= minimum {
+                    lower = candidate
+                    best = value
+                } else { upper = candidate }
+            }
+            return best
+        }
+
+        let brightest = color(saturation, 1)
+        if contrastRatio(brightest, background) >= minimum {
+            var lower = brightness
+            var upper: CGFloat = 1
+            var best = brightest
+            for _ in 0..<18 {
+                let candidate = (lower + upper) / 2
+                let value = color(saturation, candidate)
+                if contrastRatio(value, background) >= minimum {
+                    upper = candidate
+                    best = value
+                } else { lower = candidate }
+            }
+            return best
+        }
+
+        // Deep blue/red hues may need a lighter pastel to reach 7:1 on dark
+        // paper. Reduce saturation only after brightness reaches its limit.
+        var lower: CGFloat = 0
+        var upper = saturation
+        var best = color(lower, 1)
+        for _ in 0..<18 {
+            let candidate = (lower + upper) / 2
+            let value = color(candidate, 1)
+            if contrastRatio(value, background) >= minimum {
+                lower = candidate
+                best = value
+            } else { upper = candidate }
+        }
+        return best
+    }
+
+    private static func contrastRatio(_ foreground: UIColor, _ background: UIColor) -> Double {
+        func luminance(_ color: UIColor) -> Double {
+            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+            guard color.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return 0 }
+            func linear(_ value: CGFloat) -> Double {
+                let value = Double(value)
+                return value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
+            }
+            return 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue)
+        }
+        let first = luminance(foreground), second = luminance(background)
+        return (max(first, second) + 0.05) / (min(first, second) + 0.05)
     }
 }
 
@@ -80,8 +167,12 @@ struct PrimaryButton: View {
 struct ErrorBanner: View {
     let message: String
     var body: some View {
-        Label(message, systemImage: "exclamationmark.circle")
-            .font(.callout).foregroundStyle(.red).padding()
+        Label {
+            Text(message).foregroundStyle(.primary)
+        } icon: {
+            Image(systemName: "exclamationmark.circle").foregroundStyle(.red)
+        }
+            .font(.callout).padding()
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.red.opacity(0.07), in: RoundedRectangle(cornerRadius: 16))
             .accessibilityLabel("Meddelande: \(message)")

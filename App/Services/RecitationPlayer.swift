@@ -30,7 +30,8 @@ final class RecitationPlayer: ObservableObject {
     private static let reciterPreferenceKey = "sakina.audio.reciter.v1"
     private static let autoplayPreferenceKey = "sakina.audio.autoplay.v1"
     private let defaults: UserDefaults
-    private let player: AVPlayer
+    private var player: AVPlayer
+    private let makeReplacementPlayer: @MainActor () -> AVPlayer
     private let audioURL: AudioURLProvider
     private let integratesWithSystemAudio: Bool
     private let audioSession = AVAudioSession.sharedInstance()
@@ -44,6 +45,7 @@ final class RecitationPlayer: ObservableObject {
     private var itemNotifications: [NSObjectProtocol] = []
     private var interruptionNotification: NSObjectProtocol?
     private var routeNotification: NSObjectProtocol?
+    private var mediaServicesResetNotification: NSObjectProtocol?
     private var ownsAudioSession = false
     private var remoteCommandTargets: [(MPRemoteCommand, Any)] = []
 
@@ -57,14 +59,25 @@ final class RecitationPlayer: ObservableObject {
     /// An injected local source allows native tests to exercise the real player
     /// without network access or changing the app's global audio controls.
     init(player: AVPlayer, audioURL: @escaping AudioURLProvider,
-         defaults: UserDefaults, integratesWithSystemAudio: Bool) {
+         defaults: UserDefaults, integratesWithSystemAudio: Bool,
+         makeReplacementPlayer: @escaping @MainActor () -> AVPlayer = { AVPlayer() }) {
         self.defaults = defaults
         self.player = player
+        self.makeReplacementPlayer = makeReplacementPlayer
         self.audioURL = audioURL
         self.integratesWithSystemAudio = integratesWithSystemAudio
         selectedReciter = defaults.string(forKey: Self.reciterPreferenceKey).flatMap(Reciter.init(rawValue:)) ?? .alafasy
         autoplay = defaults.object(forKey: Self.autoplayPreferenceKey) as? Bool ?? true
         player.automaticallyWaitsToMinimizeStalling = true
+        // AVPlayer's media objects must be rebuilt if iOS restarts its audio
+        // services, including when a controlled player does not own the session.
+        mediaServicesResetNotification = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.mediaServicesWereResetNotification,
+            object: audioSession,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.recoverAfterMediaServicesReset() }
+        }
         guard integratesWithSystemAudio else { return }
         configureRemoteCommands()
 
@@ -94,7 +107,8 @@ final class RecitationPlayer: ObservableObject {
                 if rawReason == AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue {
                     self.pause()
                 } else if rawReason == AVAudioSession.RouteChangeReason.categoryChange.rawValue,
-                          self.audioSession.category != .playback {
+                          self.audioSession.category != .playback,
+                          self.player.currentItem != nil {
                     // The microphone may now own the shared session. A later
                     // cleanup of an old recitation must not deactivate it.
                     self.ownsAudioSession = false
@@ -114,6 +128,9 @@ final class RecitationPlayer: ObservableObject {
             NotificationCenter.default.removeObserver(token)
         }
         if let token = routeNotification {
+            NotificationCenter.default.removeObserver(token)
+        }
+        if let token = mediaServicesResetNotification {
             NotificationCenter.default.removeObserver(token)
         }
         player.pause()
@@ -311,6 +328,27 @@ final class RecitationPlayer: ObservableObject {
         } catch {
             reportFailure("Det gick inte att aktivera ljuduppspelningen. Försök igen.")
         }
+    }
+
+    private func recoverAfterMediaServicesReset() {
+        // Audio services invalidated the old player and session. Invalidate
+        // queued item callbacks before discarding either, retain the user's
+        // exact selection, and require an explicit play action to resume.
+        generation = UUID()
+        removeItemObservers()
+        wantsToPlay = false
+        ownsAudioSession = false
+        player.pause()
+        player.replaceCurrentItem(with: nil)
+        player = makeReplacementPlayer()
+        player.automaticallyWaitsToMinimizeStalling = true
+        hasReachedEnd = false
+        activeReference = nil
+        isPlaying = false
+        isBuffering = false
+        errorMessage = requestedReference == nil ? nil
+            : "Telefonens ljudtjänst startades om. Tryck på spela för att fortsätta."
+        updateNowPlaying()
     }
 
     private func isCurrent(_ item: AVPlayerItem, generation: UUID) -> Bool {

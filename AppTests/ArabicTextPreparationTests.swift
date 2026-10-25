@@ -1,10 +1,78 @@
 import Foundation
 import QuranCore
+import SwiftUI
+import UIKit
 import XCTest
 @testable import Sakina
 
 @MainActor
 final class ArabicTextPreparationTests: XCTestCase {
+    func testTajweedLettersRemainReadableOnLightAndDarkPaper() throws {
+        for style in [UIUserInterfaceStyle.light, .dark] {
+            let traits = UITraitCollection(traitsFrom: [UITraitCollection(userInterfaceStyle: style),
+                                                       UITraitCollection(accessibilityContrast: .normal)])
+            for rule in TajweedRule.allCases {
+                let (foreground, background) = resolvedColors(rule, traits: traits)
+                XCTAssertGreaterThanOrEqual(try contrastRatio(foreground, background), 4.5,
+                                            "\(rule.rawValue) must retain contrast on \(style.rawValue) paper")
+            }
+        }
+    }
+
+    func testIncreasedContrastPreservesTajweedHuesAndReachesStrongerThreshold() throws {
+        for style in [UIUserInterfaceStyle.light, .dark] {
+            let traits = UITraitCollection(traitsFrom: [UITraitCollection(userInterfaceStyle: style),
+                                                       UITraitCollection(accessibilityContrast: .high)])
+            for rule in TajweedRule.allCases {
+                let (foreground, background) = resolvedColors(rule, traits: traits)
+                XCTAssertGreaterThanOrEqual(try contrastRatio(foreground, background), 7,
+                                            "\(rule.rawValue) must support Increased Contrast on \(style.rawValue) paper")
+                let hex = try XCTUnwrap(UInt32(rule.colorHex, radix: 16))
+                let source = UIColor(red: CGFloat((hex >> 16) & 255) / 255,
+                                     green: CGFloat((hex >> 8) & 255) / 255,
+                                     blue: CGFloat(hex & 255) / 255, alpha: 1)
+                var originalHue: CGFloat = 0, originalSaturation: CGFloat = 0
+                var actualHue: CGFloat = 0, actualSaturation: CGFloat = 0
+                XCTAssertTrue(source.getHue(&originalHue, saturation: &originalSaturation, brightness: nil, alpha: nil))
+                XCTAssertTrue(foreground.getHue(&actualHue, saturation: &actualSaturation, brightness: nil, alpha: nil))
+                if originalSaturation == 0 {
+                    XCTAssertEqual(actualSaturation, 0, accuracy: 0.001, "Neutral annotation letters must remain neutral")
+                } else {
+                    let distance = abs(originalHue - actualHue)
+                    XCTAssertLessThan(min(distance, 1 - distance), 0.001, "The source rule's hue must remain recognizable")
+                }
+            }
+        }
+    }
+
+    private func resolvedColors(_ rule: TajweedRule, traits: UITraitCollection) -> (UIColor, UIColor) {
+        var foreground = UIColor.clear
+        var background = UIColor.clear
+        traits.performAsCurrent {
+            foreground = UIColor(Palette.tajweed(rule)).resolvedColor(with: traits)
+            background = UIColor(Palette.paper).resolvedColor(with: traits)
+        }
+        return (foreground, background)
+    }
+
+    private func contrastRatio(_ first: UIColor, _ second: UIColor) throws -> Double {
+        func luminance(_ color: UIColor) throws -> Double {
+            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+            guard color.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else {
+                XCTFail("The resolved display colour must expose RGB components")
+                throw CocoaError(.coderInvalidValue)
+            }
+            XCTAssertEqual(alpha, 1, accuracy: 0.001)
+            let components = [red, green, blue].map { component -> Double in
+                let value = Double(component)
+                return value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
+            }
+            return zip(components, [0.2126, 0.7152, 0.0722]).reduce(0) { $0 + $1.0 * $1.1 }
+        }
+        let firstLuminance = try luminance(first), secondLuminance = try luminance(second)
+        return (max(firstLuminance, secondLuminance) + 0.05) / (min(firstLuminance, secondLuminance) + 0.05)
+    }
+
     func testCanonicalEquivalentSourcesRetainTheirOwnExactUTF8() throws {
         let composed = "[g[أ]"
         let decomposed = "[g[ا\u{0654}]"
