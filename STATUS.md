@@ -31,7 +31,18 @@ sessionens download-delegate för progress/avbrytning. Den bevarar en hämtad
 fil innan Foundations callback återvänder och äger fortsättning/avbrytning
 med låsskydd. Appen använder samma brygga som den verkliga HTTP-testtransporten;
 separat HTTPS-policy och befintlig filantagning är kvar.
-**Rättningen och samma oförsvagade överföringsprov inväntar ny Mac-/iOS-CI.**
+[Körning 40168296979](https://github.com/AllCrow/Koran-test-/actions/runs/40168296979)
+är **completed/success** på `9000a210e29789a51b3b69a67c478ef6c1228611`:
+alla fem nya HTTP-prov, 61 hostade och fem UI-flöden (66 native), 67 portabla
+Swift-prov och 32 backendprov samt båda byggena passerade. De två öppna
+överstorleksfallen avbröts med storleksfel före EOF; okänd längd tog 0,197 s i
+denna simulatorfixtur, vilket inte är en fysisk energi-/prestandamätning.
+
+Huvudgrenens senare `1eb0b96` med läskomfort, ljudåterhämtning, tafsircache och
+SDK-matris är därefter integrerad utan att skriva över något arbete.
+**Den nya samlade versionen behöver nu verifieras på både iOS18.5/Xcode16.4
+och iOS26.2/Xcode26.2 innan merge.** Den äldre gröna körningen godkänner
+inte automatiskt de nya huvudgrensändringarna.
 
 ## MP3-verifiering och läsflöden
 
