@@ -21,63 +21,14 @@ struct ReaderView: View {
         let id = UUID()
         let targetID: String
         let anchor: UnitPoint
-        let remainingCorrections: Int
     }
 
     var body: some View {
         Group {
             ScrollView {
-                LazyVStack(spacing: 16) {
-                    if let chapter = store.chapter {
-                        chapterHeading(chapter).id("chapter-heading")
-                        if let basmala = QuranPresentation.basmala(for: chapter) {
-                            ArabicText(text: basmala, tajweed: nil, colored: false)
-                                .padding(.vertical, 12).padding(.horizontal, 8)
-                        }
-                        if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
-                        ForEach(chapter.ayahs, id: \.readerScrollID) { ayah in
-                            // The lazy layout and its scroll position use the
-                            // same global identity, including for distant rows.
-                            verseCard(ayah, chapter: chapter).id(ayah.readerScrollID)
-                        }
-                        Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
-                            .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)
-                    } else if store.isLoading {
-                        ProgressView("Öppnar Koranen …").padding(50)
-                    }
-                    if let error = store.errorMessage {
-                        ErrorBanner(message: error)
-                        Button("Försök igen") { Task { await store.load() } }
-                            .frame(minHeight: 44)
-                            .accessibilityIdentifier("reader.retry")
-                    }
-                }
-                .scrollTargetLayout()
-                .padding(20)
-                .background {
-                    GeometryReader { layout in
-                        Color.clear.preference(key: ReaderContentHeightKey.self,
-                                               value: layout.size.height.rounded(.up))
-                    }
-                }
+                readerContent
             }
             .scrollPosition(id: $scrollPosition, anchor: scrollAnchor)
-            .onPreferenceChange(ReaderContentHeightKey.self) { _ in
-                guard let request = scrollRequest,
-                      request.targetID != "chapter-heading",
-                      request.remainingCorrections > 0,
-                      !showVerseJump, !showSurahs, tafsirReference == nil else { return }
-                // Lazy rows revise the estimated content height as Arabic text
-                // is measured. Reapply the semantic target after that layout
-                // event, with a hard limit and no timer or background polling.
-                requestScroll(to: request.targetID, anchor: request.anchor,
-                              remainingCorrections: request.remainingCorrections - 1)
-            }
-            .simultaneousGesture(DragGesture(minimumDistance: 1).onChanged { _ in
-                // Manual navigation always wins over pending layout correction.
-                scrollRequest = nil
-            })
-            .onDisappear { scrollRequest = nil }
             .onChange(of: scrollPosition) { previous, next in
                 #if DEBUG
                 if CommandLine.arguments.contains("--ui-test-suite") {
@@ -163,6 +114,46 @@ struct ReaderView: View {
         .sheet(item: $tafsirReference) { TafsirSheet(reference: $0) }
     }
 
+    @ViewBuilder
+    private var readerContent: some View {
+        // Bind the chapter before creating the lazy target layout. Its
+        // ForEach exposes each verse directly at the target layout's root,
+        // alongside the heading, instead of through a whole-chapter group.
+        if let chapter = store.chapter {
+            LazyVStack(spacing: 16) {
+                chapterHeading(chapter).id("chapter-heading")
+                if let basmala = QuranPresentation.basmala(for: chapter) {
+                    ArabicText(text: basmala, tajweed: nil, colored: false)
+                        .padding(.vertical, 12).padding(.horizontal, 8)
+                }
+                if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
+                ForEach(chapter.ayahs, id: \.readerScrollID) { ayah in
+                    verseCard(ayah, chapter: chapter).id(ayah.readerScrollID)
+                }
+                Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
+                    .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)
+                readerError
+            }
+            .scrollTargetLayout()
+            .padding(20)
+        } else {
+            VStack(spacing: 16) {
+                if store.isLoading { ProgressView("Öppnar Koranen …").padding(50) }
+                readerError
+            }.padding(20)
+        }
+    }
+
+    @ViewBuilder
+    private var readerError: some View {
+        if let error = store.errorMessage {
+            ErrorBanner(message: error)
+            Button("Försök igen") { Task { await store.load() } }
+                .frame(minHeight: 44)
+                .accessibilityIdentifier("reader.retry")
+        }
+    }
+
     private func chapterHeading(_ chapter: QuranChapter) -> some View {
         Card {
             ViewThatFits(in: .horizontal) {
@@ -205,9 +196,8 @@ struct ReaderView: View {
         return nil
     }
 
-    private func requestScroll(to targetID: String, anchor: UnitPoint, remainingCorrections: Int = 8) {
-        scrollRequest = ScrollRequest(targetID: targetID, anchor: anchor,
-                                      remainingCorrections: remainingCorrections)
+    private func requestScroll(to targetID: String, anchor: UnitPoint) {
+        scrollRequest = ScrollRequest(targetID: targetID, anchor: anchor)
     }
 
     private func verseCard(_ ayah: Ayah, chapter: QuranChapter) -> some View {
@@ -272,11 +262,6 @@ struct ReaderView: View {
             RoundedRectangle(cornerRadius: 24).strokeBorder(active ? Palette.green : .clear, lineWidth: 2)
         }
     }
-}
-
-private struct ReaderContentHeightKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
 private extension Ayah {

@@ -21,12 +21,10 @@ Main-rättningarna till och med `bc304a0` har integrerats.
 [Körning 40162823918](https://github.com/AllCrow/Koran-test-/actions/runs/40162823918),
 branchkälla `5ce9e08f3a93395d9db33cb1112d631e4657e4b8`, klarade 56 hostade
 prov och fyra UI-flöden men stannade kring 2:239 efter önskat hopp till 2:255.
-En ny begränsad, händelsestyrd korrigering reagerar på ändrad innehållshöjd i
-läsaren, behåller den semantiska målversen och avbryts vid manuell rullning
-eller när läsaren lämnas. Den använder högst åtta korrigeringar per begäran,
-utan tidspollning. Samma strikta UI-krav och femsekundersgräns behålls.
-**Den rättningen och hela versionen behöver fortfarande godkänd Mac-CI före
-merge.** Tidigare misslyckade UI-körningar är inte godkända leveranser.
+Main-rättningen `7657e3a` binder nu kapitlet före LazyVStack så att varje vers
+exponeras direkt i scrollTargetLayout. Den är integrerad med samma strikta
+UI-krav och femsekundersgräns. **Hela versionen behöver fortfarande godkänd
+Mac-CI före merge.** Tidigare misslyckade UI-körningar är inte godkända leveranser.
 
 ## Aktuell källversion och verifiering
 
