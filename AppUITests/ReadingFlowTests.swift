@@ -131,7 +131,7 @@ final class ReadingFlowTests: XCTestCase {
         number.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3) + "٢٥٥")
         XCTAssertTrue(open.isEnabled)
         open.tap()
-        let verse = app.staticTexts["reader.verse.2.255"]
+        let verse = "reader.verse.2.255"
         let targetIsVisible = waitUntilVerseStartsNearTop(verse)
         XCTAssertTrue(targetIsVisible, "A jump must reveal the verse's beginning near the top of the reader")
         attachScreenshot("Reader-Baqara-255")
@@ -159,7 +159,7 @@ final class ReadingFlowTests: XCTestCase {
         app.tabBars.buttons["Idag"].tap()
         XCTAssertEqual(progress.value as? String, "1 av 3 verser lästa")
         app.tabBars.buttons["Koranen"].tap()
-        let laterVerse = app.staticTexts["reader.verse.2.256"]
+        let laterVerse = "reader.verse.2.256"
         XCTAssertTrue(waitUntilVerseStartsNearTop(laterVerse), "A later read must replace the previous jump position near the top on tab return")
     }
 
@@ -256,7 +256,7 @@ final class ReadingFlowTests: XCTestCase {
         next.tap()
         let firstVerse = app.buttons["reader.markRead.114.1"]
         XCTAssertTrue(firstVerse.waitForExistence(timeout: 5))
-        XCTAssertTrue(waitUntilVerseStartsNearTop(app.staticTexts["reader.verse.114.1"]))
+        XCTAssertTrue(waitUntilVerseStartsNearTop("reader.verse.114.1"))
         XCTAssertTrue(firstVerse.isEnabled)
         XCTAssertFalse(app.buttons["reader.markRead.113.1"].exists)
         attachScreenshot("Reader-next-surah-An-Nas")
@@ -268,7 +268,7 @@ final class ReadingFlowTests: XCTestCase {
         XCTAssertTrue(app.tabBars.buttons["Koranen"].waitForExistence(timeout: 10))
         app.tabBars.buttons["Koranen"].tap()
         XCTAssertTrue(firstVerse.waitForExistence(timeout: 5))
-        XCTAssertTrue(waitUntilVerseStartsNearTop(app.staticTexts["reader.verse.114.1"]))
+        XCTAssertTrue(waitUntilVerseStartsNearTop("reader.verse.114.1"))
         XCTAssertTrue(firstVerse.isEnabled)
         let lastVerse = app.buttons["reader.markRead.114.6"]
         scrollTo(lastVerse)
@@ -347,47 +347,55 @@ final class ReadingFlowTests: XCTestCase {
         add(attachment)
     }
 
-    private func waitUntilVerseStartsNearTop(_ element: XCUIElement) -> Bool {
-        let readerBar = app.navigationBars["Koranen"]
-        let tabBar = app.tabBars.firstMatch
-        let visible = NSPredicate { candidate, _ in
-            guard let candidate = candidate as? XCUIElement,
-                  readerBar.exists, tabBar.exists,
-                  candidate.exists else { return false }
+    private func waitUntilVerseStartsNearTop(_ identifier: String) -> Bool {
+        let parts = identifier.split(separator: ".")
+        guard parts.count == 4, parts[0] == "reader", parts[1] == "verse" else { return false }
+        let expectedLabel = "\(parts[2]):\(parts[3])"
+        var lastObservation = "No reader snapshot was available."
+        let visible = NSPredicate { _, _ in
+            // A sequence of remote .exists/.frame/.label queries can cross
+            // a tab transition and spend the entire deadline on SE's AX retries.
+            // Read target, navigation, tab bar and window from one coherent
+            // native snapshot instead. Do not move the reader or relax bounds.
+            guard let snapshot = try? self.app.snapshot() else { return false }
+            var pending: [any XCUIElementSnapshot] = [snapshot]
+            var badges: [any XCUIElementSnapshot] = []
+            var readerBar: (any XCUIElementSnapshot)?
+            var tabBar: (any XCUIElementSnapshot)?
+            var window: (any XCUIElementSnapshot)?
+            while let node = pending.popLast() {
+                if node.elementType == .staticText && node.identifier == identifier { badges.append(node) }
+                if node.elementType == .navigationBar && node.identifier == "Koranen" { readerBar = node }
+                if node.elementType == .tabBar { tabBar = node }
+                if node.elementType == .window && !node.frame.isEmpty { window = node }
+                pending.append(contentsOf: node.children)
+            }
+            guard badges.count == 1, let badge = badges.first,
+                  let readerBar, let tabBar, let window else {
+                lastObservation = "Snapshot target count: \(badges.count); reader bar: \(readerBar != nil); tab bar: \(tabBar != nil); window: \(window != nil)."
+                return false
+            }
+            guard !readerBar.frame.isEmpty, !tabBar.frame.isEmpty,
+                  tabBar.frame.minY > readerBar.frame.maxY else { return false }
             let top = readerBar.frame.maxY
             let bottom = tabBar.frame.minY
             let upperLimit = top + min(150, (bottom - top) / 4)
-            let frame = candidate.frame
-            let window = self.app.frame
+            let frame = badge.frame
+            lastObservation = "Target \(badge.identifier), label \(badge.label), frame \(frame). Expected entire badge between y=\(top) and y=\(upperLimit), within window \(window.frame)."
             guard !frame.isEmpty, frame.minY.isFinite, frame.maxY.isFinite,
                   frame.minX.isFinite, frame.maxX.isFinite,
                   frame.minY >= top, frame.maxY <= upperLimit,
-                  frame.minX >= window.minX, frame.maxX <= window.maxX else { return false }
-            // The badge is read-only. On iOS 26 its tall native List cell can
-            // report it as non-hittable despite correct visible geometry;
-            // run 39's failure image/frame show the whole 2:255 badge at y129.
-            // Keep the full near-top bounds and exact reference, not a tap
-            // activation point on a label. Interactive controls still require
-            // hittability and real taps in their separate assertions.
-            let parts = candidate.identifier.split(separator: ".")
-            return self.app.state == .runningForeground && parts.count == 4
-                && parts[0] == "reader" && parts[1] == "verse"
-                && candidate.label == "\(parts[2]):\(parts[3])"
+                  frame.minX >= window.frame.minX, frame.maxX <= window.frame.maxX else { return false }
+            // This is a read-only badge, not a tap target. Interactive controls
+            // retain their real taps, full visibility and hittability checks.
+            return self.app.state == .runningForeground && badge.identifier == identifier
+                && badge.label == expectedLabel
         }
-        let expectation = XCTNSPredicateExpectation(predicate: visible, object: element)
+        let expectation = XCTNSPredicateExpectation(predicate: visible, object: nil)
         let ready = XCTWaiter.wait(for: [expectation], timeout: 5) == .completed
         if !ready {
             attachScreenshot("Reader-position-not-visible")
-            let target = element.exists ? "Target frame: \(element.frame)\n\(element.debugDescription)" : "Target does not exist"
-            let bounds: String
-            if readerBar.exists && tabBar.exists {
-                let top = readerBar.frame.maxY
-                let upperLimit = top + min(150, (tabBar.frame.minY - top) / 4)
-                bounds = "Expected entire badge between y=\(top) and y=\(upperLimit)."
-            } else {
-                bounds = "Reader navigation bar or tab bar is missing."
-            }
-            let diagnostic = XCTAttachment(string: "\(bounds)\n\(target)\n\(app.debugDescription)")
+            let diagnostic = XCTAttachment(string: "\(lastObservation)\n\(app.debugDescription)")
             diagnostic.name = "Reader-target-frame-and-hierarchy"
             diagnostic.lifetime = .keepAlways
             add(diagnostic)

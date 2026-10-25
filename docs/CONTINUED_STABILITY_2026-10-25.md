@@ -51,3 +51,36 @@ katalogsvar kunde tappas när ett nyare suraval redan hade börjat. Katalogen
 lagras nu efter cancellation-kontroll men före kapitelgenerationens kontroll.
 Det sjunde laddningsprovet täcker både nyare färdigt och pågående kapitel.
 Den ersatta körningen räknas inte som godkännande för denna rättade källa.
+
+## Lästa resultat och positionskontroll på kompakt simulator
+
+[Körning 48](https://github.com/AllCrow/Koran-test-/actions/runs/40181293204)
+på `19a50e11becf236853cab29f779d5007cdbef7ba` är **failure**. Samtliga tre
+hostade grupper passerade 91 prov. 16Pro/iOS18.5 och 16e/iOS26.2 passerade
+även åtta UI-prov; SE3 hade ett fel i åtta UI-prov, vid återstarten till
+114:1 i `testNextSurahSavesPositionWithoutReadingCreditAndEndsAtAnNas`.
+Backendens 36 prov och det osignerade iPhoneOS-bygget passerade. Ingen
+ny ägarnedladdning skapades av den underkända helkörningen.
+
+SE-jobbet `121133205250` har lästs. Den första positionspredikatkörningen
+gjorde flera efterföljande tillgänglighetsfrågor, med omförsök vid målfrågans
+`exists`, genom femsekundersfönstret. Den hämtade felbilden och senare
+ramdiagnostiken visar hela rätta badgen vid **(40,92,55,26.5)**, inom
+krävda **y64–202.5**, med versbörjan synlig. Det senare belägget gör inte
+den underkända femsekunderskontrollen godkänd i efterhand.
+
+Artefakt `12594797373` har rätt käll-SHA och verifierad ZIP-SHA256
+`7183ef36a8ae95b1e3a2876679da8f07833f044c9d538504a2042d4805593dde`.
+Bild `C02DF83D-293C-46E4-9546-E2D0910F98E6.png`, ramtext
+`5908B0D9-6E19-40EB-8743-6DBE81042D14.txt` och skärminspelningen har
+granskats. Källans faktiska Apple-checkout `ca485ed4d3afdf9c3e5f5873011ba67e70c4c447`
+är hämtad och helt tree-identisk med `19a50e1`.
+
+Positionshjälparen läser nu badge, navigationsfält, flikfält och fönster ur
+**en sammanhängande native-ögonblicksbild** i stället för många separata
+fjärrfrågor som kan korsa ett flikbyte. Den kräver en enda matchande badge,
+rätt globalt ID/etikett, hela ändliga ramen nära toppen och inom fönstrets
+bredd samt appen i förgrunden. **Samma fem sekunder**, fyra långa hopp-/
+återstarts-/upprepnings-/senarepositionskrav och verkliga knapptryck är kvar.
+Läsaren, gesterna och all produktionskod är oförändrade av denna korrigering.
+Den är ännu inte native-godkänd; en ny Mac-körning måste läsas före integration.
