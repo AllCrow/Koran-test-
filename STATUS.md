@@ -357,3 +357,9 @@ recitatörsnamn i rapportkopplingen. Inga native-/UI-resultat godkänns från
 den körningen. Läsvyn har delats upp och kopplingen använder nu spelarens
 selectedReciter. Den tidigare körningen 40222772710 ersattes och avbröts
 när kravdokumentationen färdigställdes; den räknas inte som godkänd.
+
+Den följande PR-körningen 40223278849 på b4dcd1e byggde både iPhoneOS-paket
+och simulatorappar. Native-gaten hittade en Unicode-regression i rapportens
+beskrivning: iOS trimmade U+FEFF. Testet behålls; exporten bevarar nu hela
+inmatningen och använder trimning endast för att identifiera tom text.
+Inga UI-fall godkänns från den körningen; den är inte en godkänd leverans.

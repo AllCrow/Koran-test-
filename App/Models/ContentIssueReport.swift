@@ -46,8 +46,12 @@ struct ContentIssueReport: Encodable, Equatable, Sendable {
 
     init(reference: AyahReference, topic: Topic, tajweedEnabled: Bool,
          reciter: Reciter, description: String) throws {
-        let description = description.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !description.isEmpty else { throw ValidationError.missingDescription }
+        // Use trimming only to detect a blank description. Foundation's
+        // whitespace set differs across platforms (including U+FEFF on iOS);
+        // the preview/export must preserve the user's actual Unicode bytes.
+        guard !description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ValidationError.missingDescription
+        }
         guard description.count <= Self.maximumDescriptionCharacters,
               description.utf8.count <= Self.maximumDescriptionBytes else {
             throw ValidationError.descriptionTooLong
