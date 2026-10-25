@@ -60,7 +60,10 @@ final class RecitationPlayerTests: XCTestCase {
         let paused = expectation(description: "The latest pause intent wins on the actual engine")
         let pauseToken = rig.engine.publisher(for: \.rate, options: [.initial, .new])
             .combineLatest(rig.engine.publisher(for: \.timeControlStatus, options: [.initial, .new]))
-            .first(where: { $0.0 == 0 && $0.1 == .paused }).sink { _ in paused.fulfill() }
+            .receive(on: DispatchQueue.main)
+            .first(where: { $0.0 == 0 && $0.1 == .paused
+                && rig.engine.rate == 0 && rig.engine.timeControlStatus == .paused })
+            .sink { _ in paused.fulfill() }
         defer { pauseToken.cancel() }
         await fulfillment(of: [paused], timeout: 2)
 
@@ -79,7 +82,10 @@ final class RecitationPlayerTests: XCTestCase {
         let resumed = expectation(description: "A later explicit resume remains allowed")
         let resumeToken = rig.engine.publisher(for: \.rate, options: [.initial, .new])
             .combineLatest(rig.engine.publisher(for: \.timeControlStatus, options: [.initial, .new]))
-            .first(where: { $0.0 > 0 && $0.1 == .playing }).sink { _ in resumed.fulfill() }
+            .receive(on: DispatchQueue.main)
+            .first(where: { $0.0 > 0 && $0.1 == .playing
+                && rig.engine.rate > 0 && rig.engine.timeControlStatus == .playing })
+            .sink { _ in resumed.fulfill() }
         defer { resumeToken.cancel() }
         rig.service.resume()
         await fulfillment(of: [resumed], timeout: 2)

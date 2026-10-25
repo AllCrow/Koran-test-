@@ -8,6 +8,14 @@ fysisk installation och en offentlig apprelease är inte verifierade.
 
 ## Aktuell samlad verifieringspunkt
 
+I körning43 passerade SE3 hela80hostade+8UI på03926e5. På16Pro/iOS18.5
+passerade alla8UI och det avsiktligt sena native-start-provet, men MP3-provet
+läste åter rate1 efter ett tidigare KVO-kvitto. Kandidaten är därför inte
+godkänd. Paus-/återstartsväntarna levererar nu KVO på huvudkön och jämför
+även motorns aktuella rate/timeControlStatus innan de kvitterar; samma
+tvåsekundersgräns, slutassertioner och återstående ljud krävs. Inga ytterligare
+produktionsändringar eller sleeps införs. Ny kandidat behöver faktisk CI.
+
 PR6 samlar pausgrenarna med bevarad historik. Körning39:s iOS26-fel vid
 återstart är dessutom visuellt utrett: hela badgen2:255 ligger vid y129–155,
 inom provets y101–251, och versens början syns. Endast läsetikettens

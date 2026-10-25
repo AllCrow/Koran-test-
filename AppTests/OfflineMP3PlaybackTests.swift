@@ -180,7 +180,13 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         let paused = expectation(description: "AVPlayer acknowledges the pause before the tone ends")
         let token = context.engine.publisher(for: \.rate, options: [.initial, .new])
             .combineLatest(context.engine.publisher(for: \.timeControlStatus, options: [.initial, .new]))
-            .first(where: { $0.0 == 0 && $0.1 == .paused }).sink { _ in paused.fulfill() }
+            // Native KVO values can already be stale when an async waiter
+            // resumes. Check the current engine on the same queue as intent
+            // enforcement, after its setter/actor callbacks can return.
+            .receive(on: DispatchQueue.main)
+            .first(where: { $0.0 == 0 && $0.1 == .paused
+                && context.engine.rate == 0 && context.engine.timeControlStatus == .paused })
+            .sink { _ in paused.fulfill() }
         defer { token.cancel() }
         await fulfillment(of: [paused], timeout: 2)
         XCTAssertEqual(context.engine.rate, 0)
