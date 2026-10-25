@@ -53,9 +53,15 @@ struct ReaderView: View {
                 }
                 .scrollTargetLayout()
                 .padding(20)
-                .id(store.chapter?.surah.id)
             }
             .scrollPosition(id: $scrollPosition, anchor: scrollAnchor)
+            .onChange(of: scrollPosition) { previous, next in
+                #if DEBUG
+                if CommandLine.arguments.contains("--ui-test-suite") {
+                    print("Reader scroll position \(previous ?? "nil") -> \(next ?? "nil"); requested \(scrollRequest?.targetID ?? "nil")")
+                }
+                #endif
+            }
             .task(id: store.chapter?.surah.id) {
                 guard store.chapter != nil else { return }
                 await Task.yield()
