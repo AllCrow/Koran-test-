@@ -182,3 +182,21 @@ nåbarhet före ett riktigt tryck. Exakta kvarvarande1668byte, rätt borttagen
 post och omstart måste fortfarande verifieras. Den tidigare tidsgränsen
 förlängs inte. Alla56-resultat, originalbilder och tidigare fel bevaras;
 ny fullständig verifiering krävs för rättningarna.
+
+[Den sammanfogade PR-körningen58](https://github.com/AllCrow/Koran-test-/actions/runs/40207757711)
+på `cc1d70c4afd109f20e70fa0cb6889a1224613f1d` passerade139 hostade och89
+portabla Mac-fall på alla tre varianter. Både iPhone16Pro och iPhoneSE
+passerade samtliga tolv UI-fall; den mindre telefonens inställningsregression
+är därmed rättad utan ändring av de äldre proven. På iOS26 passerade elva av
+tolv UI-fall. Totalt452 av453 native-/UI-exekveringar passerade, men hela
+kandidaten är fortsatt underkänd och inget nytt ägarutkast godkänns här.
+
+Den nya avgränsade AX-diagnostiken visar en omslutande Button och en inre
+Button med samma raderings-ID, etikett och ram i rätt bekräftelsepopover.
+En ensam ID-fråga ger därför ingen användbar knapp. Nästa prov räknar alla
+ID-träffar och kräver exakt en innersta Button utan en underliggande Button
+med samma ID. Bara den knappen får väljas, inom samma fem sekunder och med
+oförändrade krav på förgrund, hela ändliga gränser, aktivering och nåbarhet.
+Ett riktigt tryck måste fortfarande följas av exakt radering och omstart.
+Ingen godtycklig första träff, etikettersättning eller koordinatgest används.
+Den rättade frågans faktiska operabilitet återstår för nästa native-körning.

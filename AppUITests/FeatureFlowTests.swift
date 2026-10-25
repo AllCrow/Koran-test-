@@ -227,8 +227,10 @@ final class FeatureFlowTests: XCTestCase {
         XCTAssertEqual(app.buttons["downloads.surah"].value as? String, "Al-Ikhlaas",
                        "Returning from playback must retain the exact library selection")
         tapContent(app.buttons["downloads.delete.present"])
-        let confirm = app.buttons["downloads.delete.confirm"]
-        XCTAssertTrue(waitForOperableDeletionConfirmation(confirm))
+        guard let confirm = waitForOperableDeletionConfirmation() else {
+            XCTFail("The native deletion confirmation must expose one operable action")
+            return
+        }
         confirm.tap()
         scrollFullyIntoView(element("downloads.inventory.bytes"))
         XCTAssertTrue(waitForValue("1668 byte", on: element("downloads.inventory.bytes")))
@@ -381,28 +383,48 @@ final class FeatureFlowTests: XCTestCase {
         element.tap()
     }
 
-    private func waitForOperableDeletionConfirmation(_ confirmation: XCUIElement) -> Bool {
+    private func waitForOperableDeletionConfirmation() -> XCUIElement? {
+        let identifier = "downloads.delete.confirm"
+        var resolved: XCUIElement?
         var observation = "The identified confirmation has not appeared."
-        let operable = NSPredicate { candidate, _ in
-            guard let candidate = candidate as? XCUIElement, candidate.exists else { return false }
+        let operable = NSPredicate { _, _ in
+            resolved = nil
+            // iOS26 exposes a wrapper and its native child with the same ID.
+            // Resolve the one leaf action rather than the ambiguous group.
+            let matches = self.app.buttons.matching(identifier: identifier).allElementsBoundByIndex
+            var leaves: [XCUIElement] = []
+            var descriptions: [String] = []
+            for (index, candidate) in matches.enumerated() {
+                let descendants = candidate.descendants(matching: .button).matching(identifier: identifier).count
+                if descendants == 0 { leaves.append(candidate) }
+                if index < 16 {
+                    descriptions.append("Match \(index): id=\(String(candidate.identifier.prefix(256))), same-ID descendants=\(descendants), frame=\(candidate.frame)")
+                }
+            }
+            observation = "Matching buttons: \(matches.count); leaf actions: \(leaves.count).\n\(descriptions.joined(separator: "\n"))"
+            guard leaves.count == 1, let candidate = leaves.first, candidate.exists else { return false }
             let frame = candidate.frame
             let window = self.app.frame
-            observation = "Confirmation id=\(candidate.identifier), frame=\(frame), window=\(window), enabled=\(candidate.isEnabled), hittable=\(candidate.isHittable)."
-            guard candidate.identifier == "downloads.delete.confirm", !frame.isEmpty,
+            observation += "\nLeaf frame=\(frame), window=\(window), enabled=\(candidate.isEnabled), hittable=\(candidate.isHittable)."
+            guard candidate.identifier == identifier, !frame.isEmpty,
                   frame.minX.isFinite, frame.maxX.isFinite, frame.minY.isFinite, frame.maxY.isFinite,
-                  !window.isEmpty, frame.minX >= window.minX, frame.maxX <= window.maxX,
-                  frame.minY >= window.minY, frame.maxY <= window.maxY else { return false }
-            return self.app.state == .runningForeground && candidate.isEnabled && candidate.isHittable
+                  !window.isEmpty, window.minX.isFinite, window.maxX.isFinite,
+                  window.minY.isFinite, window.maxY.isFinite,
+                  frame.minX >= window.minX, frame.maxX <= window.maxX,
+                  frame.minY >= window.minY, frame.maxY <= window.maxY,
+                  self.app.state == .runningForeground, candidate.isEnabled, candidate.isHittable else { return false }
+            resolved = candidate
+            return true
         }
-        let ready = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: operable, object: confirmation)], timeout: 5) == .completed
+        let ready = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: operable, object: nil)], timeout: 5) == .completed
         if !ready {
             attachScreenshot("Audio-library-native-confirmation-not-operable")
-            let diagnostic = XCTAttachment(string: "\(observation)\nConfirmation: \(String(confirmation.debugDescription.prefix(8_000)))\n\(String(app.debugDescription.prefix(24_000)))")
+            let diagnostic = XCTAttachment(string: "\(observation)\n\(String(app.debugDescription.prefix(24_000)))")
             diagnostic.name = "Audio-library-native-confirmation-frame-and-hierarchy"
             diagnostic.lifetime = .keepAlways
             add(diagnostic)
         }
-        return ready
+        return ready ? resolved : nil
     }
 
     private func repetitionIncrementButton(in stepper: XCUIElement) -> XCUIElement? {
