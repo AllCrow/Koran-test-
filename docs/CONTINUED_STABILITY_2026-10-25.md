@@ -84,3 +84,26 @@ bredd samt appen i förgrunden. **Samma fem sekunder**, fyra långa hopp-/
 återstarts-/upprepnings-/senarepositionskrav och verkliga knapptryck är kvar.
 Läsaren, gesterna och all produktionskod är oförändrade av denna korrigering.
 Den är ännu inte native-godkänd; en ny Mac-körning måste läsas före integration.
+
+## Förstärkt förvillkor i det riktiga MP3-avbrottsprovet
+
+I [körning 49](https://github.com/AllCrow/Koran-test-/actions/runs/40183410809)
+på `f703954c50b74c82aa0f82eac32616d2d8e3dc16` föll iOS26-jobbet
+`121139045430` i det befintliga MP3-provet för avbrott/hörlursborttagning:
+två rate-assertioner vid rad 192/136 såg 1 i stället för 0 efter kvittensen.
+Alla 91 hostade fall kördes, med två assertioner i ett underkänt fall;
+UI-gruppen i detta jobb hoppades korrekt över. Den körningen får därför
+inte kallas samlat godkänd, även om andra jobb kan passera.
+
+Avbrottsprovet väntar nu också på **positiv native-rate och faktisk
+`.playing`**, med KVO levererad på huvudkön och omläsning av motorns
+aktuella getters, före båda avbrottsnotiserna. Det ersätter inte de gamla
+kontrollerna: det stärker förvillkoret efter appens publicerade
+start-/resumehändelse. Uppstartens befintliga 12-sekundersbudget behålls;
+pauskravet är fortfarande två sekunder, både rate0 och `.paused`, inget
+versslut samt kvarvarande ljud i samma tresekunderston. Ingen av de
+underkända rate-assertionerna har tagits bort eller ersatts med en appflagga.
+En begränsad KVO-diagnostik visar publicerade och aktuella nativevärden
+om samma kontroll faller igen. Inga timers eller ändrad produktionskod
+införs. Detta är en oprövad verifieringskorrigering tills faktisk Mac CI
+har körts och lästs; inget nytt pausskydd påstås levererat här.

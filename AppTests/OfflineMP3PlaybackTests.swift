@@ -119,6 +119,7 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         defer { context.player.stop() }
         context.player.playOnce(reference: verse, chapterVerseCount: 7)
         await waitFor(context.player.$activeReference, matching: { $0 == verse })
+        await waitForNativePlayback(context)
         let session = AVAudioSession.sharedInstance()
         NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: session,
             userInfo: [AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.began.rawValue])
@@ -128,6 +129,7 @@ final class OfflineMP3PlaybackTests: XCTestCase {
 
         context.player.resume()
         await waitFor(context.player.$isPlaying, matching: { $0 })
+        await waitForNativePlayback(context)
         NotificationCenter.default.post(name: AVAudioSession.routeChangeNotification, object: session,
             userInfo: [AVAudioSessionRouteChangeReasonKey: AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue])
         await waitForNativePause(context)
@@ -174,23 +176,47 @@ final class OfflineMP3PlaybackTests: XCTestCase {
         XCTAssertFalse(context.player.isBuffering)
     }
 
+    private func waitForNativePlayback(_ context: Fixture) async {
+        // A controller publication can precede the engine's pending native play
+        // acknowledgement. Exercise an interruption of actual playback rather
+        // than pause a just-queued resume while an old zero rate is still visible.
+        let playing = expectation(description: "The actual MP3 engine is playing before interruption")
+        let token = context.engine.publisher(for: \.rate, options: [.initial, .new])
+            .combineLatest(context.engine.publisher(for: \.timeControlStatus, options: [.initial, .new]))
+            .receive(on: DispatchQueue.main)
+            .first(where: { $0.0 > 0 && $0.1 == .playing
+                && context.engine.rate > 0 && context.engine.timeControlStatus == .playing })
+            .sink { _ in playing.fulfill() }
+        defer { token.cancel() }
+        await fulfillment(of: [playing], timeout: 12)
+        XCTAssertGreaterThan(context.engine.rate, 0)
+        XCTAssertEqual(context.engine.timeControlStatus, .playing)
+    }
+
     private func waitForNativePause(_ context: Fixture) async {
         // isPlaying can also become false while buffering. Observe the native
         // engine instead of assuming that a published UI flag settles its rate.
         let paused = expectation(description: "AVPlayer acknowledges the pause before the tone ends")
+        let started = ProcessInfo.processInfo.systemUptime
+        var trace: [String] = []
         let token = context.engine.publisher(for: \.rate, options: [.initial, .new])
             .combineLatest(context.engine.publisher(for: \.timeControlStatus, options: [.initial, .new]))
             // Native KVO values can already be stale when an async waiter
             // resumes. Check the current engine on the same queue as intent
             // enforcement, after its setter/actor callbacks can return.
             .receive(on: DispatchQueue.main)
+            .handleEvents(receiveOutput: { value in
+                trace.append("t=\(ProcessInfo.processInfo.systemUptime - started), published=\(value.0)/\(value.1.rawValue), native=\(context.engine.rate)/\(context.engine.timeControlStatus.rawValue)")
+                if trace.count > 16 { trace.removeFirst() }
+            })
             .first(where: { $0.0 == 0 && $0.1 == .paused
                 && context.engine.rate == 0 && context.engine.timeControlStatus == .paused })
             .sink { _ in paused.fulfill() }
         defer { token.cancel() }
         await fulfillment(of: [paused], timeout: 2)
-        XCTAssertEqual(context.engine.rate, 0)
-        XCTAssertEqual(context.engine.timeControlStatus, .paused)
+        let diagnostic = trace.joined(separator: "\n")
+        XCTAssertEqual(context.engine.rate, 0, diagnostic)
+        XCTAssertEqual(context.engine.timeControlStatus, .paused, diagnostic)
         XCTAssertFalse(context.player.isPlaying)
         XCTAssertFalse(context.player.isBuffering)
         XCTAssertFalse(context.player.hasFinishedVerse, "Natural completion must not satisfy a pause probe")
