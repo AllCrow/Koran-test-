@@ -8,6 +8,16 @@ fysisk installation och en offentlig apprelease är inte verifierade.
 
 ## Aktuell samlad verifieringspunkt
 
+Kompaktjobbet i körning39 är nu **failure**: alla åtta UI-flöden passerar,
+men MP3-provet för hörlursnotis ser rate1 igen efter att rate-KVO kvitterat0.
+Det räcker alltså inte att skärpa väntan på appens flagga. Branch
+`codex/preserve-explicit-audio-pause` provar nu ett produktionsskydd:
+sena native rate-/tillståndshändelser ska åter pausa motorn när användarens
+aktuella avsikt är paus. Ett nytt regressionstest använder riktig AVPlayer
+och en åttasekunders genererad WAV, injicerar en sen native start efter paus
+och kräver motorstopp inom två sekunder utan naturligt versslut. De befintliga
+strikta MP3-proven är oförändrade. **Rättningen inväntar native CI.**
+
 Senaste hämtade appkälla är `07088ba8130afbb8daedb52c9d2c2bb71853af85`.
 Dess [huvudkörning 40171995960](https://github.com/AllCrow/Koran-test-/actions/runs/40171995960)
 är ännu inte godkänd vid kontrollen 2026-10-25 kl07:17 UTC. Den bevarar
