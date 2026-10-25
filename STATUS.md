@@ -370,3 +370,13 @@ originalassertionen och kontrollerar även inmatningens byte och JSONDecoder,
 samt en separat kontroll med systemets JSONEncoder/JSONSerialization. U+FEFF
 exporteras som JSON-Unicode-escape för entydig läsning över Foundation-versioner.
 Detta gäller rapportbeskrivningen; koranresurserna ändras inte.
+
+Körning 40224518157 på 4243917 isolerade felet: både kompakt iOS18 och
+iPhone16Pro körde 143 hostade fall med ett enda fel i JSONSerialization-
+assertionen. Inmatningens byte, JSON-Unicode-escapen och strikt JSONDecoder-
+återläsning passerade. Kontrollraden var raw input marker=true, encoded literal
+marker=true, Foundation-decoded marker=false. Förlusten sker alltså i Darwins
+JSONSerialization, även vid en giltig Unicode-escape. Nästa kandidat använder
+JSONDecoder som byte-orakel och behåller exakta UTF-8-kravet; JSONSerialization
+används fortsatt för oberoende kontroll av schema/källor/referenser. Detta
+rättar provmetoden utifrån native-bevis och godkänner inte den fallerade körningen.

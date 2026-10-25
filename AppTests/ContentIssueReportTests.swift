@@ -53,8 +53,10 @@ final class ContentIssueReportTests: XCTestCase {
         struct DescriptionOnly: Decodable { let description: String }
         let typed = try JSONDecoder().decode(DescriptionOnly.self, from: encoded)
         XCTAssertEqual(Array(typed.description.utf8), Array(description.utf8))
-        let exported = try XCTUnwrap(try object(report)["description"] as? String)
-        XCTAssertEqual(Array(exported.utf8), Array(description.utf8))
+        // Darwin JSONSerialization consumes an initial U+FEFF even from a
+        // valid JSON Unicode escape. Use the typed decoder above as the
+        // normative byte-preservation oracle. Schema tests still independently
+        // inspect JSONSerialization keys, source identities and references.
         XCTAssertNotNil(encoded.range(of: Data("\\uFEFF".utf8)), "The leading scalar uses an unambiguous JSON escape")
 
         // A control with the system encoder localizes the prior Darwin loss.

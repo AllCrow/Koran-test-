@@ -73,10 +73,10 @@ struct ContentIssueReport: Encodable, Equatable, Sendable {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
         var data = try encoder.encode(self)
-        // Some Foundation JSON readers treat a literal U+FEFF at the start of
-        // a string value as a byte-order marker. A JSON Unicode escape retains
-        // the scalar unambiguously across those readers, without changing the
-        // user's description. All other encoded UTF-8 stays untouched.
+        // Make U+FEFF explicit in the exported JSON instead of emitting an
+        // invisible literal marker. The typed decoder retains its exact scalar;
+        // some Darwin JSONSerialization versions are lossy even with escapes.
+        // All other encoded UTF-8 stays untouched.
         let marker = Data([0xEF, 0xBB, 0xBF])
         let escapedMarker = Data("\\uFEFF".utf8)
         while let range = data.range(of: marker) {
