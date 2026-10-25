@@ -19,7 +19,8 @@ final class AudioLibrary: ObservableObject {
 
     var progress: Double { total > 0 ? Double(completed) / Double(total) : 0 }
 
-    private let directory: URL?
+    private let configuredDirectory: URL?
+    private var directory: URL?
     private let downloader: AudioFileDownloader
     private let downloadFile: Download
     private let fileManager = FileManager.default
@@ -29,6 +30,7 @@ final class AudioLibrary: ObservableObject {
     private var validatedFiles: [URL: FileIdentity] = [:]
 
     init(directory: URL? = nil, download: Download? = nil) {
+        configuredDirectory = directory
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil
         configuration.httpCookieStorage = nil
@@ -45,22 +47,7 @@ final class AudioLibrary: ObservableObject {
         }
 
         do {
-            var root: URL
-            if let directory {
-                root = directory
-            } else {
-                root = try FileManager.default.url(
-                    for: .applicationSupportDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                ).appendingPathComponent("Recitations", isDirectory: true)
-            }
-            try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-            var values = URLResourceValues()
-            values.isExcludedFromBackup = true
-            try root.setResourceValues(values)
-            self.directory = root
+            self.directory = try Self.prepareStorage(at: directory)
         } catch {
             self.directory = nil
             errorMessage = "Det gick inte att skapa en sparplats för ljudet på telefonen."
@@ -112,9 +99,16 @@ final class AudioLibrary: ObservableObject {
     /// queued to start later. Completed verses survive cancellation and resume.
     func beginDownload(_ surah: Surah, reciter: Reciter) {
         guard downloadTask == nil else { return }
-        guard directory != nil else {
-            errorMessage = "Ljudets sparplats är inte tillgänglig. Försök starta om appen."
-            return
+        if directory == nil {
+            do {
+                // Storage can become available after the user frees space or
+                // the OS releases a temporary filesystem restriction. Retry
+                // only on an explicit action, without requiring an app restart.
+                directory = try Self.prepareStorage(at: configuredDirectory)
+            } catch {
+                errorMessage = "Ljudets sparplats är inte tillgänglig. Kontrollera lagringsutrymmet och försök igen."
+                return
+            }
         }
         guard (1...AyahReference.ayahCounts.count).contains(surah.id),
               surah.numberOfAyahs == AyahReference.ayahCounts[surah.id - 1] else {
@@ -230,14 +224,38 @@ final class AudioLibrary: ObservableObject {
         try fileManager.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
         try Task.checkCancellation()
 
+        // Prepare all required metadata before publishing the final filename.
+        // A protection/attribute failure must not report an unsaved verse while
+        // leaving that newly admitted verse installed behind the error.
+        try fileManager.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: temporary.path)
+        let installedIdentity = try fileIdentity(at: temporary)
         if fileManager.fileExists(atPath: destination.path) {
             _ = try fileManager.replaceItemAt(destination, withItemAt: temporary, backupItemName: nil, options: .usingNewMetadataOnly)
         } else {
             try fileManager.moveItem(at: temporary, to: destination)
         }
-        // Downloaded audio stays available for playback while the phone is locked.
-        try fileManager.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: destination.path)
-        validatedFiles[destination] = try fileIdentity(at: destination)
+        // The rename retains the prepared protection and file identity, so no
+        // fallible operation remains after the verse is committed to storage.
+        validatedFiles[destination] = installedIdentity
+    }
+
+    private static func prepareStorage(at requestedDirectory: URL?) throws -> URL {
+        var root: URL
+        if let requestedDirectory {
+            root = requestedDirectory
+        } else {
+            root = try FileManager.default.url(
+                for: .applicationSupportDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            ).appendingPathComponent("Recitations", isDirectory: true)
+        }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try root.setResourceValues(values)
+        return root
     }
 
     private func chapterDirectory(surahID: Int, reciter: Reciter) -> URL? {

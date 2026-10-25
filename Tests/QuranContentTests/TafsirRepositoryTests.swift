@@ -421,6 +421,97 @@ final class TafsirRepositoryTests: XCTestCase {
         XCTAssertTrue(try link.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == true)
     }
 
+    func testRemovedCacheDirectoryRecoversWithoutRecreatingRepository() async throws {
+        let directory = temporaryCacheDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let first = try XCTUnwrap(AyahReference(surahID: 1, ayahNumber: 1))
+        let second = try XCTUnwrap(AyahReference(surahID: 1, ayahNumber: 2))
+        let environment = StubEnvironment { request in (200, try makePayload(for: reference(in: request))) }
+        defer { environment.close() }
+        let repository = TafsirRepository(session: environment.session, cacheDirectory: directory)
+        _ = try await repository.tafsir(for: first)
+        try FileManager.default.removeItem(at: directory)
+
+        let fetched = try await repository.tafsir(for: second)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: cacheURL(second, in: directory).path),
+                      "A lost cache directory must recover during the same app session")
+        environment.close()
+        let offline = StubEnvironment { _ in throw URLError(.notConnectedToInternet) }
+        defer { offline.close() }
+        let restored = try await TafsirRepository(session: offline.session, cacheDirectory: directory).tafsir(for: second)
+        XCTAssertEqual(restored, fetched)
+    }
+
+    func testReplacementCacheDirectorySymlinkIsNeverReadWrittenOrPruned() async throws {
+        let directory = temporaryCacheDirectory()
+        let outside = temporaryCacheDirectory()
+        defer {
+            try? FileManager.default.removeItem(at: directory)
+            try? FileManager.default.removeItem(at: outside)
+        }
+        let first = try XCTUnwrap(AyahReference(surahID: 1, ayahNumber: 1))
+        let second = try XCTUnwrap(AyahReference(surahID: 1, ayahNumber: 2))
+        let third = try XCTUnwrap(AyahReference(surahID: 1, ayahNumber: 3))
+        let log = RequestLog()
+        let environment = StubEnvironment { request in
+            log.append(request)
+            return (200, try makePayload(for: reference(in: request)))
+        }
+        defer { environment.close() }
+        let repository = TafsirRepository(session: environment.session, cacheDirectory: directory)
+        _ = try await repository.tafsir(for: first)
+        try FileManager.default.removeItem(at: directory)
+        try FileManager.default.createDirectory(at: outside, withIntermediateDirectories: true)
+        let externalFile = cacheURL(second, in: outside)
+        let externalBytes = try makeCachedPayload(makePayload(for: second) { $0["text"] = "نص خارج مخزن التطبيق" })
+        try externalBytes.write(to: externalFile)
+        let originalDate = Date(timeIntervalSince1970: 1_000)
+        try FileManager.default.setAttributes([.modificationDate: originalDate], ofItemAtPath: externalFile.path)
+        // An outside directory that exceeds our own quota must also be left
+        // alone: a rejected root must not become the target of cache pruning.
+        for ayah in 1...TafsirRepository.maximumCachedEntries {
+            let reference = try XCTUnwrap(AyahReference(surahID: 2, ayahNumber: ayah))
+            try makeCachedPayload(makePayload(for: reference)).write(to: cacheURL(reference, in: outside))
+        }
+        try FileManager.default.createSymbolicLink(at: directory, withDestinationURL: outside)
+
+        let fetched = try await repository.tafsir(for: second)
+        _ = try await repository.tafsir(for: third)
+        XCTAssertEqual(fetched.text, "تفسير عربي محفوظ كما ورد من المصدر.", "A replacement root must not supply disk content")
+        XCTAssertEqual(log.requests.count, 3)
+        XCTAssertEqual(try Data(contentsOf: externalFile), externalBytes)
+        XCTAssertEqual(try externalFile.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate, originalDate)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: cacheURL(third, in: outside).path), "No entry may be written through the link")
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: outside.path).count,
+                       TafsirRepository.maximumCachedEntries + 1, "No outside file may be pruned")
+        XCTAssertTrue(try directory.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == true)
+    }
+
+    func testCacheRootChangedDuringNetworkRequestDoesNotReceiveResponse() async throws {
+        let directory = temporaryCacheDirectory()
+        let outside = temporaryCacheDirectory()
+        defer {
+            try? FileManager.default.removeItem(at: directory)
+            try? FileManager.default.removeItem(at: outside)
+        }
+        try FileManager.default.createDirectory(at: outside, withIntermediateDirectories: true)
+        let reference = try XCTUnwrap(AyahReference(surahID: 1, ayahNumber: 1))
+        let fixture = try makePayload(for: reference)
+        let environment = StubEnvironment { _ in
+            // URLSession suspends the repository actor while the request runs.
+            // The root must be checked again before the valid result is saved.
+            try FileManager.default.removeItem(at: directory)
+            try FileManager.default.createSymbolicLink(at: directory, withDestinationURL: outside)
+            return (200, fixture)
+        }
+        defer { environment.close() }
+        let repository = TafsirRepository(session: environment.session, cacheDirectory: directory)
+        let entry = try await repository.tafsir(for: reference)
+        XCTAssertEqual(entry.text, "تفسير عربي محفوظ كما ورد من المصدر.", "A lost cache must not hide a valid online explanation")
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: outside.path).isEmpty)
+        XCTAssertTrue(try directory.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == true)
+    }
+
     private func assertError(
         _ expected: TafsirRepository.TafsirError,
         file: StaticString = #filePath, line: UInt = #line,

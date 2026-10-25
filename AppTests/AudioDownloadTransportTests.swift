@@ -115,6 +115,107 @@ final class AudioDownloadTransportTests: XCTestCase {
         XCTAssertTrue(transport.temporaryFiles.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
     }
 
+    func testPrematureHTTPBodyEndKeepsCompletedVersesAndReopenResumesOnlyMissingOnes() async throws {
+        let audio = try XCTUnwrap(GeneratedMP3Fixture.data)
+        let server = try await startServer { _, call in
+            call == 2 ? .truncated(audio) : .complete(audio)
+        }
+        let transport = HTTPDownloadTransport(server: server)
+        defer { transport.stop() }
+        let root = try storage()
+        let library = AudioLibrary(directory: root, download: transport.download)
+        defer { library.cancelDownload() }
+
+        library.beginDownload(chapter, reciter: .husary)
+        await finish(library)
+
+        XCTAssertEqual(library.completed, 1)
+        XCTAssertNotNil(library.errorMessage)
+        XCTAssertEqual(transport.requests.count, 2)
+        let first = try XCTUnwrap(library.localURL(for: try verse(1), reciter: .husary))
+        XCTAssertEqual(try Data(contentsOf: first), audio)
+        XCTAssertNil(library.localURL(for: try verse(2), reciter: .husary))
+        XCTAssertEqual(library.downloadedVerseCount(surahID: 108, reciter: .husary), 1)
+
+        // A new store must recover from the disk state, not from the old job's
+        // in-memory count, and must not request anything just by opening it.
+        let reopened = AudioLibrary(directory: root, download: transport.download)
+        defer { reopened.cancelDownload() }
+        XCTAssertEqual(reopened.downloadedVerseCount(surahID: 108, reciter: .husary), 1)
+        XCTAssertEqual(transport.requests.count, 2)
+        reopened.beginDownload(chapter, reciter: .husary)
+        await finish(reopened)
+
+        XCTAssertNil(reopened.errorMessage)
+        XCTAssertEqual(reopened.completed, 3)
+        XCTAssertEqual(reopened.downloadedVerseCount(surahID: 108, reciter: .husary), 3)
+        let expected = try [1, 2, 2, 3].map { Reciter.husary.audioURL(for: try verse($0)).path }
+        XCTAssertEqual(server.requests.map(\.path), expected)
+        XCTAssertEqual(transport.requests.compactMap(\.url).map(\.path), expected)
+        XCTAssertEqual(try Data(contentsOf: first), audio)
+        XCTAssertTrue(transport.temporaryFiles.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
+    }
+
+    func testDeletingAnOpenDownloadCannotClearOrInstallIntoANewerReciterJob() async throws {
+        let audio = try XCTUnwrap(GeneratedMP3Fixture.data)
+        let oldBodyHeld = expectation(description: "The deleted job has an unfinished HTTP body")
+        let newBodyHeld = expectation(description: "The replacement reciter has an unfinished HTTP body")
+        let oldRequestFinished = expectation(description: "The old transport has acknowledged cancellation")
+        let server = try await startServer { _, call in
+            switch call {
+            case 2: return .held(audio, onHeld: { oldBodyHeld.fulfill() })
+            case 3: return .held(audio, onHeld: { newBodyHeld.fulfill() })
+            default: return .complete(audio)
+            }
+        }
+        let transport = HTTPDownloadTransport(server: server)
+        defer { transport.stop() }
+        let oldURL = Reciter.alafasy.audioURL(for: try verse(2))
+        transport.onRequestFinished = { url in
+            guard url == oldURL else { return }
+            // A separate main-actor turn acknowledges the transport's unwind;
+            // the new HTTP body stays open while we inspect its job identity.
+            // Actual old-file cleanup is also covered by AudioLibraryTests'
+            // deliberately noncooperating transport, independently of this
+            // URLSession cancellation acknowledgement.
+            Task { @MainActor in oldRequestFinished.fulfill() }
+        }
+        let library = AudioLibrary(directory: try storage(), download: transport.download)
+        defer { library.cancelDownload(); server.releaseHeldBodies() }
+        library.beginDownload(chapter, reciter: .alafasy)
+        await fulfillment(of: [oldBodyHeld], timeout: 5)
+        XCTAssertEqual(library.completed, 1)
+
+        library.deleteSurah(chapter, reciter: .alafasy)
+        library.beginDownload(chapter, reciter: .minshawi)
+        await fulfillment(of: [oldRequestFinished, newBodyHeld], timeout: 5)
+
+        XCTAssertEqual(library.downloadingSurahID, 108)
+        XCTAssertEqual(library.downloadingReciter, .minshawi)
+        XCTAssertEqual(library.completed, 0)
+        XCTAssertEqual(library.total, 3)
+        XCTAssertNil(library.errorMessage)
+        XCTAssertEqual(library.downloadedVerseCount(surahID: 108, reciter: .alafasy), 0)
+        XCTAssertNil(library.localURL(for: try verse(2), reciter: .alafasy))
+        XCTAssertNil(library.localURL(for: try verse(1), reciter: .minshawi))
+
+        server.releaseHeldBodies()
+        await finish(library)
+
+        XCTAssertNil(library.errorMessage)
+        XCTAssertEqual(library.completed, 3)
+        XCTAssertEqual(library.downloadedVerseCount(surahID: 108, reciter: .alafasy), 0)
+        XCTAssertEqual(library.downloadedVerseCount(surahID: 108, reciter: .minshawi), 3)
+        let expected = try [
+            Reciter.alafasy.audioURL(for: verse(1)), Reciter.alafasy.audioURL(for: verse(2)),
+            Reciter.minshawi.audioURL(for: verse(1)), Reciter.minshawi.audioURL(for: verse(2)),
+            Reciter.minshawi.audioURL(for: verse(3)),
+        ]
+        XCTAssertEqual(transport.requests.compactMap(\.url), expected)
+        XCTAssertEqual(server.requests.map(\.path), expected.map(\.path))
+        XCTAssertTrue(transport.temporaryFiles.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
+    }
+
     func testAdvertisedOversizeCancelsBeforeTheServerCompletesItsBody() async throws {
         let server = try await startServer { _, _ in .advertisedOversize }
         let transport = HTTPDownloadTransport(server: server)
@@ -196,6 +297,7 @@ private final class HTTPDownloadTransport {
     private let downloader: AudioFileDownloader
     private(set) var requests: [URLRequest] = []
     private(set) var temporaryFiles: [URL] = []
+    var onRequestFinished: ((URL) -> Void)?
 
     init(server: LoopbackAudioHTTPServer) {
         self.server = server
@@ -214,6 +316,7 @@ private final class HTTPDownloadTransport {
         { [self] original, delegate in
             requests.append(original)
             let origin = try XCTUnwrap(original.url)
+            defer { onRequestFinished?(origin) }
             let port = try XCTUnwrap(server.port)
             var components = URLComponents()
             components.scheme = "http"
@@ -251,6 +354,7 @@ private final class LoopbackAudioHTTPServer: @unchecked Sendable {
     enum Reply: Sendable {
         case complete(Data, status: Int = 200, mime: String = "audio/mpeg")
         case held(Data, onHeld: @Sendable () -> Void)
+        case truncated(Data)
         case advertisedOversize
         case chunkedOversize
     }
@@ -387,6 +491,13 @@ private final class LoopbackAudioHTTPServer: @unchecked Sendable {
             let count = min(128, body.count)
             heldBodies.append((connection, Data(body.dropFirst(count))))
             connection.send(content: header(length: body.count) + body.prefix(count), completion: .contentProcessed { _ in onHeld() })
+        case let .truncated(body):
+            // Include complete MPEG frames, but close the real TCP response
+            // before its advertised body length. URLSession must report the
+            // interrupted transfer; a valid prefix must never become offline.
+            connection.send(content: header(length: body.count) + body.prefix(body.count / 2),
+                            contentContext: .finalMessage, isComplete: true,
+                            completion: .contentProcessed { _ in connection.cancel() })
         case .advertisedOversize:
             // Leave almost the entire advertised body unsent. The download
             // delegate, rather than EOF or file admission, must end the job.

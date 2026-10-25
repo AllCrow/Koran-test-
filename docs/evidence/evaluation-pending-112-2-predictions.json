@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "run_id": "archived-baseline-2026-10-24",
+  "engine_source_sha256": "8b3e996a5d44b641d9ede4c5a45b77e9d51af15766b8a64ab6c2ca109185b032",
+  "cases": [
+    {
+      "case_id": "alafasy-112-2-onset",
+      "audio_sha256": "35b7b49e10fb3c295c7ec076403e241714c8cc75a72c2d909f145a62b47a2f6d",
+      "audio_bytes": 21619,
+      "assessment": {
+        "schema_version": 1,
+        "status": "assessed",
+        "experimental": true,
+        "engine": "quran-muaalem",
+        "engine_version": "0.2.2",
+        "model": "obadx/muaalem-model-v3_2",
+        "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+        "reference": {
+          "surah_id": 112,
+          "ayah_number": 2
+        },
+        "reference_text": "ٱللَّهُ ٱلصَّمَدُ",
+        "reference_source": "quran-transcript-0.6.4",
+        "reference_scalar_offset": 0,
+        "include_basmala": false,
+        "issues": [
+          {
+            "kind": "normal",
+            "category": "delete",
+            "start_scalar": 0,
+            "end_scalar": 1,
+            "expected": "ءَ",
+            "observed": "",
+            "message": "Modellen indikerar en möjlig skillnad i uttalet."
+          }
+        ],
+        "message": "Experimentell analys klar. Gå igenom markeringarna med en kunnig lärare.",
+        "assumptions": [
+          "Hafs an Asim",
+          "Madd munfasil: 4 harakat; madd muttasil: 4; muttasil vid waqf: 4. Madd arid: 2, 4 eller 6 harakat godtas för samma långvokal.",
+          "Endast fonetiska modellutdata jämförs; sifat-huvudena bedöms inte i denna version.",
+          "Experimentell modell. Kvaliteten har inte jämförts med Tarteel eller verifierats av tajweedlärare."
+        ]
+      }
+    }
+  ]
+}

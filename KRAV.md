@@ -36,6 +36,12 @@ kravet på korrekt korantext, verkligt bra recitationshjälp och låg belastning
 
 ## Funktionella krav
 
+Senaste beslutet är att genomföra de förbättringar som går att färdigställa med
+nuvarande molnmiljö och fortsätta tills uppgifterna är verifierade. Denna omgång
+prioriterar återhämtning för offline-ljud och tafsir samt ett reproducerbart
+utvärderingsunderlag för tajweed. Den innebär inte att saknad fysisk provning
+eller sakkunnig granskning kan ersättas med syntetiska testresultat.
+
 | ID | Krav | Avsedd kontroll |
 | --- | --- | --- |
 | K01 | Fullständig och källtrogen korantext med bevarad arabisk ortografi och diakritik. | 114 suror och 6 236 ayat; varje referens och text kontrolleras mot det sparade källmaterialet. |
@@ -93,6 +99,12 @@ mikrofon och giltiga sparade tagningar behöver kontrolleras på telefonen.
 - Korantext och tajweeddata är paketerade för offlinebruk. Ljud ska kunna användas offline efter en uttrycklig nedladdning; hämtning och strömning kräver internet. Ny tafsir behöver internet, medan nyligen öppnade och lokalt sparade förklaringar kan läsas offline. Cachefilerna utesluts från systemets säkerhetskopiering. Ljudnedladdningens native-funktion och rättigheter behöver verifieras före release.
 
 ## Automatisk recitationshjälp
+
+Ett separat [utvärderingsverktyg](docs/TAJWEED_EVALUATION.md) förbereder jämförelse
+mot oberoende granskade inspelningar. Det kontrollerar exakt ljudidentitet,
+referensutgåva och modellversion och skiljer ogranskade fall från avgjorda.
+Verktyget kör inte modellen eller laddar upp ljud. Det är infrastruktur för att
+mäta K08, inte ett uppfyllt kvalitetskrav eller en aktiverad funktion i appen.
 
 Återkopplingen behöver kunna skilja mellan att hitta läsposition, upptäcka missade eller felaktiga ord och bedöma fonetiska tajweedfel. Exempelvis madd och ghunnah kräver bedömning av ljudet; en korrekt texttranskription räcker inte.
 

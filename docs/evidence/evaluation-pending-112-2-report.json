@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "corpus_id": "alafasy-112-2-pending",
+  "run_id": "archived-baseline-2026-10-24",
+  "purpose": "expert_review",
+  "corpus_canonical_sha256": "8ac928212cd48d642fa48552432d1fe983fbbf59aa519bb1a9034d7bc23fc43f",
+  "predictions_canonical_sha256": "9a2885c3e2a1230203310f5db43ab62cc49e275deb2f185f533c6df34755179b",
+  "engine_source_sha256": "8b3e996a5d44b641d9ede4c5a45b77e9d51af15766b8a64ab6c2ca109185b032",
+  "model": "obadx/muaalem-model-v3_2",
+  "model_revision": "01a1ef9fbe40d144ef845101e89ff924aed3fef5",
+  "engine_version": "0.2.2",
+  "reference_source": "quran-transcript-0.6.4",
+  "matching_policy": {
+    "primary": "exact kind, category and half-open Unicode scalar span",
+    "diagnostic": "same kind/category and nonempty half-open overlap; points match only equal points",
+    "assignment": "maximum-cardinality one-to-one",
+    "scope": "indication classification/localization only; not rule identity, phoneme correctness or feedback quality"
+  },
+  "original_audio_verified_locally": true,
+  "review_coverage": 0.0,
+  "totals": {
+    "cases": 1,
+    "pending": 1,
+    "inconclusive": 0,
+    "adjudicated": 0,
+    "assessed": 0,
+    "unavailable": 0,
+    "insufficient_audio": 0,
+    "missing_predictions": 0,
+    "teacher_errors": 0,
+    "teacher_errors_in_assessed": 0,
+    "teacher_errors_in_abstained": 0,
+    "teacher_errors_in_missing": 0,
+    "error_free_clips": 0,
+    "assessed_error_free_clips": 0,
+    "error_free_clips_with_indications": 0
+  },
+  "matching_counts": {
+    "exact": {
+      "matched": 0,
+      "false_indications": 0,
+      "missed_errors": 0,
+      "by_kind": {
+        "normal": {
+          "matched": 0,
+          "false_indications": 0,
+          "missed_errors": 0
+        },
+        "tashkeel": {
+          "matched": 0,
+          "false_indications": 0,
+          "missed_errors": 0
+        },
+        "tajweed": {
+          "matched": 0,
+          "false_indications": 0,
+          "missed_errors": 0
+        }
+      }
+    },
+    "overlap_diagnostic": {
+      "matched": 0,
+      "false_indications": 0,
+      "missed_errors": 0,
+      "by_kind": {
+        "normal": {
+          "matched": 0,
+          "false_indications": 0,
+          "missed_errors": 0
+        },
+        "tashkeel": {
+          "matched": 0,
+          "false_indications": 0,
+          "missed_errors": 0
+        },
+        "tajweed": {
+          "matched": 0,
+          "false_indications": 0,
+          "missed_errors": 0
+        }
+      }
+    }
+  },
+  "quality_metrics": null,
+  "cases": [
+    {
+      "case_id": "alafasy-112-2-onset",
+      "review_status": "pending",
+      "assessment_status": "assessed",
+      "scored": false
+    }
+  ],
+  "limitations": [
+    "Reviewer credentials, independence and completeness are declarations, not verified by this tool.",
+    "Metrics cover only declared adjudicated cases; unresolved cases are excluded, not correct negatives.",
+    "Exact kind, category and scalar span are the primary matching rule; overlap is diagnostic only.",
+    "A matched indication does not validate the tajweed rule, expected/observed phonemes or suggested feedback.",
+    "Absent original audio verification, identity is a matching recorded hash, not rechecked audio bytes.",
+    "No population accuracy, religious correctness, full sifat coverage or Tarteel parity is established."
+  ],
+  "input_file_sha256": {
+    "corpus": "743f683900cd6f830527208b97122704a8ac85fe2be2702a42b0eb67c4551ea8",
+    "predictions": "e8f77879f51a73c1698cbca309d8310b2124bc3678e0340656502c377c6702ef"
+  },
+  "evaluator_source_sha256": "7df1d093695da07d1f981eee1e00d21ed5345e0fb2ce9032a237edac737d2ca1"
+}

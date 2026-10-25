@@ -119,6 +119,35 @@ final class AudioLibraryTests: XCTestCase {
         XCTAssertNotNil(library.errorMessage)
     }
 
+    func testExplicitRetryRecoversStorageWithoutRecreatingTheLibrary() async throws {
+        let root = try temporaryDirectory().appendingPathComponent("temporarily-blocked")
+        try Data([0]).write(to: root)
+        let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+        let library = AudioLibrary(directory: root, download: transport.download)
+        XCTAssertNotNil(library.errorMessage)
+
+        library.beginDownload(chapter(), reciter: .minshawi)
+        XCTAssertTrue(transport.requests.isEmpty)
+        XCTAssertNil(library.downloadingSurahID)
+        XCTAssertNotNil(library.errorMessage)
+
+        // Represent storage becoming usable after the user resolves its cause.
+        // Retry the same live instance, rather than hiding recovery in a restart.
+        try FileManager.default.removeItem(at: root)
+        library.beginDownload(chapter(), reciter: .minshawi)
+        await waitForDownloadToFinish(library)
+
+        XCTAssertEqual(transport.requests.count, 7)
+        XCTAssertEqual(library.completed, 7)
+        XCTAssertEqual(library.progress, 1)
+        XCTAssertNil(library.errorMessage)
+        let restored = AudioLibrary(directory: root)
+        XCTAssertEqual(restored.downloadedVerseCount(surahID: 1, reciter: .minshawi), 7)
+        XCTAssertNotNil(restored.localURL(for: try reference(1), reciter: .minshawi))
+        XCTAssertEqual(try root.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup, true)
+        XCTAssertTrue(transport.createdFiles.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
+    }
+
     func testCancellationBeforeTheOwnedJobStartsMakesNoRequest() async throws {
         let root = try temporaryDirectory()
         let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
@@ -183,6 +212,36 @@ final class AudioLibraryTests: XCTestCase {
         XCTAssertNil(library.errorMessage)
     }
 
+    func testResumeRepairsCorruptAudioWithoutReplacingCompletedVerses() async throws {
+        let root = try temporaryDirectory()
+        let corruptFile = try save(Data(repeating: 0x3C, count: 900), reference: reference(1), root: root)
+        let retainedFile = try save(mpegFrames(), reference: reference(2), root: root)
+        let retainedDate = Date(timeIntervalSince1970: 12_345)
+        try FileManager.default.setAttributes([.modificationDate: retainedDate], ofItemAtPath: retainedFile.path)
+        let retainedBytes = try Data(contentsOf: retainedFile)
+        let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+        let library = AudioLibrary(directory: root, download: transport.download)
+        XCTAssertNil(library.localURL(for: try reference(1), reciter: .alafasy))
+        XCTAssertNotNil(library.localURL(for: try reference(2), reciter: .alafasy))
+
+        library.beginDownload(chapter(), reciter: .alafasy)
+        await waitForDownloadToFinish(library)
+
+        let expectedNumbers = [1, 3, 4, 5, 6, 7]
+        let expected = try expectedNumbers.map { Reciter.alafasy.audioURL(for: try reference($0)) }
+        XCTAssertEqual(transport.requests.compactMap(\.url), expected)
+        XCTAssertEqual(try Data(contentsOf: corruptFile), mpegFrames())
+        XCTAssertEqual(try Data(contentsOf: retainedFile), retainedBytes)
+        let retainedAttributes = try FileManager.default.attributesOfItem(atPath: retainedFile.path)
+        XCTAssertEqual(retainedAttributes[.modificationDate] as? Date, retainedDate)
+        XCTAssertEqual(library.completed, 7)
+        XCTAssertNil(library.errorMessage)
+        let restored = AudioLibrary(directory: root)
+        XCTAssertEqual(restored.downloadedVerseCount(surahID: 1, reciter: .alafasy), 7)
+        XCTAssertNotNil(restored.localURL(for: try reference(1), reciter: .alafasy))
+        XCTAssertTrue(transport.createdFiles.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
+    }
+
     func testRejectedResponsesLeaveNoStoredOrTemporaryAudio() async throws {
         for kind in DownloadStub.InvalidResponse.allCases {
             let root = try temporaryDirectory()
@@ -219,6 +278,65 @@ final class AudioLibraryTests: XCTestCase {
         XCTAssertEqual(library.completed, 0)
         XCTAssertNil(library.errorMessage)
         XCTAssertNil(library.localURL(for: try reference(1), reciter: .alafasy))
+        XCTAssertTrue(transport.createdFiles.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
+    }
+
+    func testDeletedJobWithLateResponseCannotChangeANewerDownload() async throws {
+        let root = try temporaryDirectory()
+        let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+        transport.pausedCalls = [1, 2]
+        let oldStarted = expectation(description: "Old reciter request is held")
+        let newStarted = expectation(description: "New reciter request is held")
+        let oldFileCreated = expectation(description: "Cancelled transport still returns its owned file")
+        var lateFile: URL?
+        transport.onRequest = { [weak transport] in
+            if transport?.requests.count == 1 { oldStarted.fulfill() }
+            if transport?.requests.count == 2 { newStarted.fulfill() }
+        }
+        transport.onFileCreated = { call, file in
+            if call == 1 {
+                lateFile = file
+                oldFileCreated.fulfill()
+            }
+        }
+        let library = AudioLibrary(directory: root, download: transport.download)
+        defer {
+            library.cancelDownload()
+            transport.resumeResponse()
+            transport.resumeResponse(call: 2)
+        }
+        library.beginDownload(chapter(), reciter: .alafasy)
+        await fulfillment(of: [oldStarted], timeout: 2)
+
+        library.deleteSurah(chapter(), reciter: .alafasy)
+        library.beginDownload(chapter(), reciter: .husary)
+        await fulfillment(of: [newStarted], timeout: 2)
+        XCTAssertEqual(library.downloadingReciter, .husary)
+
+        // This transport deliberately ignores Task cancellation, so the old
+        // owner's actual cleanup must finish while the new request stays live.
+        transport.resumeResponse()
+        await fulfillment(of: [oldFileCreated], timeout: 2)
+        let oldFile = try XCTUnwrap(lateFile)
+        let cleaned = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            !FileManager.default.fileExists(atPath: oldFile.path)
+        }, object: nil)
+        await fulfillment(of: [cleaned], timeout: 2)
+        XCTAssertEqual(library.downloadingSurahID, 1)
+        XCTAssertEqual(library.downloadingReciter, .husary)
+        XCTAssertEqual(library.completed, 0)
+        XCTAssertNil(library.errorMessage)
+        XCTAssertNil(library.localURL(for: try reference(1), reciter: .alafasy))
+
+        transport.resumeResponse(call: 2)
+        await waitForDownloadToFinish(library)
+        let expected = [Reciter.alafasy.audioURL(for: try reference(1))]
+            + (try (1...7).map { Reciter.husary.audioURL(for: try reference($0)) })
+        XCTAssertEqual(transport.requests.compactMap(\.url), expected)
+        XCTAssertEqual(library.completed, 7)
+        XCTAssertEqual(library.downloadedVerseCount(surahID: 1, reciter: .alafasy), 0)
+        XCTAssertEqual(library.downloadedVerseCount(surahID: 1, reciter: .husary), 7)
+        XCTAssertNil(library.errorMessage)
         XCTAssertTrue(transport.createdFiles.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
     }
 
@@ -294,15 +412,17 @@ private final class DownloadStub {
     enum InvalidResponse: CaseIterable, Equatable { case status, mimeType, length, nonHTTP, oversized }
     private let directory: URL
     private let body: Data
-    private var pausedResponse: CheckedContinuation<Void, Never>?
-    private var responseMayContinue = false
+    private var pausedResponses: [Int: CheckedContinuation<Void, Never>] = [:]
+    private var resumedCalls: Set<Int> = []
     var requests: [URLRequest] = []
     var createdFiles: [URL] = []
     var invalidResponse: InvalidResponse?
     var failure: Error?
     var failureOnCall: Int?
     var pauseFirstResponse = false
+    var pausedCalls: Set<Int> = []
     var onRequest: (() -> Void)?
+    var onFileCreated: ((Int, URL) -> Void)?
 
     init(directory: URL, body: Data) {
         self.directory = directory
@@ -312,16 +432,18 @@ private final class DownloadStub {
     var download: AudioLibrary.Download {
         { [self] request, _ in
             requests.append(request)
-            if pauseFirstResponse && requests.count == 1 && !responseMayContinue {
+            let call = requests.count
+            if ((pauseFirstResponse && call == 1) || pausedCalls.contains(call)) && !resumedCalls.contains(call) {
                 await withCheckedContinuation { continuation in
-                    pausedResponse = continuation
+                    pausedResponses[call] = continuation
                     onRequest?()
                 }
             }
-            if let failure, failureOnCall == nil || failureOnCall == requests.count { throw failure }
+            if let failure, failureOnCall == nil || failureOnCall == call { throw failure }
             let file = directory.appendingPathComponent(UUID().uuidString)
             try body.write(to: file)
             createdFiles.append(file)
+            onFileCreated?(call, file)
             if invalidResponse == .oversized {
                 let handle = try FileHandle(forWritingTo: file)
                 defer { try? handle.close() }
@@ -340,10 +462,9 @@ private final class DownloadStub {
         }
     }
 
-    func resumeResponse() {
-        responseMayContinue = true
-        let continuation = pausedResponse
-        pausedResponse = nil
+    func resumeResponse(call: Int = 1) {
+        resumedCalls.insert(call)
+        let continuation = pausedResponses.removeValue(forKey: call)
         continuation?.resume()
     }
 }
