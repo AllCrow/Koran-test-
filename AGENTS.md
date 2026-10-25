@@ -107,7 +107,12 @@ upload acceptance proof. Personal signing remains the current priority.
 ArabicText's selectable base size comes from EnvironmentValues.quranTextSize;
 retain Dynamic Type scaling. Persist a raw optional size string so old reading
 states and unknown future choices do not discard progress. Reading-data imports
-must preserve the current text size. Tajweed display hues have cached variants
+must preserve the current text size and system/light/dark appearance choice.
+The night UI test must select the real persisted appearance setting: the earlier
+AppleInterfaceStyle launch argument produced light screenshots despite passing.
+Inspect real screenshots before claiming dark rendering. Primary button text
+uses Palette.onGreen, contrasting with both light and dark brand fills.
+Tajweed display hues have cached variants
 for light/dark and Increased Contrast; do not edit the source colorHex values.
 
 Tafsir caches only recently opened, validated explanations: 64 entries, 4MiB

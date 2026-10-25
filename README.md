@@ -9,6 +9,7 @@ Utvecklingen fortsätter självständigt enligt användarens senaste instruktion
 - Alla **114 suror och 6 236 ayat** lokalt, uppdelade per sura, med valbar tajweedvisning.
 - Bundlad **Amiri Quran**-font med ursprunglig OFL-licens och verifierade filhashar.
 - Fyra sparade arabiska textstorlekar, med förhandsvisning från den bundlade korantexten. Valet gäller läsning, tafsir och övning tillsammans med iPhones Dynamic Type.
+- Sparat val mellan ljust läge, mörkt läge och att följa iPhone, med anpassad textkontrast.
 - Tre recitatörer: Mishary Rashid al-Afasy, Mahmoud Khalil al-Husary och Muhammad Siddiq al-Minshawi.
 - En ljudfil per vers. Versmarkering och versbyte följer AVPlayer-händelser; låsskärmskontroller och sparade ljudval är implementerade.
 - Uttryckliga ljudnedladdningar per sura och recitatör; spelaren föredrar sparat lokalt ljud. Inget recitationsljud är förpaketerat.
