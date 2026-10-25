@@ -51,7 +51,10 @@ struct ReaderView: View {
             .onChange(of: player.activeReference) { _, reference in
                 guard let reference, reference.surahID == store.chapter?.surah.id else { return }
                 store.setLastRead(reference)
-                requestScroll(to: reference.id, anchor: .center)
+                // Each new recitation begins at the start of its verse. A long
+                // Arabic card can exceed the viewport, so centering it would
+                // hide its opening while that opening is being recited.
+                requestScroll(to: reference.id, anchor: .top)
             }
             .sheet(isPresented: $showVerseJump, onDismiss: {
                 guard let reference = pendingJumpReference else { return }

@@ -28,7 +28,8 @@ för din telefon innan den kan öppnas.
    läsning och en bock ett uppnått dagsmål.
 4. Spela samma vers med var och en av de tre recitatörerna. Kontrollera att
    vald vers och recitatör stämmer med ljudet. Prova paus, nästa vers och sista
-   versen i en sura. Markeringen avser hela versen, inte tidssatta ord.
+   versen i en sura. Prova även 2:255: versens början ska visas när den nya
+   recitationen startar. Markeringen avser hela versen, inte tidssatta ord.
 5. Under **Mitt → Ljud för offline-lyssning**, ladda ned al-Fatiha för en
    recitatör och vänta tills alla sju verserna är sparade. Stoppa uppspelningen,
    slå på flygplansläge och stäng av Wi-Fi. Öppna appen igen, välj samma
