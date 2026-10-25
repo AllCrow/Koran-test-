@@ -58,7 +58,11 @@ reference and Basmala choice on tab changes. Only explicit practice selection or
 recording/deletion actions can replace it. Foreground downloads and own-voice
 playback/recording stop on background; recitation can continue with native controls.
 
-Intended remote: private `AllCrow/koran-ios`. Creation was denied by the GitHub
-integration (403) on 2026-10-24; do not claim upload success without checking the
-remote's actual visibility and commit. Do not substitute an unrelated repository
-or make source public. Preserve local Git commits and source backups meanwhile.
+The user created `AllCrow/Koran-test-` and explicitly authorized it to remain
+PUBLIC for now on 2026-10-25, overriding the earlier private-only instruction
+for this repository. The designated remote is
+`https://github.com/AllCrow/Koran-test-.git`. Preserve all existing Git history.
+Verify remote commits and actual CI outcomes before claiming upload/build success.
+The previous attempt to create private `AllCrow/koran-ios` was denied (403),
+and changing repository visibility is also denied to this integration. A later
+switch to private must be performed by the owner or an authorized connection.

@@ -29,6 +29,8 @@ Den 25 oktober gav användaren en timmes arbetsutrymme för finjusteringar. Arbe
 | K09 | Använd REA där det är relevant för undersökningen av en befintlig lösning. | Dokumentera målfil, verktyg, belägg och begränsningar när en faktisk undersökning görs. REA ersätter inte en talmodell. |
 | K10 | Bevara kod, krav och status i ett separat **privat GitHub-repo under AllCrow**. | Verifiera repositoryns ägare, privata synlighet och uppladdad commit. Inga hemligheter eller signeringsnycklar i repot. |
 
+Senare beslut 2026-10-25: användaren skapade [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-) och godkände uttryckligen att repot får vara **publikt tills vidare**, med möjlighet att göra det privat senare. Det beslutet ersätter det tidigare privatkravet för den aktuella uppladdningen. Ägare, synlighet och den faktiska uppladdningen ska fortfarande verifieras.
+
 Sparad läsposition, bokmärken och lokal inspelning/återlyssning ingår i den byggda appgrunden som stöd för läsning och övning. Lokal återlyssning uppfyller inte K08 och ska inte beskrivas som automatisk tajweedbedömning.
 
 Ljud kan nu uttryckligen laddas ned per sura och recitatör; spelaren föredrar den lokala filen när den finns. Ingen recitation är förpaketerad. Denna implementation behöver fortfarande native-testas på iPhone. Amiri Quran är bundlad med originallicens och verifierad täckning av lästextens synliga tecken; faktisk återgivning på iPhone återstår.
@@ -64,4 +66,4 @@ REA har nu faktiskt undersökt Muaalems viktfil och verifierat dess fullfilshash
 - Sakkunnigt kontrollerad recitationshjälp och jämförelse som styrker kvalitetsanspråk. **Kravet om Tarteels betalnivå är inte uppfyllt.**
 - Färdigställd innehålls-/ljudrättighetskontroll, korrekt användarinformation och validerad hantering av eventuell skickad röst.
 - Fungerande signering, Apple Developer/App Store Connect och TestFlight-väg utan krav på egen Mac hos användaren.
-- Verifierad privat GitHub-lagring under AllCrow. Lokala Git-snapshots och dokumentation ska bevaras under tiden; skapandeförsöket är för närvarande blockerat av HTTP 403.
+- Verifierad GitHub-lagring under AllCrow enligt det uppdaterade synlighetsbeslutet. Lokala Git-snapshots och dokumentation ska bevaras; en senare ändring till privat kräver ägarens inställningsändring eftersom integrationen nekas den åtgärden (403).

@@ -85,7 +85,7 @@ Tillgängliga API:er och ljudfiler betyder inte att alla rättigheter för appen
 
 Ett lokalt Git-repo finns. Grundversionen är sparad i `238ac4b` och den integrerade offline-/analyspipelinen i `10abe88`; följande ändringar och dokumentation bevaras i nya snapshots. Se lokal Git-logg för senaste commit. Denna status innebär inte att det senaste arbetsträdet redan är uppladdat eller att utvecklingen är färdig.
 
-Ett separat **privat GitHub-repo under AllCrow** är begärt. Autentiserad anslutning är bekräftad, men skapande nekades med HTTP 403, `Resource not accessible by integration`. Ingen ny GitHub-repository eller lyckad uppladdning är bekräftad. Arbetet fortsätter lokalt utan nya rutinfrågor medan denna externa behörighetsbegränsning kvarstår.
+Användaren har skapat [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-). Ägare AllCrow, publikt läge, tomt repo och läs-/skrivåtkomst är kontrollerade den 25 oktober. Användaren godkände därefter uttryckligen **publikt tills vidare**, vilket ersätter det tidigare privatkravet för uppladdningen. Integrationen nekas att ändra synlighet (403); ägaren behöver utföra ett senare byte till privat. Koden och den fulla lokala Git-historiken förbereds för det angivna repot. Uppladdning och Mac-byggresultat ska verifieras separat innan de beskrivs som godkända.
 
 REA finns separat i `/workspace/rea`, commit `f196ebf80665107aedc16892af25a1e1f9f26f43`. Det har faktiskt inventerat Muaalems safetensors-fil och strömmat hela filen för SHA256; den matchar den fixerade HF-artefakten. [Oförändrad evidens och metod](docs/REA_MODEL_INSPECTION.md) är sparade. Detta är en artefaktundersökning, inte en kvalitetsbedömning. **Tarteels app eller servrar har inte analyserats.**
 
@@ -94,7 +94,7 @@ Användaren har iPhone men ingen Mac. Molnbaserad macOS-byggmiljö, Apple Develo
 ## Återstående releasekrav och fortsatt arbete
 
 1. Utöka modellproven från den verifierade begränsade körningen till flera verser, elever och verkliga förhållanden. Kör sakkunnig utvärdering; påstå ingen Tarteel-paritet innan den är styrkt.
-2. Verifiera privat GitHub-bevarande under AllCrow när rätt åtkomst finns. Behåll lokala snapshots under tiden.
+2. Verifiera uppladdad commit i användarens AllCrow/Koran-test-. Bevara lokala snapshots; följ det nya beslutet om publikt tills vidare.
 3. Kör riktigt Xcode-bygge och simulatorprov i macOS. Prova därefter läsning, arabisk text, ljudsynkning, nedladdning/offline, tafsir, streak, inspelning och eventuell analys på fysisk iPhone.
 4. Mät telefonens värme, batteri, minne och svarstid. **Ingen fysisk temperatur- eller energimätning är ännu utförd.**
 5. Slutför innehållsrättigheter, användarinformation, signering och TestFlight-distribution. Dokumentera vad som faktiskt passerar varje steg.
