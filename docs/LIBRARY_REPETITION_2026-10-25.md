@@ -1,9 +1,7 @@
 # Ljudbibliotek, repetition och personlig övning
 
 Omgången genomför de sex förbättringar användaren godkände efter bygge53.
-**Implementationen granskas och native-verifiering återstår.** Det tidigare
-godkända paketet och dess underlag bevaras. Faktiska utfall förs in här när
-kandidaten har verifierats; förväntade funktioner är inte godkända provresultat.
+**Omgången är godkänd i [huvudkörning 63](https://github.com/AllCrow/Koran-test-/actions/runs/40218507319).** Alla sex jobb och ägarutkastet passerade. Tidigare paket och full historik bevaras.
 
 ## Användarbeteende
 
@@ -55,11 +53,58 @@ energiförbrukning behöver fortfarande provas på telefon. Automatisk
 tajweedanalys är avstängd i normalbygget; inga nya lärarbedömningar eller
 anspråk på Tarteel-kvalitet följer av denna omgång.
 
-Förväntad ordinarie native-svit är 139 hostade och tolv UI-fall per
-simulatorvariant, samt 89 separata portabla Mac-fall och 57 backendfall.
-Det är förväntade antal, inte ett godkänt körresultat. Innehålls-, referens-,
-font-, ikon- och projektkontrollerna har passerat lokalt. Backendens indata
-är oförändrade jämfört med den tidigare godkända källan.
+## Faktisk verifiering och leverans
+
+[Huvudkörning 63](https://github.com/AllCrow/Koran-test-/actions/runs/40218507319) är **avslutad med alla sex jobb godkända**.
+Varje simulator utförde **139 hostade + 12 UI-fall**, samt separat
+**89 portabla Mac-fall**. Backendjobbet passerade **57 fall**, inklusive
+21 befintliga utvärderingskontraktsprov. Det är **151 unika native-/UI-fall och
+453 exekveringar** över tre konfigurationer.
+
+Källa `dd0f159dbf60d5daa839bafd252dc80091cc18aa`, komplett Git-träd `b082e40e92f85cabd8d6bf66e7f1e228f9cccd1b`. Den hämtade
+[PR-checkouten](https://github.com/AllCrow/Koran-test-/actions/runs/40216509406) `3da7cf46d0680815618ccfbe2401537b455d2a48` har samma hela träd.
+[Leveransbeviset](evidence/library-delivery-63-2026-10-25.json) binder individuella passrader, råloggar,
+källor, paket och ägarutkast.
+
+Aktuellt paket är **0.1.0 (63)**, **3 491 616 byte**,
+iPhoneOS/arm64, minsta iOS17.0 och SDK26.2. IPA SHA256:
+`0bfb02ef8779662de7e99a47a43c60643483eaf7450c3ee4a1ff801a99dbea3f`.
+Releaseutkast **423574403**, tagg **personal-build-63-1**, är draft/prerelease
+på rätt källa. Alla tre assets matchar filstorlekar och SHA256. Hämta under
+[Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som **AllCrow**.
+
+Det separata [EveryAyah-provet](https://github.com/AllCrow/Koran-test-/actions/runs/40205401991) passerade tre
+opt-in-fall på iPhone16e/iOS26.2: tolv riktiga filer, 855505 byte,
+avkodade och lokal112:2 spelad till native-slut för alla tre recitatörer.
+[Originalunderlaget och sex kodhashar](evidence/live-recitation-native-library-2026-10-25.json) binds till den
+aktuella källans sex granskade ljud-/lagringsfiler. Körkällan är
+`b7725676b6ea578a5be4daec98c784bffb8087b1`; detta är ingen ny körning av hela appen eller dess UI.
+Rålogg, API-metadata, ZIP och tre ursprungliga JSON-bilagor är återkontrollerade.
+Provet använder normal `playOnce`. Den nya bundna sessionsvägen
+`playSavedOnce` täcks separat av det genererade MP3-provet i normalmatrisen.
+De tre källfallen ingår inte i matrisens 151/453.
+
+Personlig signering och fysisk installation, mobilradio, låsta repetitionspauser,
+ljudrutter, Files-export, VoiceOver och energi återstår. Automatisk analys är av;
+ingen ny akustisk noggrannhet eller Tarteel-jämförelse påstås.
+
+### Användning
+
+1. **Mitt → Ljud för offline-lyssning:** se sparade val och kontrollerad lagring. Spela öppnar rätt sura och vers med läsarens spelkontroller. Valet binds till sin lokala fil även vid nytt försök; om filen saknas visas fel utan att strömning startar. Radera efter bekräftelse.
+2. **Koranen → Läsinställningar → Repetera verser:** välj intervall, omgångar och paus och tryck på Starta. Spelaren visar omgång/färdigt pass; manuellt stopp avbryter det.
+3. **Mitt → Använd mobildata för ljud:** stäng av för Wi-Fi-krav på nytt ljud. Sparat ljud fungerar utan nät. Valet gäller inte tafsir eller separat aktiverad analys.
+4. Lägg till **Öva igen** från versens meny eller övningsvyn. **Min övningskö** låter dig öppna eller ta bort verser själv. Nya läskopior inkluderar kön; den ger ingen automatisk läskredit.
+5. **Mitt → Felsökningsrapport:** skapa och granska rapporten före export till Filer. Ingen rapport skickas automatiskt.
+
+Bygge53:s separata EveryAyah-prov bevaras för dess exakta historiska källa,
+inte som nytt bevis för senare ändrad ljudkod. Följ [installationsguiden](PERSONAL_IPHONE_INSTALL.md)
+och [telefonprovet](FIRST_IPHONE_TEST.md) för signering och de kvarvarande fysiska proven.
+
+## Bevarad lokal förkontroll och miljöhistorik
+
+Följande anteckningar beskriver läget före slutgodkännandet ovan; tidigare
+underkända eller avbrutna prov blir inte godkända i efterhand.
+
 
 Efter återställningen passerade en samlad Swift6.0.3-förkontroll: syntax för
 app- och testfiler med Debug aktiverat samt **87 portabla Swift-fall** i en

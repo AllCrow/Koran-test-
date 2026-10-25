@@ -13,6 +13,11 @@ Den utökade stabilitetsrundan förbättrar läskomfort, veckohistorik, offline-
 - Tre recitatörer: Mishary Rashid al-Afasy, Mahmoud Khalil al-Husary och Muhammad Siddiq al-Minshawi.
 - En ljudfil per vers. Versmarkering och versbyte följer AVPlayer-händelser; låsskärmskontroller och sparade ljudval är implementerade.
 - Uttryckliga ljudnedladdningar per sura och recitatör; spelaren föredrar sparat lokalt ljud. Inget recitationsljud är förpaketerat.
+- Samlat ljudbibliotek med kontrollerad lagring, avskilda skadade filer och radering per sura/recitatör. Sparat ljud öppnar rätt text och binds till sin lokala fil även vid nytt försök.
+- Ändlig repetition av ett versintervall, 1–20 omgångar och 0–15 sekunders paus, driven av verkligt versslut.
+- Sparat nätval för mobildata eller Wi-Fi-krav på nytt ljud; sparat ljud fungerar lokalt.
+- Ordnad övningskö med högst 200 verser, omstart och additiva läskopior utan automatisk läskredit.
+- Uppdateringsprov med frysta äldre format och en frivillig felsökningsrapport att granska före export.
 - Tafsir al-Muyassar på arabiska med källangivelse. Tidigare öppnade förklaringar kan sparas lokalt för senare offlinebruk i en begränsad och validerad cache.
 - Lokala bokmärken, läsposition, dagligt läsmål, en uppmuntrande streak och en översikt över de senaste sju läsdagarna.
 - Surasökning med arabiska siffror och vanliga latinska stavningar samt direkt **Gå till vers** i läsmenyn.
@@ -63,24 +68,45 @@ behöver fortfarande verifieras. Minsta körversion iOS17 är en annan
 inställning än bygg-SDK:n. Den personliga installationsvägen
 beskrivs i [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
-**Aktuell verifiering:** [huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)
-passerar **96 hostade iOS-prov och åtta UI-flöden på var och en av tre
-simulatorvarianter**, samt **85 portabla Mac-prov och 57 backendprov**.
-Det är 104 unika native-/UI-fall och 312 exekveringar över matrisen.
-Omgången förbättrar återhämtning av ljudlagring, skyddar färdiga nedladdningar
-och återställer en försvunnen tafsircache. Ett separat
-[utvärderingsverktyg för tajweed](docs/TAJWEED_EVALUATION.md) är provat med
-21 kontraktsfall; det ger inga kvalitetsmått för det ogranskade arkivfallet.
-**Bygge 53** finns som ägaråtkomligt utkast under
-[Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som AllCrow.
-IPA:n är oberoende kontrollerad mot källan. Personlig installation,
-fysisk mikrofon och värme/batteri återstår. Se
-[omgångens underlag](docs/OFFLINE_QUALITY_2026-10-25.md).
+**Aktuell verifiering:**
 
-Ett separat [prov med riktiga recitationer](docs/LIVE_RECITATION_AUDIT.md)
-har också passerat mot det ändrade ljudbiblioteket: tolv filer avkodades och
-lokal 112:2 spelades till faktiskt versslut för alla tre recitatörer.
-Det återanvänder den befintliga provsviten och räknas separat från matrisen.
+[Huvudkörning 63](https://github.com/AllCrow/Koran-test-/actions/runs/40218507319) är **avslutad med alla sex jobb godkända**.
+Varje simulator utförde **139 hostade + 12 UI-fall**, samt separat
+**89 portabla Mac-fall**. Backendjobbet passerade **57 fall**, inklusive
+21 befintliga utvärderingskontraktsprov. Det är **151 unika native-/UI-fall och
+453 exekveringar** över tre konfigurationer.
+
+Källa `dd0f159dbf60d5daa839bafd252dc80091cc18aa`, komplett Git-träd `b082e40e92f85cabd8d6bf66e7f1e228f9cccd1b`. Den hämtade
+[PR-checkouten](https://github.com/AllCrow/Koran-test-/actions/runs/40216509406) `3da7cf46d0680815618ccfbe2401537b455d2a48` har samma hela träd.
+[Leveransbeviset](docs/evidence/library-delivery-63-2026-10-25.json) binder individuella passrader, råloggar,
+källor, paket och ägarutkast.
+
+Aktuellt paket är **0.1.0 (63)**, **3 491 616 byte**,
+iPhoneOS/arm64, minsta iOS17.0 och SDK26.2. IPA SHA256:
+`0bfb02ef8779662de7e99a47a43c60643483eaf7450c3ee4a1ff801a99dbea3f`.
+Releaseutkast **423574403**, tagg **personal-build-63-1**, är draft/prerelease
+på rätt källa. Alla tre assets matchar filstorlekar och SHA256. Hämta under
+[Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som **AllCrow**.
+
+Det separata [EveryAyah-provet](https://github.com/AllCrow/Koran-test-/actions/runs/40205401991) passerade tre
+opt-in-fall på iPhone16e/iOS26.2: tolv riktiga filer, 855505 byte,
+avkodade och lokal112:2 spelad till native-slut för alla tre recitatörer.
+[Originalunderlaget och sex kodhashar](docs/evidence/live-recitation-native-library-2026-10-25.json) binds till den
+aktuella källans sex granskade ljud-/lagringsfiler. Körkällan är
+`b7725676b6ea578a5be4daec98c784bffb8087b1`; detta är ingen ny körning av hela appen eller dess UI.
+Rålogg, API-metadata, ZIP och tre ursprungliga JSON-bilagor är återkontrollerade.
+Provet använder normal `playOnce`. Den nya bundna sessionsvägen
+`playSavedOnce` täcks separat av det genererade MP3-provet i normalmatrisen.
+De tre källfallen ingår inte i matrisens 151/453.
+
+Personlig signering och fysisk installation, mobilradio, låsta repetitionspauser,
+ljudrutter, Files-export, VoiceOver och energi återstår. Automatisk analys är av;
+ingen ny akustisk noggrannhet eller Tarteel-jämförelse påstås.
+
+[Omgångens underlag](docs/LIBRARY_REPETITION_2026-10-25.md) redovisar faktisk
+simulatorverifiering. Bygge53:s separata [prov med riktiga recitationer](docs/LIVE_RECITATION_AUDIT.md)
+är historiskt underlag för dess exakta källa, inte ett nytt prov av senare ändrad
+ljudkod. Personlig installation beskrivs i [guiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
 Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, personlig signering och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
 

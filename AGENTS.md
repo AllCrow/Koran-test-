@@ -18,7 +18,80 @@ can be borrowed for initial setup/recovery. The user expects access to a compute
 confirmed. See `docs/PERSONAL_IPHONE_INSTALL.md`; no signing or device install is
 verified, and never request passwords or pairing files in chat.
 
-## Latest offline-quality verification
+## Latest library and practice verification
+
+Main run 40218507319 passed on dd0f159dbf60d5daa839bafd252dc80091cc18aa: 139 hosted and 12 UI
+cases per simulator, 89 portable Mac cases and 57 backend cases.
+These are 151 unique native/UI cases and 453 executions. Actual PR
+checkout 3da7cf46d0680815618ccfbe2401537b455d2a48 has the same complete tree.
+Owner draft personal-build-63-1 and its three assets are independently checked.
+See STATUS.md and docs/LIBRARY_REPETITION_2026-10-25.md.
+Separate real-source run 40205401991 passed three unchanged cases
+on b7725676b6ea578a5be4daec98c784bffb8087b1. Recheck all six source fingerprints against the current
+source and preserve the original JSON/archive/API proof. It uses normal
+playOnce, not the pinned-session playSavedOnce API; normal generated-audio
+coverage establishes that separate API. Do not add these three cases to the
+normal matrix totals. Keep storage admission and loop implementation in the
+opt-in staging fingerprints.
+
+Keep inventory IO off MainActor, bounded/cancellable and guarded against stale
+results. Retained rows are not a fresh verified total. Separate usable verses
+from damaged occupied bytes, reuse admission, preserve legacy paths and
+unrelated selections, and recheck roots before deletion.
+Controlled held-scan tests must register their exact pending continuation
+before signalling START. Before cancellation, replacement or deletion, require
+that registration, an open gate, active scanning and unverified inventory.
+Only this worker-start prerequisite has a separate 10-second safety budget;
+it is not an inventory-completion or cancellation-latency promise. A missed
+prerequisite must fail with bounded diagnostics, cancel owned jobs and the
+library scan, permanently close/drain the gate, and return without exercising
+later phases. Closed gates reject late arrivals; complete/fail must still
+reject missing requests. Retain the actual held-response/stale-result
+assertions. Keep production QoS unchanged, native AVPlayer pause probes' original
+2-second budget and UI's original 5-second interaction requirements.
+Main60 failed this START prerequisite before testing cancellation; its failed
+history and unapproved package remain preserved, never retroactively approved.
+
+Library playback must load and validate the exact local chapter before opening
+the matching Reader verse and controls. Cancel stale navigation and preserve
+newer playback when an old view closes. Pin the selected saved source across
+retry: a missing file must fail locally, never silently resolve through the
+ordinary provider or fall back to streaming.
+
+Real native EOF drives finite same-surah repetition; only its gap sleeps.
+Retain one owned cancellable delay, generation guards, explicit resume after
+interruptions/reset, exact pending verse/cycle and unchanged normal autoplay.
+Native tests do not establish cellular enforcement or a long locked-phone gap.
+Apply policy changes to old remote work and future requests/assets while
+keeping local playback usable.
+
+Queue edits/imports preflight persisted state and export before mutation.
+Keep 200 ordered unique references, optional v1 fields and zero-mutation
+rejection. Deduplicate in one eager pass: side effects in lazy Collection
+filters can consume entries or invalidate bounds. Navigation/removal never
+grants credit or silently deletes a different valid take. Preserve recorded
+reference/Basmala and reject hidden/stale practice callbacks.
+
+Diagnostics are explicit, previewable and local until user export. Permit only
+typed whitelisted status, never raw errors, voice/verse data, history, account
+data, paths or URLs. Debug fixtures stay out of Release. Preserve actual
+interactions and existing timing/geometry requirements in both UI classes.
+Read-only library metadata uses its dedicated visibility path: one fresh,
+coherent native snapshot per observation must bind one exact global ID, the
+exact value after removing only NBSP/narrow-NBSP between decimal digits, and the whole finite
+label frame inside the viewport between the library navigation and tab bars
+in that same window, with the app in the foreground. Retain at most 12 measured
+geometry-based drags followed by one 5-second assertion. Do not require an
+activation point or tap the metadata label. Real buttons, pickers, steppers
+and deletion confirmation keep operability checks and actual interactions;
+the eight older UI cases remain unchanged. PR61 failed overall; preserve its
+failure record without treating later unexecuted checks as passed.
+
+Physical signing/installation, microphone, radio, locked gaps, Files providers,
+VoiceOver and energy remain unverified. Analysis stays off; no new inference,
+expert accuracy or Tarteel parity follows from these test results.
+
+## Historical build53 verification
 
 Main run 40192974053 passed on e1bb2625136277beb8f4eab78f17576acc3d56e5: 96 hosted and eight UI cases
 on each of three simulator configurations, 85 portable Mac cases per variant
@@ -53,8 +126,7 @@ three cases, 12 real files decoded, pinned112:2 locally played to native EOF
 for each reciter without fallback/redownload. Read
  docs/evidence/live-recitation-native-recovery-2026-10-25.json and
  docs/evidence/delivery-53-2026-10-25.json. All three original JSON attachments,
-ZIP/source/manifest hashes and current code hashes were checked. Do not rerun
-this already approved source without another concrete code/content concern.
+ZIP/source/manifest hashes and current code hashes were checked. That remains evidence for its exact source, not a rerun of later changed audio code.
 The three opt-in cases are separate from normal104/312 and prove no physical
 radio, audio route, energy, rights or expert quality.
 

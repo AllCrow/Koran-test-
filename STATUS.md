@@ -7,11 +7,50 @@ analysserver är konfigurerad och Tarteel-kvalitetsmålet är inte uppfyllt.**
 
 ## Senaste fortsättningsrunda
 
-**Nästa kandidat granskas:** samlat ljudbibliotek, ändligt repetitionsläge,
-sparat val för mobildata, personlig övningskö, uppdateringskompatibilitet och
-frivillig lokal felsökningsrapport. [Omgångens omfattning](docs/LIBRARY_REPETITION_2026-10-25.md)
-skiljer genomförande från ännu återstående native-prov. Bygge53 nedan är
-fortfarande den senaste fullständigt godkända ägarnedladdningen.
+- Samlat ljudbibliotek med kontrollerad lagring, avskilda skadade filer och radering per sura/recitatör. Sparat ljud öppnar rätt text och binds till sin lokala fil även vid nytt försök.
+- Ändlig repetition av ett versintervall, 1–20 omgångar och 0–15 sekunders paus, driven av verkligt versslut.
+- Sparat nätval för mobildata eller Wi-Fi-krav på nytt ljud; sparat ljud fungerar lokalt.
+- Ordnad övningskö med högst 200 verser, omstart och additiva läskopior utan automatisk läskredit.
+- Uppdateringsprov med frysta äldre format och en frivillig felsökningsrapport att granska före export.
+
+[Huvudkörning 63](https://github.com/AllCrow/Koran-test-/actions/runs/40218507319) är **avslutad med alla sex jobb godkända**.
+Varje simulator utförde **139 hostade + 12 UI-fall**, samt separat
+**89 portabla Mac-fall**. Backendjobbet passerade **57 fall**, inklusive
+21 befintliga utvärderingskontraktsprov. Det är **151 unika native-/UI-fall och
+453 exekveringar** över tre konfigurationer.
+
+Källa `dd0f159dbf60d5daa839bafd252dc80091cc18aa`, komplett Git-träd `b082e40e92f85cabd8d6bf66e7f1e228f9cccd1b`. Den hämtade
+[PR-checkouten](https://github.com/AllCrow/Koran-test-/actions/runs/40216509406) `3da7cf46d0680815618ccfbe2401537b455d2a48` har samma hela träd.
+[Leveransbeviset](docs/evidence/library-delivery-63-2026-10-25.json) binder individuella passrader, råloggar,
+källor, paket och ägarutkast.
+
+Aktuellt paket är **0.1.0 (63)**, **3 491 616 byte**,
+iPhoneOS/arm64, minsta iOS17.0 och SDK26.2. IPA SHA256:
+`0bfb02ef8779662de7e99a47a43c60643483eaf7450c3ee4a1ff801a99dbea3f`.
+Releaseutkast **423574403**, tagg **personal-build-63-1**, är draft/prerelease
+på rätt källa. Alla tre assets matchar filstorlekar och SHA256. Hämta under
+[Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som **AllCrow**.
+
+Det separata [EveryAyah-provet](https://github.com/AllCrow/Koran-test-/actions/runs/40205401991) passerade tre
+opt-in-fall på iPhone16e/iOS26.2: tolv riktiga filer, 855505 byte,
+avkodade och lokal112:2 spelad till native-slut för alla tre recitatörer.
+[Originalunderlaget och sex kodhashar](docs/evidence/live-recitation-native-library-2026-10-25.json) binds till den
+aktuella källans sex granskade ljud-/lagringsfiler. Körkällan är
+`b7725676b6ea578a5be4daec98c784bffb8087b1`; detta är ingen ny körning av hela appen eller dess UI.
+Rålogg, API-metadata, ZIP och tre ursprungliga JSON-bilagor är återkontrollerade.
+Provet använder normal `playOnce`. Den nya bundna sessionsvägen
+`playSavedOnce` täcks separat av det genererade MP3-provet i normalmatrisen.
+De tre källfallen ingår inte i matrisens 151/453.
+
+Personlig signering och fysisk installation, mobilradio, låsta repetitionspauser,
+ljudrutter, Files-export, VoiceOver och energi återstår. Automatisk analys är av;
+ingen ny akustisk noggrannhet eller Tarteel-jämförelse påstås.
+
+Se [användning och provgränser](docs/LIBRARY_REPETITION_2026-10-25.md) samt
+[installationsguiden](docs/PERSONAL_IPHONE_INSTALL.md). Bygge53:s separata
+EveryAyah-prov bevaras som historiskt underlag för den då körda källan.
+
+## Historiskt bygge 53
 
 Offlineomgången är **godkänd i [huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)**:
 **96 hostade + åtta UI-fall per simulator**, **85 separata portabla Mac-fall**
@@ -42,7 +81,7 @@ metadata/resultat finns i [det kompletterande leveransbeviset](docs/evidence/del
 Originalrösten var inte tillgänglig för denna andra kontroll; dess tidigare
 bytekontroll intygas inte på nytt.
 
-Aktuellt paket är **0.1.0 (53)**, **3 271 185 byte**,
+Det historiska paketet är **0.1.0 (53)**, **3 271 185 byte**,
 iPhoneOS/arm64, minsta iOS17.0 och bygg-SDK26.2. IPA SHA256:
 `159cbb58cde06dca919b956b8a4b918339c7d79ec1266de1a31682a404c2c6eb`.
 Releaseutkast **423396167**, tagg **personal-build-53-1**, är verifierat
