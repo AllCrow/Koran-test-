@@ -24,7 +24,6 @@ struct ReaderView: View {
                         if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
                         ForEach(chapter.ayahs) { ayah in
                             verseCard(ayah, chapter: chapter).id(ayah.numberInSurah)
-                                .accessibilityIdentifier("reader.verse.\(chapter.surah.id).\(ayah.numberInSurah)")
                         }
                         Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
                             .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)

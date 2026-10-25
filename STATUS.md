@@ -24,6 +24,13 @@ körda i iOS**; resultatet måste hämtas från den nya macOS-körningen.
 Lokalt passerar koran-, övningsreferens- och resurskontroller efter tillägget.
 Denna miljö saknar fortfarande Swift/Xcode; inga nya lokala Swift-resultat påstås.
 
+[Omkörningen på `4645f6c`](https://github.com/AllCrow/Koran-test-/actions/runs/40153076721)
+klarade Xcode-bygget och samtliga åtta hostade AppStore-prov. De tre UI-proven
+misslyckades: simulatorns tillgänglighetsträd visade att verskortets yttre
+`reader.verse`-identifierare skrevs över läs- och bokmärkesknapparnas egna
+identifierare. Den oanvända yttre identifieraren tas därför bort; knapparnas
+namn, handlingar och själva testkraven bevaras. Ny simulatorverifiering återstår.
+
 ## Senaste finjusteringar
 
 - Ljudfältet har större tryckytor och bättre plats för stor text. Arabisk högerjustering och VoiceOver-rubriker är rättade; startsida och suraval har adaptiv layout.
