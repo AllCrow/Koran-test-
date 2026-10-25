@@ -14,7 +14,7 @@ utfall och exakta källversioner redovisas i [STATUS.md](../STATUS.md).
 
 | Variant | Byggverktyg / simulator | Enhet |
 | --- | --- | --- |
-| ios18 | Xcode 16.4 / iOS 18.5 | iPhone 16 Pro |
+| ios18 | Xcode 26.2 / iOS 18.5 | iPhone 16 Pro |
 | ios18-compact | Xcode 16.4 / iOS 18.5 | iPhone SE (3:e generationen) |
 | ios26 | Xcode 26.2 / iOS 26.2 | iPhone 16e |
 
@@ -22,6 +22,15 @@ Varje variant kör innehållskontroller, portabla Swift-tester, projektkontroll,
 simulatorbygge och de hostade native-/UI-proven. Den personliga osignerade
 iPhone-IPA:n byggs separat med **Xcode 26.2 / iOS 26.2 SDK**. Minsta stödda
 körversion för appen är fortsatt **iOS 17**.
+
+CI-konfigurationen bygger testmålen en gång för den valda simulatorn och
+kör sedan de hostade tjänsteproven före UI-flödena med `test-without-building`.
+Ett tjänstefel ska stoppa omgången före de långsammare UI-proven; samma
+UI-svit krävs fortfarande för ett godkänt nativejobb. Resultatartefakten
+bevarar `HostedTests.xcresult` och, när tjänsterna passerat,
+`UITestResults.xcresult`. Skärmbilder exporteras från UI-resultatet, eller
+från tjänsteresultatet om körningen stannade där. Det är en ändrad
+konfiguration som behöver faktisk Mac-verifiering innan den kan godkännas.
 
 Det genererade Xcode-projektet har tre mål: `Sakina`, `SakinaTests` och
 `SakinaUITests`. Schemat `Sakina` kopplar båda testmålen till appen.
