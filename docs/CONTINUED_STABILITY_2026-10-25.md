@@ -1,5 +1,21 @@
 # Fortsatt stabilitetsarbete 2026-10-25
 
+## Förtydligad native-kvittens i pausprovet
+
+Körning 49 hittade ett för tidigt kvitterat pausläge i MP3-provets andra
+avbrottsfas på iOS 26. Två rate-kontroller läste 1, medan status var paused;
+provet tog 0,309 s och hade inte nått någon tidsgräns. Den tidigare
+förutsättningen efter resume kontrollerade bara appens publicerade flagga.
+
+Provet bevakar nu motorn före varje kommando och kräver positiv native-rate
+och playing före avbrottet. KVO är endast väckning för nya aktuella getter-
+kontroller på huvudaktorn. Samma tvåsekundersgräns, riktiga MP3-avkodning,
+tresekunderston, kvarvarande ljud under 2,5 s, inget naturligt slut och
+slutliga rate0/paused-krav behålls. Samma item och ljudfil kontrolleras också.
+De senaste 64 tillståndsobservationerna bifogas om kvittensen misslyckas.
+Detta testbyte påstår inte att ett ihållande produktfel har bevisats eller
+att en tidigare misslyckad körning har blivit godkänd. Ny Mac-verifiering krävs.
+
 Användaren bad om fortsatt förbättringsarbete efter det godkända personliga
 bygget 46. Det paketet och dess fullständiga historik/backup bevaras.
 
