@@ -5,46 +5,47 @@ Uppdaterat **2026-10-25**. Native-app för iPhone, **iOS 17+**.
 **Automatisk tajweedbedömning är fortsatt experimentell och avstängd. Ingen
 analysserver är konfigurerad och Tarteel-kvalitetsmålet är inte uppfyllt.**
 
-## Senaste verifierade fortsättningsrunda
+## Senaste fortsättningsrunda
 
-[Huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)
-på `e1bb2625136277beb8f4eab78f17576acc3d56e5` är **godkänd i alla sex jobb**.
-Faktiska loggar visar **96 hostade + åtta UI-prov på var och en av tre
-simulatorer**, 85 unika portabla Swift-fall per Mac-variant och 57 backendfall.
-Det är **104 unika native-/UI-fall och 312 exekveringar**, inte 312 olika fall.
+Offlineomgången är **godkänd i [huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)**:
+**96 hostade + åtta UI-fall per simulator**, **85 separata portabla Mac-fall**
+och **57 backendfall**, varav **21 utvärderingsverktygsprov**. Alla sex jobb
+passerade, inklusive det osignerade iPhone-bygget och sparandet av ägarutkastet.
+Det är **104 unika native-/UI-fall och 312 exekveringar över tre varianter**.
 
-Ljudlagring kan återhämta sig vid ett nytt uttryckligt försök; filskydd och
-identitet förbereds före publicering av en färdig vers. Tafsircachen kan
-återskapas när mappen försvinner och avvisar en ersättande symbolisk länk.
-Fem nya hostade nät-/filregressioner och tre portabla cachefall ingår.
-[Omgångens omfattning](docs/OFFLINE_QUALITY_2026-10-25.md).
+- Ljudlagring kan återhämtas vid uttryckligt återförsök i samma appsession.
+- Färdiga verser bevaras vid fel; trasiga versfiler repareras och sena svar får inte påverka ett nyare jobb.
+- Tafsircachen återhämtar en borttagen mapp och avvisar ersättande länkar även efter nätväntan.
+- Ett separat [verktyg för tajweedutvärdering](docs/TAJWEED_EVALUATION.md) kan jämföra modellindikationer med sakkunnigas bedömningar. Det ogranskade arkivfallet får fortsatt inga kvalitetsmått.
 
-Det separata [tajweedverktyget](docs/TAJWEED_EVALUATION.md) har 21 syntetiska
-kontraktsprov bland backendens 57. Den verkliga 112:2-observationen förblir
-ogranskad och får inga kvalitetsmått. Rapportens indata, kodhash och resultat
-har återskapats separat utan modellkörning eller nya expertetiketter.
+Källa: `e1bb2625136277beb8f4eab78f17576acc3d56e5`. Faktisk PR-checkout `6897dba0e03072d18c79e14a74d165d5c219232b` har samma
+Git-träd `4a769740e82380a90c0b63fc04fe172ffd893fad`. [Ändringar och provgränser](docs/OFFLINE_QUALITY_2026-10-25.md)
+och [leveransbevis](docs/evidence/offline-quality-delivery-53-2026-10-25.json) anger exakt omfattning.
 
-**Personligt bygge 0.1.0 (53)** finns i
-[ägarutkastet](https://github.com/AllCrow/Koran-test-/releases/tag/untagged-9f5ff7d75e7bdc880981),
-release-ID **423396167**, tagg **personal-build-53-1**, källa `e1bb262`.
-IPA: **3 271 185 byte**, SHA256
+Den riktade [källåterkontrollen](https://github.com/AllCrow/Koran-test-/actions/runs/40194584222)
+är nu också **godkänd på samma nya källa**: tre befintliga fall på iPhone16e/
+iOS26.2, tolv riktiga filer avkodade och lokal 112:2 till native-slut för
+varje recitatör utan fallback eller ny nedladdning. Kod-/manifesthashar och
+alla originalbilagor är kontrollerade i
+[det nya källbeviset](docs/evidence/live-recitation-native-recovery-2026-10-25.json).
+De tre fallen är separata från 104/312 och ersätter ingen fysisk provning.
+
+En andra oberoende kontroll av slutloggar, tre 2:255-bilder, IPA/rapport,
+källguide, alla 239 resurser och den ogranskade utvärderingens reproducerbara
+metadata/resultat finns i [det kompletterande leveransbeviset](docs/evidence/delivery-53-2026-10-25.json).
+Originalrösten var inte tillgänglig för denna andra kontroll; dess tidigare
+bytekontroll intygas inte på nytt.
+
+Aktuellt paket är **0.1.0 (53)**, **3 271 185 byte**,
+iPhoneOS/arm64, minsta iOS17.0 och bygg-SDK26.2. IPA SHA256:
 `159cbb58cde06dca919b956b8a4b918339c7d79ec1266de1a31682a404c2c6eb`.
-Oberoende kontroll av iPhoneOS/arm64, min iOS17, SDK26.2, alla 239
-källresurser samt releasefilerna finns i
-[leveransbeviset](docs/evidence/delivery-53-2026-10-25.json).
-IPA/byggrapport jämfördes med hämtad CI-artefakt; installationsguiden med
-källfilen. Alla matchar respektive release-digest och storlek.
+Releaseutkast **423396167**, tagg **personal-build-53-1**, är verifierat
+mot rätt källa och samtliga tre nedladdade filers storlekar och SHA256.
+Hämta under [Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad
+som **AllCrow**, och följ [installationsguiden](docs/PERSONAL_IPHONE_INSTALL.md).
+Personlig signering och fysisk iPhone-provning återstår; automatisk analys är av.
 
-Paketet är **osignerat**, kan inte installeras direkt från Filer och kräver
-[personlig signering](docs/PERSONAL_IPHONE_INSTALL.md). Inloggning som AllCrow
-krävs för utkastet. Tidigare utkast och all Git-historik är bevarade.
-Fysisk iPhone, energi/värme, innehållsrättigheter och sakkunnig tajweedkvalitet
-återstår; denna verifiering klarmarkerar inte appen.
-
-## Bevarad verifiering av bygge 51
-
-Detta är den tidigare godkända källan; senare lagringsändringar i bygge53
-omfattas av den nya huvudkörningen ovan.
+## Historiskt bygge 51
 
 Fortsättningsrundan är **godkänd i huvudkörning 51**: **91 hostade + åtta UI-prov på var och en av tre simulatorer**, samt **82 portabla Swift-prov per Mac-variant och 36 backendprov**. **Personligt bygge 51** är sparat som ägaråtkomligt releaseutkast. Personlig signering och fysisk iPhone-provning återstår.
 
@@ -61,10 +62,10 @@ Ett separat [native-källprov](docs/LIVE_RECITATION_AUDIT.md) passerade dessutom
 tre fall på iPhone16e/iOS26.2: tolv riktiga EveryAyah-filer hämtades och
 avkodades, och en hashkontrollerad lokal 112:2 spelades till native-slut för
 varje recitatör utan fallback. De tre opt-in-fallen räknas inte in i 99/297.
-Senare tillägg av detta verktyg/test/workflow ligger utanför appens och den
-ordinarie verifieringens indata; de levererade runtime-indata är oförändrade.
+Detta är det historiska underlaget för bygge51. Återkontrollen mot bygge53:s
+ändrade AudioLibrary är en separat ny körning, redovisad ovan.
 
-Det bevarade paketet är **0.1.0 (51)**, **3 269 813 byte**,
+Det historiska paketet är **0.1.0 (51)**, **3 269 813 byte**,
 iPhoneOS/arm64, minsta iOS 17.0 och SDK 26.2. IPA SHA256:
 `279803799a1f3d72626c42ab7e7a651e3859cb528a80625e0c5ef26de5e6854b`.
 Releaseutkast **423341980**, tagg **personal-build-51-1**, är verifierat

@@ -65,16 +65,22 @@ beskrivs i [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
 **Aktuell verifiering:** [huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)
 passerar **96 hostade iOS-prov och åtta UI-flöden på var och en av tre
-simulatorvarianter**, samt **85 portabla Mac-prov per variant och 57 backendprov**.
+simulatorvarianter**, samt **85 portabla Mac-prov och 57 backendprov**.
 Det är 104 unika native-/UI-fall och 312 exekveringar över matrisen.
-Offline-lagring kan återhämta sig utan appomstart; en ersättande tafsir-cachelänk
-avvisas. Det separata tajweedutvärderingsverktyget ger inga kvalitetsmått för
-ogranskade fall och bevisar ingen expertbedömd noggrannhet.
+Omgången förbättrar återhämtning av ljudlagring, skyddar färdiga nedladdningar
+och återställer en försvunnen tafsircache. Ett separat
+[utvärderingsverktyg för tajweed](docs/TAJWEED_EVALUATION.md) är provat med
+21 kontraktsfall; det ger inga kvalitetsmått för det ogranskade arkivfallet.
 **Bygge 53** finns som ägaråtkomligt utkast under
 [Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som AllCrow.
-IPA, byggrapport och källresurser är oberoende kontrollerade.
-Personlig signering/installation, fysisk mikrofon och värme/batteri återstår.
-Se [underlaget](docs/OFFLINE_QUALITY_2026-10-25.md).
+IPA:n är oberoende kontrollerad mot källan. Personlig installation,
+fysisk mikrofon och värme/batteri återstår. Se
+[omgångens underlag](docs/OFFLINE_QUALITY_2026-10-25.md).
+
+Ett separat [prov med riktiga recitationer](docs/LIVE_RECITATION_AUDIT.md)
+har också passerat mot det ändrade ljudbiblioteket: tolv filer avkodades och
+lokal 112:2 spelades till faktiskt versslut för alla tre recitatörer.
+Det återanvänder den befintliga provsviten och räknas separat från matrisen.
 
 Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, personlig signering och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
 

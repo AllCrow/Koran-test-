@@ -18,28 +18,50 @@ can be borrowed for initial setup/recovery. The user expects access to a compute
 confirmed. See `docs/PERSONAL_IPHONE_INSTALL.md`; no signing or device install is
 verified, and never request passwords or pairing files in chat.
 
-## Latest continued verification
+## Latest offline-quality verification
 
-Main run 40192974053 passed on e1bb2625136277beb8f4eab78f17576acc3d56e5:
-96 hosted and eight UI cases on each of three configurations, 85 unique portable
-Mac cases per variant and 57 backend cases (21 synthetic evaluator cases).
-All six actual job logs were read. The owner draft personal-build-53-1 is verified
-against independently downloaded IPA/report, the source installation guide and
-239 packaged source resources. See docs/evidence/delivery-53-2026-10-25.json.
-Older build51/46 evidence remains historical; no physical signing/install is proven.
+Main run 40192974053 passed on e1bb2625136277beb8f4eab78f17576acc3d56e5: 96 hosted and eight UI cases
+on each of three simulator configurations, 85 portable Mac cases per variant
+and 57 backend cases, including 21 evaluation tool cases. These are 104 unique
+native/UI cases and 312 executions. Draft personal-build-53-1 is independently
+checked. See STATUS.md and docs/OFFLINE_QUALITY_2026-10-25.md. Actual PR checkout
+6897dba0e03072d18c79e14a74d165d5c219232b has the same complete Git tree as this main source.
 
-Audio storage may recover on an explicit new download after initial setup failed.
-Prepare protection and identity before committing the verse filename; no fallible
-metadata step may follow that rename. Tafsir cache readiness must not outlive the
-current directory type: a removed root may be recreated, a replacement symlink
-must be rejected before read/write/pruning and after an awaited network response.
+Keep downloads explicit and foreground-only. A failed storage setup must allow
+a later explicit retry in the same library. Prepare protection/identity before
+publication at the final verse filename; no fallible metadata step follows that
+move. Preserve completed bytes on failure. Cancellation and stale generation
+checks must prevent old responses from installing files or clearing newer jobs.
 
-backend.evaluation is a separate offline tool, never imported by the normal API
-or app. Pending/inconclusive labels never become error-free ground truth;
-synthetic fixtures publish no quality metrics. Keep exact input/text/model hashes,
-one-to-one matching, abstention/missing denominators and explicit review coverage.
-The original112:2 saved evaluation records a recovered upload; an independent
-metadata/score reproduction without those audio bytes is not a second audio check.
+Revalidate the current tafsir root before filesystem access and after network
+suspension. Recover a removed root without restarting the repository; never use
+a replacement symlink for reads, recency writes or pruning. Keep 64 entries,
+4MiB total/128KiB per disk entry, exact source text and valid online fallback.
+
+backend.evaluation is an offline development tool, not a production analysis
+dependency. Exact kind/category/scalar matching and one-to-one assignment measure
+indication localization only. Pending/inconclusive cases are not truth; synthetic
+fixtures never publish quality metrics. Retain reference/model/audio binding,
+bounded strict JSON, missing/abstention denominators and null results without
+adjudicated material. Never infer Tarteel parity from the tool's tests.
+
+Historical main51 passed on c907121e59eab81ae8848e2ca0311ab54f2aa6ec with
+91 hosted/eight UI, 82 Mac and 36 backend cases. Its original live-source audit
+remains historical. A NEW targeted follow-up of the unchanged opt-in suite
+passed on the changed e1bb262 AudioLibrary in run40194584222/job121172574349:
+three cases, 12 real files decoded, pinned112:2 locally played to native EOF
+for each reciter without fallback/redownload. Read
+ docs/evidence/live-recitation-native-recovery-2026-10-25.json and
+ docs/evidence/delivery-53-2026-10-25.json. All three original JSON attachments,
+ZIP/source/manifest hashes and current code hashes were checked. Do not rerun
+this already approved source without another concrete code/content concern.
+The three opt-in cases are separate from normal104/312 and prove no physical
+radio, audio route, energy, rights or expert quality.
+
+The independent saved-evaluation review reproduces hashes and score fields,
+not the original audio-byte check recorded by the other archive verification.
+Preserve pending112:2, no new inference/labels and null quality metrics.
+All older builds and full source history remain preserved.
 
 Keep chapter loads transactional. Cancellation preserves the last settled chapter,
 selection, error and saved bytes. A stale request must not clear newer progress.

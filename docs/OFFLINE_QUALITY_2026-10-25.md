@@ -41,24 +41,72 @@ Alla **83 portabla Linux-Swift-fall** passerade därefter i Swift6.0.3 med
 avstängt containernät. Innehåll, källhashar, övningsreferenser, font, ikon och
 reproducerbar projektgenerering passerade också.
 
-**Native-verifieringen är godkänd i [huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)**
-på `e1bb2625136277beb8f4eab78f17576acc3d56e5`. Alla sex jobb och faktiska
-loggar har lästs: **96 hostade + åtta UI-fall på vardera tre simulatorer**,
-85 unika portabla Mac-fall per variant och 57 backendfall, varav 21 syntetiska
-utvärderingskontraktsprov. Det är 104 unika native-/UI-fall och 312
-exekveringar. Byggen och det gated ägarutkastet passerade också.
+## Godkänd native-källa och leverans
 
-Personligt paket **0.1.0 (53)** har jämförts oberoende med CI-artefakt,
-releasepost, Mach-O/plist och alla 239 källresurser. IPA:n är fortfarande
-osignerad. De tre nya 2:255-bilderna har hashkontrollerats och granskats.
-[Leveransbeviset](evidence/delivery-53-2026-10-25.json) binder källa,
-jobb, paket, bilder och kvarvarande provgränser.
+[PR-körningen](https://github.com/AllCrow/Koran-test-/actions/runs/40191800468) körde faktisk checkout
+`6897dba0e03072d18c79e14a74d165d5c219232b`. Huvudkällan `e1bb2625136277beb8f4eab78f17576acc3d56e5` har byteidentiskt
+komplett Git-träd `4a769740e82380a90c0b63fc04fe172ffd893fad`. Slutkontrollen bekräftar också att app-, test-,
+resurs-, backend-, script- och workflow-indata matchar båda körda källorna
+före denna dokumentationsuppdatering.
 
-Utvärderingsrapportens indata-/kodhashar, kompletta baslinjesvar och alla
-reproducerbara resultatfält matchar vid separat kontroll. 112:2 är fortsatt
-`pending`, noll sakkunnigt avgjorda fall och `quality_metrics: null`.
-Den sparade rapporten dokumenterar återfunnen originalfil; denna separata
-kontroll hade inte ljudbyten och intygar ingen andra bytekontroll.
+[Huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053) har **alla sex jobb avslutade och godkända**.
+Varje simulators rålogg visar **96 hostade och åtta UI-fall utan fel**,
+samt separat **85 portabla Swift-fall**. De tre konfigurationerna utförde
+samma individuella fall: Xcode26.2/iPhone16Pro/iOS18.5,
+Xcode16.4/iPhoneSE3/iOS18.5 och Xcode26.2/iPhone16e/iOS26.2.
+Det är **104 unika native-/UI-fall och 312 exekveringar** över matrisen.
+
+Hostade grupper: 25 AppStore, 11 text/färg, sju HTTP-transport,
+16 AudioLibrary, sju ChapterLoading, sju MP3, 11 inspelnings- och tolv
+spelarfall. De fem nya fallen beskrivs ovan; alla åtta tidigare UI-flöden
+och deras faktiska interaktions-/positionskrav är kvar.
+
+Backendjobbet passerade **57 prov**, varav 21 gäller utvärderingsverktyget.
+Det använder riktig ffmpeg-avkodning och behandlar ResourceWarning som fel.
+Detta är kontrakts-/transport-/avkodningsbevis, ingen ny akustisk kvalitetsstudie.
+Arkivfallet 112:2 har fortsatt `pending`, noll avgjorda fall och
+`quality_metrics: null`. Dess ursprungliga ljudidentitet återkontrollerades
+lokalt utan nytt modellanrop och utan ljud i Git.
+
+### Personligt paket
+
+- Version **0.1.0 (53)**, **3 271 185 byte**.
+- IPA SHA256: `159cbb58cde06dca919b956b8a4b918339c7d79ec1266de1a31682a404c2c6eb`.
+- Källa `e1bb2625136277beb8f4eab78f17576acc3d56e5`, artefakt **12599105394**.
+- Yttre artefakt-ZIP SHA256: `fb1b14b7bf0240f21f93f1701292ceeef15105d7b8b57d10c2030027dd6afe40`.
+- Oberoende Mach-O-/plistkontroll: iPhoneOS, arm64, minsta iOS17.0, SDK26.2.
+- Alla 115 koran-JSON-filer, fonten och 118 övningsresurser matchar källan exakt.
+- Analysflaggan är avstängd och serveradressen tom; inga profiler eller testpaket ingår.
+
+Ägarutkast **423396167**, tagg `personal-build-53-1`, är bekräftat som
+draft/prerelease på rätt källa. IPA, byggrapport och installationsguide
+matchar GitHubs samtliga tre asset-digests och storlekar. Hämta under
+[Releases](https://github.com/AllCrow/Koran-test-/releases), inloggad som AllCrow.
+[Leveransbeviset](evidence/offline-quality-delivery-53-2026-10-25.json)
+binder källor, jobb, logghashar, paket, ägarutkast och den ogranskade utvärderingen.
+
+Bygge51, dess första verkliga EveryAyah-prov och tidigare säkerhetskopior
+bevaras som historiskt underlag. Följ [installationsguiden](PERSONAL_IPHONE_INSTALL.md)
+och [provlistan](FIRST_IPHONE_TEST.md) för signering och första fysiska telefonprov.
+
+### Riktad återkontroll med riktiga ljudkällor
+
+AudioLibrary:s filberedning/publicering ändrades; därför kördes den befintliga
+opt-in-sviten igen på samma källa `e1bb262`. Ingen test- eller produktionskod
+ändrades av återkontrollen och normalmatrisen upprepades inte.
+[Körning40194584222](https://github.com/AllCrow/Koran-test-/actions/runs/40194584222)
+passerade tre fall på iPhone16e/iOS26.2/Xcode26.2. Tolv verkliga filer
+(855505 byte) avkodades till52,020612 s PCM; lokal, hashpinnad112:2 spelades
+till native-slut för alla tre utan fallback eller ny nedladdning.
+[Alla tre originalbilagor och hashbindningar](evidence/live-recitation-native-recovery-2026-10-25.json)
+har kontrollerats. De tre fallen räknas separat från104/312.
+
+En [kompletterande oberoende kontroll](evidence/delivery-53-2026-10-25.json)
+matchar slutloggar, tre granskade 2:255-bilder, IPA/byggrapport, källguide och
+alla239 paketerade resurser. Utvärderingens hela arkivsvar, kod-/indatahashar
+och reproducerbara resultatfält stämmer. 112:2 får fortsatt inga kvalitetsmått.
+Denna andra kontroll saknade originalrösten och ersätter inte den tidigare
+bytekontroll som finns dokumenterad i den sparade utvärderingsrapporten.
 
 ## Kvarvarande gränser
 
