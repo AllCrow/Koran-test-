@@ -1,6 +1,6 @@
 # Native iPhone-verifiering
 
-Uppdaterat 2026-10-25. **Riktigt Xcode-bygge, åtta hostade tester och tre
+Uppdaterat 2026-10-25. **Riktigt Xcode-bygge, 15 hostade tester och tre
 UI-flöden har passerat** i GitHub Actions på macOS. Körningen använde
 Xcode 16.4 och iPhone 16 Pro-simulator med iOS 18.5, arm64.
 Den lokala Linuxmiljön saknar fortfarande Apple SDK;
@@ -11,6 +11,10 @@ eller signering är verifierad.** Aktuella resultat finns i [statusen](../STATUS
 
 Det genererade Xcode-projektet har tre mål: `Sakina`, `SakinaTests` och
 `SakinaUITests`. Schemat `Sakina` kopplar båda testmålen till appen.
+`AppTests/AudioLibraryTests.swift` tillför sju prov av offlineljudets lokala
+filhantering. Alla sju passerade tillsammans med samtliga läs- och UI-prov i
+[körningen på a0b2e62](https://github.com/AllCrow/Koran-test-/actions/runs/40154414555).
+De använder syntetiska MPEG-ramar och testar inte verklig avkodning eller ljudrutter.
 
 På en Mac med Xcode och en installerad iPhone-simulator:
 
@@ -26,11 +30,15 @@ xcodebuild -project Sakina.xcodeproj -scheme Sakina \
 Välj ett faktiskt tillgängligt simulatornamn från det första kommandot.
 [GitHub Actions-flödet](../.github/workflows/ios.yml) väljer ett tillgängligt
 iPhone-ID och sparar en `.xcresult` även om teststeget misslyckas. Flödet är
-godkänt i användarens repo [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-/actions/runs/40154343011), kodcommit `4a30f477e0b9b1174ee95ca950d51ab4a682ec7f`. Användaren har uttryckligen godkänt publikt läge tills vidare. Native-resultat och simulatorapp finns som CI-artefakter med sju dagars lagring.
+godkänt i användarens repo [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-/actions/runs/40154414555),
+kodcommit `a0b2e624406242f85af75e483854a09ce8265919`. Användaren har uttryckligen
+godkänt publikt läge tills vidare. Native-resultat och simulatorapp finns som
+CI-artefakter med sju dagars lagring. Simulatorappen kan inte installeras på en fysisk iPhone.
 
 | Testgrupp | Avsikt |
 | --- | --- |
 | Åtta hostade AppStore-tester | Uttryckliga, unika läsmarkeringar; persistens och återstart; midnatt/DST; systemklockans förändringsnotis; måländring; bokmärken och tajweedval; beskärd detaljhistorik; korrupt sparad data; bundlade kapitel och ogiltigt suraval. |
+| Sju hostade AudioLibrary-tester | Rätt lokalt ljud per vers/sura/recitatör; avvisning av fel-/ofullständiga filer och felaktig ID3-storlek; omvalidering av en ändrad fil; återöppning från disk; radering som bevarar andra suror/recitatörer; otillgänglig lagring utan nedladdningsstart. |
 | Tre UI-flöden | Läsmarkering utan automatisk läskredit och återstart; sparat bokmärke som öppnar sin vers; tom sökning samt arabiska siffror i surasökning. |
 
 UI-testerna använder en egen `UserDefaults`-suite per test. Endast Debug-byggen
