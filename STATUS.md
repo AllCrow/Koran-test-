@@ -12,19 +12,19 @@ Uppdaterat: **2026-10-25**. Den senaste omgången fokuserar på användarens beg
 - Streakhistorik räknas konsekvent även i tidszoner med historiskt överhoppade datum. Systemets tids-/tidszonsändring uppdaterar dagens läsprogression utan polling. Modellens indikation om ett extra ljud färgar inte en befintlig bokstav.
 - Backend avvisar spellistor och ofullständig PCM; dubbelt avbrutna HTTP-anrop behåller analysplatsen tills arbetstråden har avslutats.
 
-Det första riktiga Apple SDK-bygget har nu passerat på macOS med Xcode 16.4 och iPhoneSimulator 18.5 SDK. Samtliga **åtta hostade AppStore-tester har passerat i simulatorn**. Tre UI-flöden kördes och hittade en verklig konflikt mellan verskortets och knapparnas tillgänglighetsidentifierare; kortets identifierare har flyttats till en separat textetikett. Samma UI-prov körs igen. Detta är ännu inget godkänt fullständigt simulator- eller enhetsresultat. Se [native-proven](docs/IOS_VERIFICATION.md).
+**Det riktiga Apple SDK-bygget och samtliga elva native-tester har passerat** i [GitHub Actions](https://github.com/AllCrow/Koran-test-/actions/runs/40154343011): åtta hostade AppStore-tester och tre UI-flöden på iPhone 16 Pro-simulator med iOS 18.5, arm64 och Xcode 16.4. UI-proven hittade först konflikter i tillgänglighetsidentifierare och radidentitet vid surabyte. Rättningarna klarar nu samma eller starkare krav: den sista kontrollen markerar och bokmärker 112:1 och verifierar att åtgärden hör till rätt sura. **Fysisk iPhone, ljudrutter, energi och signering återstår.** Se [native-proven](docs/IOS_VERIFICATION.md).
 
-[Verifieringssammanställningen](docs/evidence/polish-verification-2026-10-25.json) sparar resultat, avgränsningar och SHA256 för den granskade källkoden.
+Den tidigare [Linux-sammanställningen](docs/evidence/polish-verification-2026-10-25.json) bevarar dåtidens resultat, avgränsningar och källhashar. De senare Mac-resultaten och deras exakta kodcommit länkas separat nedan.
 
 ## Implementation
 
 | Del | Nuvarande läge | Återstående kontroll |
 | --- | --- | --- |
-| iPhone-app | SwiftUI för iOS 17+, startsida, läsare, övning, inställningar och ljudnedladdningar. Riktigt simulatorbygge på macOS har passerat. | Slutför UI-prov och fysisk iPhone-verifiering. |
+| iPhone-app | SwiftUI för iOS 17+, startsida, läsare, övning, inställningar och ljudnedladdningar. Riktigt Mac-bygge och elva native-tester har passerat. | Fysisk iPhone-verifiering och återstående manuella flöden. |
 | Korantext | Alla 114 suror och 6 236 ayat lokalt, uppdelade per sura. Källmaterial och hashmanifest ingår. | Visuell arabisk återgivning och läsflöde på enheten. |
 | Tajweedvisning | Separat annoterad edition, parser och på/av-val. | Färger, diakritik och växling på iPhone. |
 | Arabisk font | Amiri Quran är bundlad med OFL-licens och fixerad proveniens. Hashar och täckning av lästextens synliga tecken är verifierade. | Formgivning, radbrytning och tillgänglighet på iPhone. Glyph-täckning är inte ett renderingsprov. |
-| Läsprogression | Lokal läsposition, bokmärken, dagligt mål och uppmuntrande streak. Uttrycklig läsmarkering räknas, inte bara appstart. | Integrerat beteende på iPhone. Portabla kärntester passerar. |
+| Läsprogression | Lokal läsposition, bokmärken, dagligt mål och uppmuntrande streak. Uttrycklig läsmarkering räknas, inte bara appstart. Återstart, bokmärken och surabyte har passerat simulatorprov. | Fysiska kalender-/tidszonsbyten och längre användning. |
 | Recitation | AVPlayer med al-Afasy, al-Husary och al-Minshawi, en fil per vers och spelarstyrd markering. | Ljud/textkoppling, buffring, avbrott, bakgrund och recitatörsbyte på iPhone. Ord-för-ord-synkning är inte verifierad. |
 | Ljud offline | Uttrycklig nedladdning per sura/recitatör, framsteg, avbrytning, fortsättning och radering finns i native-koden. Spelaren föredrar lokal fil. Inget ljud är förpaketerat. | Nedladdnings- och offlineflödet är ännu inte native-testat på iPhone. Ljudrättigheter återstår. |
 | Tafsir | Al-Muyassar på arabiska hämtas online med källangivelse. | iOS-nätverksflöde och visuell återgivning. Ingen offline-tafsir eller svensk tafsir ingår. |
@@ -39,12 +39,12 @@ Korantext, tajweeddata och övningsreferenser är lokala. Recitationsljud kräve
 
 | Kontroll | Resultat | Omfattning |
 | --- | --- | --- |
-| Portabla Swift-tester | **61 passerade, 0 fel** | 22 kärntester, 18 datatester och 21 övnings-/analyskontraktstester. Tvärspråkstestet validerar fem verkliga Python-svar genom Swift-klienten. Körda på Linux med Swift, inte via iOS-runtime. |
+| Portabla Swift-tester | **61 passerade, 0 fel** | 22 kärntester, 18 datatester och 21 övnings-/analyskontraktstester. Tvärspråkstestet validerar fem verkliga Python-svar genom Swift-klienten. Körda på både Linux och macOS; iOS-resultaten redovisas separat. |
 | Backendtester | **28 passerade** | Kontrakt, validering, resursgränser, riktig M4A/AAC-/WAV-avkodning, upprepad avbrytning och avgränsade madd arid-varianter. Kontraktstester med motorersättning mäter inte modellkvalitet. |
 | Koranresurser | **Godkända** | 114 suror, 6 236 konsekutiva referenser, metadatakoppling, UTF-8-bevarande och samtliga käll-/resurshashar. |
 | Övningsreferenser | **Godkända** | Fixerad källversion, originaldata/API-hashar, filinventering, licensnotiser samt fonemkompatibilitet för samtliga referenser. |
 | Font och resurser | **Godkända** | Amiri Quran-/OFL-hashar, resursdeklarationer och synlig teckentäckning för kanonisk lästext. |
-| Native Xcode-/enhetsprov | **Bygge och åtta hostade tester passerade; UI-prov pågår** | Verkliga macOS-/iPhone-simulatorkörningar har utförts. Första testbyggets arkitekturkonflikt är rättad; åtta AppStore-tester passerade i nästa körning. Tre UI-prov hittade en identifierarkonflikt som nu är rättad och omprovas. Fysisk telefon, ljudrutter och signering återstår. |
+| Native Xcode-/enhetsprov | **Xcode-bygge och 11 av 11 native-tester passerade** | iPhone 16 Pro / iOS 18.5-simulator, Xcode 16.4, arm64. Åtta hostade tester och tre UI-flöden gav noll fel. Fysisk telefon, ljudrutter och signering återstår. |
 | Verklig Muaalem-inferens | **Utförd; utökat prov med 35 indata** | 33 referensklipp från al-Fatiha/al-Ikhlas med tre recitatörer samt annan vers och tystnad. Ett referensfall behöver sakkunnig granskning. Inga expertetiketter eller generell kvalitetsmätning. |
 | REA-inspektion | **Utförd på verklig viktfil** | 816 F32-tensorer, 605 754 251 deklarerade element och full SHA256 verifierade. Tensorvärden eller kvalitet tolkas inte av denna kontroll. |
 | Dockerbygg/-start | **Tidigare image och aktuell källstart kontrollerade** | Image från 2026-10-24 kördes som UID 10001 utan nätverk eller värdportar. Den 25 oktober startades aktuell backendkod och referenser via read-only-mount i samma runtime, som UID 1000, utan nätverk/värdportar. Verklig lokal HTTP-hälsa gav inte-redo-läge och ren avstängning. Det är ingen ny imagebyggning, containerinferens eller publik tjänst. |
@@ -89,7 +89,11 @@ Användaren har skapat [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-te
 
 Koden och hela den tidigare lokala Git-historiken är uppladdade. Första remote `main` verifierades mot lokal commit **`eccabe79ad7405d2cb4fe5ad317e46de9416d14d`**. Det [första Mac-bygget](https://github.com/AllCrow/Koran-test-/actions/runs/40152872024) kompilerade appen, men testlänkningen hittade en arkitekturkonflikt. Standardinställningen `ONLY_ACTIVE_ARCH=YES` för Debug rättade den.
 
-I [nästa körning](https://github.com/AllCrow/Koran-test-/actions/runs/40153076721), kodcommit **`4645f6c3547057a6ee3f449664624af92116566b`**, passerade appbygget, 61 portabla Swift-tester, 28 backendtester och samtliga åtta hostade iOS-tester. De tre UI-proven kördes men misslyckades på versknapparnas identifierare. Den avgränsade rättningen finns i **`e7e859dc7a33734f59a731ea1ec6e386d6574589`** och [omprovas här](https://github.com/AllCrow/Koran-test-/actions/runs/40153744517). Ingen installerbar fysisk iPhone-version eller TestFlight-publicering finns ännu.
+I [nästa körning](https://github.com/AllCrow/Koran-test-/actions/runs/40153076721) passerade appbygget och åtta hostade tester. UI-proven hittade kortidentifieraren som maskerade knapparnas egna identifierare. När den flyttats till en textetikett passerade [två UI-flöden](https://github.com/AllCrow/Koran-test-/actions/runs/40153744517); surabytet visade därefter gamla kontrollidentifierare. Globala versidentiteter, surans identitet på versgruppen och motsvarande scrollreferenser rättade detta.
+
+**Godkänd körning:** [40154343011](https://github.com/AllCrow/Koran-test-/actions/runs/40154343011), exakt kodcommit **`4a30f477e0b9b1174ee95ca950d51ab4a682ec7f`**. Båda jobben är `success`: appbygge, 61 portabla tester, 28 backendtester, åtta hostade tester och tre UI-flöden. Native-resultat (`Sakina-native-test-results`, ID 12584176677) och simulatorapp (`Sakina-simulator`, ID 12584471042) är uppladdade som CI-artefakter med sju dagars lagring. Senare dokumentationscommits ändrar ingen testad appkod och utlöser ingen onödig Mac-omkörning.
+
+Simulatorappen kan **inte** installeras på fysisk iPhone. Ingen signerad iPhone-version eller TestFlight-publicering finns ännu. Den slutliga distributionen behöver även uppfylla Apples då aktuella Xcode-/SDK-krav.
 
 REA finns separat i `/workspace/rea`, commit `f196ebf80665107aedc16892af25a1e1f9f26f43`. Det har faktiskt inventerat Muaalems safetensors-fil och strömmat hela filen för SHA256; den matchar den fixerade HF-artefakten. [Oförändrad evidens och metod](docs/REA_MODEL_INSPECTION.md) är sparade. Detta är en artefaktundersökning, inte en kvalitetsbedömning. **Tarteels app eller servrar har inte analyserats.**
 
@@ -99,7 +103,7 @@ Användaren har iPhone men ingen Mac. Molnbaserad macOS-byggmiljö, Apple Develo
 
 1. Utöka modellproven från den verifierade begränsade körningen till flera verser, elever och verkliga förhållanden. Kör sakkunnig utvärdering; påstå ingen Tarteel-paritet innan den är styrkt.
 2. Fortsätt verifiera uppladdade commits i användarens AllCrow/Koran-test-. Bevara lokala snapshots; följ det nya beslutet om publikt tills vidare.
-3. Slutför simulatorns UI-prov efter det godkända Xcode-bygget och de åtta hostade testerna. Prova därefter läsning, arabisk text, ljudsynkning, nedladdning/offline, tafsir, streak, inspelning och eventuell analys på fysisk iPhone.
+3. Prova läsning, arabisk text, ljudsynkning, nedladdning/offline, tafsir, streak, inspelning och eventuell analys på fysisk iPhone. Automatiskt simulatorbygge och elva native-tester är nu godkända, men täcker inte alla manuella flöden.
 4. Mät telefonens värme, batteri, minne och svarstid. **Ingen fysisk temperatur- eller energimätning är ännu utförd.**
 5. Slutför innehållsrättigheter, användarinformation, signering och TestFlight-distribution. Dokumentera vad som faktiskt passerar varje steg.
 

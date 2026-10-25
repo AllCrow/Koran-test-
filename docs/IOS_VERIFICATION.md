@@ -1,8 +1,11 @@
 # Native iPhone-verifiering
 
-Uppdaterat 2026-10-25. Detta är förberedda prov, **inte genomförda eller godkända
-iOS-körningar**. Linuxmiljön saknar Apple SDK, simulator och fysisk iPhone.
-Portabla testresultat finns i [statusen](../STATUS.md).
+Uppdaterat 2026-10-25. **Riktigt Xcode-bygge, åtta hostade tester och tre
+UI-flöden har passerat** i GitHub Actions på macOS. Körningen använde
+Xcode 16.4 och iPhone 16 Pro-simulator med iOS 18.5, arm64.
+Den lokala Linuxmiljön saknar fortfarande Apple SDK;
+Mac-resultaten kommer från de länkade CI-körningarna. **Ingen fysisk iPhone
+eller signering är verifierad.** Aktuella resultat finns i [statusen](../STATUS.md).
 
 ## Automatiska prov på macOS
 
@@ -23,7 +26,7 @@ xcodebuild -project Sakina.xcodeproj -scheme Sakina \
 Välj ett faktiskt tillgängligt simulatornamn från det första kommandot.
 [GitHub Actions-flödet](../.github/workflows/ios.yml) väljer ett tillgängligt
 iPhone-ID och sparar en `.xcresult` även om teststeget misslyckas. Flödet är
-startat i användarens repo [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-/actions/runs/40152872024). Användaren har uttryckligen godkänt publikt läge tills vidare. Native-resultatet är ännu inte godkänt.
+godkänt i användarens repo [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-/actions/runs/40154343011), kodcommit `4a30f477e0b9b1174ee95ca950d51ab4a682ec7f`. Användaren har uttryckligen godkänt publikt läge tills vidare. Native-resultat och simulatorapp finns som CI-artefakter med sju dagars lagring.
 
 | Testgrupp | Avsikt |
 | --- | --- |
@@ -32,9 +35,11 @@ startat i användarens repo [AllCrow/Koran-test-](https://github.com/AllCrow/Kor
 
 UI-testerna använder en egen `UserDefaults`-suite per test. Endast Debug-byggen
 accepterar det avgränsade testargumentet. Tester raderar inte normala läsdata,
-kontaktar ingen analystjänst och ber inte om mikrofonbehörighet. Simulatorns
-stöd för tangentbordsinmatning av arabiska siffror måste också verifieras av
-den första riktiga körningen.
+kontaktar ingen analystjänst och ber inte om mikrofonbehörighet. Den godkända
+UI-körningen matar in arabiska siffror, öppnar sura 112, kontrollerar att den
+föregående surans kontroller har ersatts och markerar/bokmärker 112:1. Den
+sparade bokmärkesreferensen verifieras också i inställningarna. Proven
+kontrollerar inte mikrofon, ljudrutter eller fysisk energiförbrukning.
 
 ## Manuella prov på iPhone
 
