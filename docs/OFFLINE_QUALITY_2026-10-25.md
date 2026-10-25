@@ -41,11 +41,24 @@ Alla **83 portabla Linux-Swift-fall** passerade därefter i Swift6.0.3 med
 avstängt containernät. Innehåll, källhashar, övningsreferenser, font, ikon och
 reproducerbar projektgenerering passerade också.
 
-**Native-verifiering av denna kandidat återstår.** Förväntad svit är
-96 hostade och åtta UI-fall per simulator, 85 separata portabla Mac-fall
-och 57 backendfall, varav 21 syntetiska utvärderingskontraktsprov.
-Förväntade antal är inte ett godkänt Xcode- eller modellkvalitetsresultat.
-Den senast godkända ägarnedladdningen är tills vidare bygge51; se [statusen](../STATUS.md).
+**Native-verifieringen är godkänd i [huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)**
+på `e1bb2625136277beb8f4eab78f17576acc3d56e5`. Alla sex jobb och faktiska
+loggar har lästs: **96 hostade + åtta UI-fall på vardera tre simulatorer**,
+85 unika portabla Mac-fall per variant och 57 backendfall, varav 21 syntetiska
+utvärderingskontraktsprov. Det är 104 unika native-/UI-fall och 312
+exekveringar. Byggen och det gated ägarutkastet passerade också.
+
+Personligt paket **0.1.0 (53)** har jämförts oberoende med CI-artefakt,
+releasepost, Mach-O/plist och alla 239 källresurser. IPA:n är fortfarande
+osignerad. De tre nya 2:255-bilderna har hashkontrollerats och granskats.
+[Leveransbeviset](evidence/delivery-53-2026-10-25.json) binder källa,
+jobb, paket, bilder och kvarvarande provgränser.
+
+Utvärderingsrapportens indata-/kodhashar, kompletta baslinjesvar och alla
+reproducerbara resultatfält matchar vid separat kontroll. 112:2 är fortsatt
+`pending`, noll sakkunnigt avgjorda fall och `quality_metrics: null`.
+Den sparade rapporten dokumenterar återfunnen originalfil; denna separata
+kontroll hade inte ljudbyten och intygar ingen andra bytekontroll.
 
 ## Kvarvarande gränser
 

@@ -5,14 +5,46 @@ Uppdaterat **2026-10-25**. Native-app för iPhone, **iOS 17+**.
 **Automatisk tajweedbedömning är fortsatt experimentell och avstängd. Ingen
 analysserver är konfigurerad och Tarteel-kvalitetsmålet är inte uppfyllt.**
 
-## Senaste fortsättningsrunda
+## Senaste verifierade fortsättningsrunda
 
-**Ny kandidat under verifiering:** offlineåterhämtning för ljudlagring och
-tafsircache, fem ytterligare hostade nät-/filregressioner samt ett separat
-[utvärderingsverktyg för tajweed](docs/TAJWEED_EVALUATION.md). Linux-Swiftens
-83 fall och innehållskontrollerna passerar; native-körningen återstår.
+[Huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)
+på `e1bb2625136277beb8f4eab78f17576acc3d56e5` är **godkänd i alla sex jobb**.
+Faktiska loggar visar **96 hostade + åtta UI-prov på var och en av tre
+simulatorer**, 85 unika portabla Swift-fall per Mac-variant och 57 backendfall.
+Det är **104 unika native-/UI-fall och 312 exekveringar**, inte 312 olika fall.
+
+Ljudlagring kan återhämta sig vid ett nytt uttryckligt försök; filskydd och
+identitet förbereds före publicering av en färdig vers. Tafsircachen kan
+återskapas när mappen försvinner och avvisar en ersättande symbolisk länk.
+Fem nya hostade nät-/filregressioner och tre portabla cachefall ingår.
 [Omgångens omfattning](docs/OFFLINE_QUALITY_2026-10-25.md).
-Bygge51 nedan är fortfarande den senast fullständigt godkända nedladdningen.
+
+Det separata [tajweedverktyget](docs/TAJWEED_EVALUATION.md) har 21 syntetiska
+kontraktsprov bland backendens 57. Den verkliga 112:2-observationen förblir
+ogranskad och får inga kvalitetsmått. Rapportens indata, kodhash och resultat
+har återskapats separat utan modellkörning eller nya expertetiketter.
+
+**Personligt bygge 0.1.0 (53)** finns i
+[ägarutkastet](https://github.com/AllCrow/Koran-test-/releases/tag/untagged-9f5ff7d75e7bdc880981),
+release-ID **423396167**, tagg **personal-build-53-1**, källa `e1bb262`.
+IPA: **3 271 185 byte**, SHA256
+`159cbb58cde06dca919b956b8a4b918339c7d79ec1266de1a31682a404c2c6eb`.
+Oberoende kontroll av iPhoneOS/arm64, min iOS17, SDK26.2, alla 239
+källresurser samt releasefilerna finns i
+[leveransbeviset](docs/evidence/delivery-53-2026-10-25.json).
+IPA/byggrapport jämfördes med hämtad CI-artefakt; installationsguiden med
+källfilen. Alla matchar respektive release-digest och storlek.
+
+Paketet är **osignerat**, kan inte installeras direkt från Filer och kräver
+[personlig signering](docs/PERSONAL_IPHONE_INSTALL.md). Inloggning som AllCrow
+krävs för utkastet. Tidigare utkast och all Git-historik är bevarade.
+Fysisk iPhone, energi/värme, innehållsrättigheter och sakkunnig tajweedkvalitet
+återstår; denna verifiering klarmarkerar inte appen.
+
+## Bevarad verifiering av bygge 51
+
+Detta är den tidigare godkända källan; senare lagringsändringar i bygge53
+omfattas av den nya huvudkörningen ovan.
 
 Fortsättningsrundan är **godkänd i huvudkörning 51**: **91 hostade + åtta UI-prov på var och en av tre simulatorer**, samt **82 portabla Swift-prov per Mac-variant och 36 backendprov**. **Personligt bygge 51** är sparat som ägaråtkomligt releaseutkast. Personlig signering och fysisk iPhone-provning återstår.
 
@@ -32,7 +64,7 @@ varje recitatör utan fallback. De tre opt-in-fallen räknas inte in i 99/297.
 Senare tillägg av detta verktyg/test/workflow ligger utanför appens och den
 ordinarie verifieringens indata; de levererade runtime-indata är oförändrade.
 
-Aktuellt paket är **0.1.0 (51)**, **3 269 813 byte**,
+Det bevarade paketet är **0.1.0 (51)**, **3 269 813 byte**,
 iPhoneOS/arm64, minsta iOS 17.0 och SDK 26.2. IPA SHA256:
 `279803799a1f3d72626c42ab7e7a651e3859cb528a80625e0c5ef26de5e6854b`.
 Releaseutkast **423341980**, tagg **personal-build-51-1**, är verifierat

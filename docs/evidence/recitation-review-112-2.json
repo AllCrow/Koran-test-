@@ -58,10 +58,19 @@
   "expert_accuracy_metrics": null,
   "tarteel_comparison": null,
   "review_steps": [
-    "Recover the exact converted baseline input from an authorized local archive and verify its saved SHA256, or explicitly mark a newly prepared input as a different case; do not claim byte identity from the URL.",
+    "The exact converted baseline input was recovered and hash-checked in the saved evaluation report. For human review retrieve that same 21619-byte, SHA256-pinned upload from the authorized private archive; this follow-up did not recheck the audio bytes. A later download from the same URL is not a substitute.",
     "Have two qualified Hafs reviewers listen independently before seeing the model indication. Record clip onset/end completeness, wasl/waqf context, permitted variation and any uncertainty.",
     "Then review the indicated initial scalar/expected phoneme in this exact practice edition. Separate recording-boundary effects, reference/phonetic alignment and ASR differences from real pronunciation/tajweed findings.",
     "Adjudicate disagreements. Keep an inconclusive status if expertise, context or input identity is insufficient; do not turn an unreviewed case into a precision/recall result.",
     "Any new model run must pin current engine/model/reference hashes and use an explicitly selected input within the existing authorized scope. Never upload user recordings automatically or add audio to Git."
-  ]
+  ],
+  "original_upload_archive_observation": {
+    "checked_on_utc": "2026-10-25",
+    "saved_evaluation_report": "docs/evidence/evaluation-pending-112-2-report.json",
+    "saved_evaluation_report_sha256": "c4fd318a8615922d4903d7688174bee2eaf0ba7b8f37cd5520cf9adfe416b091",
+    "reported_original_audio_verified_locally": true,
+    "independent_metadata_and_report_reproduction": true,
+    "original_audio_rechecked_by_this_followup": false,
+    "scope": "The saved evaluation records an exact original upload byte check. This independent follow-up reproduces its metadata and scoring; it has no copy of the original audio. No new inference or expert adjudication."
+  }
 }

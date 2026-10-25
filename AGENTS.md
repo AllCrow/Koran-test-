@@ -20,10 +20,26 @@ verified, and never request passwords or pairing files in chat.
 
 ## Latest continued verification
 
-Main run 40186048325 passed on c907121e59eab81ae8848e2ca0311ab54f2aa6ec: 91 hosted and eight UI
-cases on each of three configurations, 82 portable Mac cases per variant and
-36 backend cases. The owner draft personal-build-51-1 is confirmed; older
-build46 evidence remains historical. See STATUS.md for the exact tested inputs.
+Main run 40192974053 passed on e1bb2625136277beb8f4eab78f17576acc3d56e5:
+96 hosted and eight UI cases on each of three configurations, 85 unique portable
+Mac cases per variant and 57 backend cases (21 synthetic evaluator cases).
+All six actual job logs were read. The owner draft personal-build-53-1 is verified
+against independently downloaded IPA/report, the source installation guide and
+239 packaged source resources. See docs/evidence/delivery-53-2026-10-25.json.
+Older build51/46 evidence remains historical; no physical signing/install is proven.
+
+Audio storage may recover on an explicit new download after initial setup failed.
+Prepare protection and identity before committing the verse filename; no fallible
+metadata step may follow that rename. Tafsir cache readiness must not outlive the
+current directory type: a removed root may be recreated, a replacement symlink
+must be rejected before read/write/pruning and after an awaited network response.
+
+backend.evaluation is a separate offline tool, never imported by the normal API
+or app. Pending/inconclusive labels never become error-free ground truth;
+synthetic fixtures publish no quality metrics. Keep exact input/text/model hashes,
+one-to-one matching, abstention/missing denominators and explicit review coverage.
+The original112:2 saved evaluation records a recovered upload; an independent
+metadata/score reproduction without those audio bytes is not a second audio check.
 
 Keep chapter loads transactional. Cancellation preserves the last settled chapter,
 selection, error and saved bytes. A stale request must not clear newer progress.

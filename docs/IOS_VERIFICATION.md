@@ -7,14 +7,18 @@ inte dessa prov. **Ingen fysisk iPhone eller personlig signering är verifierad.
 
 ## Automatiska prov på macOS
 
-**Aktuell källa `c907121e59eab81ae8848e2ca0311ab54f2aa6ec` passerar [huvudkörning 51](https://github.com/AllCrow/Koran-test-/actions/runs/40186048325)**
-med **91 hostade + åtta UI-prov per variant**, 82 separata portabla
-Swift-prov per Mac-variant och 36 backendprov. Alla sex jobb inklusive
-ägarutkastet är godkända. Elva nya native-regressioner täcker ljudtjänstförlust,
-importgränser och avbrutna/överlappande laddningar. Se
-[fortsättningsunderlaget](CONTINUED_STABILITY_2026-10-25.md).
-[Det oberoende leveransbeviset](evidence/delivery-51-2026-10-25.json)
-knyter jobben till releaseutkastets tre filer, IPA-hash och paketerade källresurser.
+**Aktuell källa `e1bb2625136277beb8f4eab78f17576acc3d56e5` passerar [huvudkörning 53](https://github.com/AllCrow/Koran-test-/actions/runs/40192974053)**
+med **96 hostade + åtta UI-prov per variant**, 85 unika portabla
+Swift-prov per Mac-variant och 57 backendprov. Alla sex jobb inklusive
+ägarutkastet är godkända enligt lästa slutloggar.
+[Offline-/kvalitetsunderlaget](OFFLINE_QUALITY_2026-10-25.md) beskriver nya
+lagringsfall och gränser. [Leveransbeviset](evidence/delivery-53-2026-10-25.json)
+knyter jobben till utkastets IPA/rapport, källguiden, paketerade resurser och
+hashkontrollerade/granskade 2:255-bilder. Ingen fysisk iPhone provades.
+
+**Tidigare bygge51** passerade91 hostade + åtta UI,82 portabla fall och36
+backendfall. Dess [separata leveransbevis](evidence/delivery-51-2026-10-25.json)
+och ägarutkast bevaras. Det är inte testantalet för den nu utökade källan.
 
 **Historisk baslinje för bygge 46:**
 

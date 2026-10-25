@@ -1,5 +1,31 @@
 # Separat native-prov av riktiga recitationskällor
 
+## Återkontroll för bygge 53
+
+Ljudbibliotekets lagringsförberedelse och publicering av färdiga filer ändrades
+sedan den första körningen. Därför kördes **samma befintliga tre prov** igen
+mot `e1bb2625136277beb8f4eab78f17576acc3d56e5`; ingen produktions- eller
+provkod ändrades och den ordinarie simulator­matrisen kördes inte om.
+
+[Manuell körning 40194584222](https://github.com/AllCrow/Koran-test-/actions/runs/40194584222)
+är **completed/success**: tre fall utan fel på iPhone16e/iOS26.2/Xcode26.2,
+20,549 s. Alla tolv riktiga filer hämtades och avkodades till 52,020612 s PCM;
+hashpinnad 112:2 spelades lokalt till faktiskt native-slut för alla tre
+recitatörer med samma item/referens, utan fallback eller ny nedladdning.
+
+[Ny råmetadatabevisning](evidence/live-recitation-native-recovery-2026-10-25.json)
+bevarar alla tre originalbilagors innehåll och filhashar. ZIP **12599313521**
+(96 715 byte), käll-SHA, fyra aktuella kodhashar och manifesthash är kontrollerade.
+Den ändrade AudioLibrary-hashen är
+`d2d90eff604179d1931c15793bcd09820fccb5a9dd7eb7bbf7185aa3db4ac6e4`.
+Inga ljudfiler ingår i Git eller artefakten. Detta provar en simulator och
+intygar inte fysisk radio/offlineväxling, filskydd vid låsning, hörsel,
+VoiceOver, energi, innehållsrättigheter eller sakkunnig tajweedkvalitet.
+De tre fallen är separata från huvudkörningens 96 hostade + åtta UI per variant.
+
+## Första körningen, bevarat underlag för bygge 51
+
+
 Detta är ett opt-in-prov av ett verifieringsglapp som de vanliga genererade
 tonerna och loopback-servern inte täcker: verkliga EveryAyah-filer genom
 appens ordinarie HTTPS-nedladdare, diskantagning och lokala filval, följt

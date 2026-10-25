@@ -1,0 +1,238 @@
+{
+  "verified_on_utc": "2026-10-25",
+  "source_commit": "e1bb2625136277beb8f4eab78f17576acc3d56e5",
+  "normal_ci": {
+    "id": 40192974053,
+    "number": 53,
+    "head_sha": "e1bb2625136277beb8f4eab78f17576acc3d56e5",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/AllCrow/Koran-test-/actions/runs/40192974053",
+    "variants": [
+      {
+        "job_id": 121167742973,
+        "variant": "ios18-compact",
+        "device": "iPhone SE (3rd generation)",
+        "ios": "18.5",
+        "xcode": "16.4",
+        "hosted_cases": 96,
+        "ui_cases": 8,
+        "portable_cases": 85,
+        "conclusion": "success",
+        "log_read": true
+      },
+      {
+        "job_id": 121167743062,
+        "variant": "ios18",
+        "device": "iPhone 16 Pro",
+        "ios": "18.5",
+        "xcode": "26.2",
+        "hosted_cases": 96,
+        "ui_cases": 8,
+        "portable_cases": 85,
+        "conclusion": "success",
+        "log_read": true
+      },
+      {
+        "job_id": 121167742804,
+        "variant": "ios26",
+        "device": "iPhone 16e",
+        "ios": "26.2",
+        "xcode": "26.2",
+        "hosted_cases": 96,
+        "ui_cases": 8,
+        "portable_cases": 85,
+        "conclusion": "success",
+        "log_read": true
+      }
+    ],
+    "unique_hosted_ui_cases": 104,
+    "hosted_ui_executions": 312,
+    "backend": {
+      "job_id": 121167743187,
+      "cases": 57,
+      "synthetic_evaluation_contract_cases": 21,
+      "conclusion": "success",
+      "log_read": true
+    },
+    "physical_package_job": {
+      "job_id": 121167742985,
+      "conclusion": "success",
+      "log_read": true
+    },
+    "save_owner_draft_job": {
+      "job_id": 121171477446,
+      "conclusion": "success",
+      "log_read": true
+    }
+  },
+  "release": {
+    "id": 423396167,
+    "tag": "personal-build-53-1",
+    "draft": true,
+    "prerelease": true,
+    "target": "e1bb2625136277beb8f4eab78f17576acc3d56e5",
+    "url": "https://github.com/AllCrow/Koran-test-/releases/tag/untagged-9f5ff7d75e7bdc880981",
+    "assets": [
+      {
+        "id": 675019229,
+        "name": "iPhone-build-info.json",
+        "bytes": 741,
+        "sha256": "e1d6f7562da6039dc3bd7861767b3606f2c626d2d071708c40844eb3e5f70b95"
+      },
+      {
+        "id": 675019230,
+        "name": "PERSONAL_IPHONE_INSTALL.md",
+        "bytes": 5451,
+        "sha256": "0085c8f846d3dfdf2a47decce983845cb93f7a0589d88f76b7c6cbb301a6cd3b"
+      },
+      {
+        "id": 675019231,
+        "name": "Sakina-iPhone-unsigned.ipa",
+        "bytes": 3271185,
+        "sha256": "159cbb58cde06dca919b956b8a4b918339c7d79ec1266de1a31682a404c2c6eb"
+      }
+    ],
+    "older_drafts_preserved": true
+  },
+  "artifacts": [
+    {
+      "id": 12599105394,
+      "name": "Sakina-iPhone-personal-unsigned",
+      "bytes": 3222493,
+      "sha256": "fb1b14b7bf0240f21f93f1701292ceeef15105d7b8b57d10c2030027dd6afe40",
+      "head_sha": "e1bb2625136277beb8f4eab78f17576acc3d56e5",
+      "expires_at": "2026-11-01T12:25:38Z"
+    },
+    {
+      "id": 12598892896,
+      "name": "Sakina-simulator-screenshots-ios18-compact",
+      "bytes": 1927683,
+      "sha256": "8b478039aaf97cf0bf23b9dac1a92e756592f6b8f172b7d655fad1bb338367dc",
+      "head_sha": "e1bb2625136277beb8f4eab78f17576acc3d56e5",
+      "expires_at": "2026-11-01T12:39:09Z"
+    },
+    {
+      "id": 12598773858,
+      "name": "Sakina-simulator-screenshots-ios26",
+      "bytes": 3936574,
+      "sha256": "ef19e749f31f1b4b10f06acd548c7818aeff7039068cb8d73d1e9e277aec7ace",
+      "head_sha": "e1bb2625136277beb8f4eab78f17576acc3d56e5",
+      "expires_at": "2026-11-01T12:41:00Z"
+    },
+    {
+      "id": 12598613774,
+      "name": "Sakina-simulator-screenshots-ios18",
+      "bytes": 4604573,
+      "sha256": "920fb21e096f58f04822e48f6b2e01adda27b22d1e8c6205a7cf45a3c4fcf0bf",
+      "head_sha": "e1bb2625136277beb8f4eab78f17576acc3d56e5",
+      "expires_at": "2026-11-01T12:38:02Z"
+    }
+  ],
+  "independent_package_check": {
+    "assets": [
+      {
+        "id": 675019229,
+        "name": "iPhone-build-info.json",
+        "bytes": 741,
+        "sha256": "e1d6f7562da6039dc3bd7861767b3606f2c626d2d071708c40844eb3e5f70b95",
+        "compared_with": "independently downloaded CI artifact"
+      },
+      {
+        "id": 675019230,
+        "name": "PERSONAL_IPHONE_INSTALL.md",
+        "bytes": 5451,
+        "sha256": "0085c8f846d3dfdf2a47decce983845cb93f7a0589d88f76b7c6cbb301a6cd3b",
+        "compared_with": "source guide"
+      },
+      {
+        "id": 675019231,
+        "name": "Sakina-iPhone-unsigned.ipa",
+        "bytes": 3271185,
+        "sha256": "159cbb58cde06dca919b956b8a4b918339c7d79ec1266de1a31682a404c2c6eb",
+        "compared_with": "independently downloaded CI artifact"
+      }
+    ],
+    "mach_o_build_version": [
+      {
+        "platform": 2,
+        "minimum": 1114112,
+        "sdk": 1704448
+      }
+    ],
+    "resource_counts": {
+      "quran": 118,
+      "fonts": 3,
+      "practice": 118
+    },
+    "version": "0.1.0",
+    "build": "53",
+    "ipa_bytes": 3271185,
+    "ipa_sha256": "159cbb58cde06dca919b956b8a4b918339c7d79ec1266de1a31682a404c2c6eb",
+    "platform": "iPhoneOS",
+    "cpu": "arm64",
+    "minimum_ios": "17.0",
+    "sdk": "26.2",
+    "xcode": "2620/17C52",
+    "provisioning_profile_present": false,
+    "test_bundles_or_audio_or_model_weights_present": false,
+    "personal_signing_required": true,
+    "physical_iphone_tested": false
+  },
+  "screenshots": [
+    {
+      "artifact_id": 12598892896,
+      "file": "1BEA5B93-891D-448B-9B8A-5D7AC812D825.png",
+      "sha256": "f227019dd8a282fdf0bac6a31a49db64b5a184e378fea1e8be24990816b723c8",
+      "viewed": true,
+      "observation": "Entire 2:255 badge and verse opening visible near top beneath navigation."
+    },
+    {
+      "artifact_id": 12598613774,
+      "file": "BC929942-B018-4C34-9122-657FE8756507.png",
+      "sha256": "9f01bd9c1349230136f11cec1f6a6b33ef0f96eccde273051ea765b0d69a1bed",
+      "viewed": true,
+      "observation": "Entire 2:255 badge and verse opening visible near top beneath navigation."
+    },
+    {
+      "artifact_id": 12598773858,
+      "file": "2657D93C-0292-445A-A2B1-B3C3C269C57F.png",
+      "sha256": "39ae1a44a6e7517a2454418cdcf097e1bcb04e91680681a95850ea794da18e3d",
+      "viewed": true,
+      "observation": "Entire 2:255 badge and verse opening visible near top beneath navigation."
+    }
+  ],
+  "evaluation_review": {
+    "saved_report": "docs/evidence/evaluation-pending-112-2-report.json",
+    "saved_report_sha256": "c4fd318a8615922d4903d7688174bee2eaf0ba7b8f37cd5520cf9adfe416b091",
+    "evaluator_source_sha256": "7df1d093695da07d1f981eee1e00d21ed5345e0fb2ce9032a237edac737d2ca1",
+    "input_file_hashes_match": true,
+    "all_reproducible_report_fields_match": true,
+    "complete_assessment_matches_baseline_clip_8": true,
+    "engine_source_matches_current_and_baseline": true,
+    "pending_cases": 1,
+    "adjudicated_cases": 0,
+    "quality_metrics": null,
+    "saved_report_records_original_audio_recheck": true,
+    "original_audio_available_to_this_independent_review": false,
+    "new_inference_or_expert_labels": false
+  },
+  "real_source_recheck": {
+    "reason": "AudioLibrary storage preparation and metadata/rename changed since the previous pinned live-source run. Reused the existing isolated suite with no new tests or production changes.",
+    "run_id": 40194584222,
+    "job_id": 121172574349,
+    "source_commit": "e1bb2625136277beb8f4eab78f17576acc3d56e5",
+    "status": "completed",
+    "conclusion": "success",
+    "native_cases": 3,
+    "decoded_files": 12,
+    "separate_from_normal_test_counts": true,
+    "evidence": "docs/evidence/live-recitation-native-recovery-2026-10-25.json"
+  },
+  "remaining": [
+    "Personal signing and actual iPhone installation.",
+    "Physical microphone, offline radio/network changes, audio routes/interruptions, Files providers, VoiceOver and device energy/heat.",
+    "Content/tafsir/audio rights clearance and expert clip-boundary review.",
+    "Representative expert-labelled learner/tajweed assessment, full sifat coverage and comparable Tarteel quality."
+  ]
+}
