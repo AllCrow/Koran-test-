@@ -22,6 +22,12 @@ Den senaste instruktionen är att **fortsätta självständigt så långt det g�
 
 Den 25 oktober gav användaren en timmes arbetsutrymme för finjusteringar. Arbetet fokuserar därför på befintliga flöden, felrättning, tillgänglighet och verifiering, med bevarad källkod och aktuell status.
 
+Senaste fortsättningsbeskedet ersätter den tillfälliga timgränsen: arbeta så länge
+det behövs med optimering och byggfel för att förbereda ett bra personligt
+iPhone-test när användaren får tillgång till en dator. Datoråtkomst finns ännu
+inte nu. Källkod, krav och faktisk status ska fortsätta bevaras; signering och
+fysisk provning ska inte beskrivas som genomförda i förväg.
+
 ## Funktionella krav
 
 | ID | Krav | Avsedd kontroll |
@@ -40,6 +46,12 @@ Den 25 oktober gav användaren en timmes arbetsutrymme för finjusteringar. Arbe
 Senare beslut 2026-10-25: användaren skapade [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-) och godkände uttryckligen att repot får vara **publikt tills vidare**, med möjlighet att göra det privat senare. Det beslutet ersätter det tidigare privatkravet för den aktuella uppladdningen. Ägare, synlighet och den faktiska uppladdningen ska fortfarande verifieras.
 
 Sparad läsposition, bokmärken och lokal inspelning/återlyssning ingår i den byggda appgrunden som stöd för läsning och övning. Lokal återlyssning uppfyller inte K08 och ska inte beskrivas som automatisk tajweedbedömning.
+
+Läsdata kan exporteras till en separat fil och återimporteras med sammanfogning.
+Det stöder personlig ominstallation utan att kräva konto eller automatisk
+molnsynk. Exporten omfattar läsposition, bokmärken och läshistorik, inte röst,
+nedladdad recitation eller appinställningar. Avinstallation utan separat kopia
+raderar de lokala uppgifterna.
 
 Ljud kan nu uttryckligen laddas ned per sura och recitatör; spelaren föredrar den lokala filen när den finns. Ingen recitation är förpaketerad. Denna implementation behöver fortfarande native-testas på iPhone. Amiri Quran är bundlad med originallicens och verifierad täckning av lästextens synliga tecken; faktisk återgivning på iPhone återstår.
 

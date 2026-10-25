@@ -51,11 +51,13 @@ final class ArabicTextPreparationTests: XCTestCase {
         let name = "سُورَةُ ٱلْفَاتِحَةِ"
         let fatiha = Surah(id: 1, name: name, englishName: "Al-Faatiha", englishNameTranslation: "The Opening", numberOfAyahs: 7, revelationType: "Meccan")
         let index = SurahSearchIndex(surahs: [fatiha])
-        for query in ["الفاتحة", "ٱلفاتحة", "الفَاتِحَة", "  AL FAATIHA  ", "opening", "١", "۱"] {
+        for query in ["الفاتحة", "ٱلفاتحة", "الفَاتِحَة", "  AL FAATIHA  ", "Fatiha", "Faatiha", "Faaatiha", "opening", "١", "۱"] {
             XCTAssertEqual(index.matching(query).map(\.id), [1], query)
         }
         XCTAssertTrue(index.matching("zzznomatch").isEmpty)
+        XCTAssertTrue(index.matching("Fattiha").isEmpty, "Consonants must not be collapsed as transliterated long vowels")
         XCTAssertEqual(Array(index.surahs[0].name.utf8), Array(name.utf8))
+        XCTAssertEqual(Array(index.surahs[0].englishName.utf8), Array("Al-Faatiha".utf8))
     }
 
     func testSearchRebuildDoesNotKeepResultsFromPreviousMetadata() {
@@ -64,8 +66,27 @@ final class ArabicTextPreparationTests: XCTestCase {
         let index = SurahSearchIndex(surahs: [fatiha, ikhlas])
         XCTAssertEqual(index.matching("الاخلاص").map(\.id), [112])
         XCTAssertEqual(index.matching("١١٢").map(\.id), [112])
+        for query in ["Ikhlas", "Ikhlaas", "al ikhlas"] {
+            XCTAssertEqual(index.matching(query).map(\.id), [112], query)
+        }
         let replaced = SurahSearchIndex(surahs: [ikhlas])
         XCTAssertTrue(replaced.matching("opening").isEmpty)
         XCTAssertEqual(replaced.matching("  ").map(\.id), [112])
+    }
+
+    func testVerseJumpAcceptsKeyboardNumeralsWithinCurrentSurah() {
+        for input in ["255", "٢٥٥", "۲۵۵", "２５５", " ٢٥٥\n", "000255"] {
+            XCTAssertEqual(VerseJumpInput.number(from: input, maximum: 286), 255, input)
+        }
+        XCTAssertEqual(VerseJumpInput.number(from: "1", maximum: 7), 1)
+        XCTAssertEqual(VerseJumpInput.number(from: "٧", maximum: 7), 7)
+    }
+
+    func testVerseJumpRejectsOutOfRangeOrNonDecimalInput() {
+        for input in ["", " ", "0", "٠", "287", "٢٨٧", "-1", "+1", "2:255", "2.5", "٢٫٥", "2 55", "²", "Ⅷ", "255verser", "99999999999999999999"] {
+            XCTAssertNil(VerseJumpInput.number(from: input, maximum: 286), input)
+        }
+        XCTAssertNil(VerseJumpInput.number(from: "1", maximum: 0))
+        XCTAssertNil(VerseJumpInput.number(from: "1", maximum: -1))
     }
 }

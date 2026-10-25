@@ -13,6 +13,8 @@ Utvecklingen fortsätter självständigt enligt användarens senaste instruktion
 - Uttryckliga ljudnedladdningar per sura och recitatör; spelaren föredrar sparat lokalt ljud. Inget recitationsljud är förpaketerat.
 - Tafsir al-Muyassar på arabiska, hämtad online med källangivelse.
 - Lokala bokmärken, läsposition, dagligt läsmål och en uppmuntrande streak.
+- Surasökning med arabiska siffror och vanliga latinska stavningar samt direkt **Gå till vers** i läsmenyn.
+- Export och återställning av lokal läsdata via Filer, med sammanfogning av bokmärken och läsdagar.
 - Lokal inspelning och återlyssning för övning, med bevarad tagning och tydliga val före ersättning/radering.
 - En integrerad **experimentell analysväg** med separat Muaalem-backend, typad iOS-klient och återkopplingsvy. Den är **avstängd som standard** och har ingen konfigurerad serveradress.
 
@@ -22,11 +24,11 @@ Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först f�
 
 Se [kraven](KRAV.md), [aktuell status](STATUS.md), [modellundersökningen](docs/RECITATION_RESEARCH.md) och [backendens installations- och driftguide](backend/README.md).
 
-## Provköra med bara iPhone
+## Installera för personligt bruk
 
-Du behöver inte äga en Mac, men appen behöver byggas och signeras i en macOS-miljö. [GitHub Actions har nu byggt appen och godkänt alla 18 native-tester](https://github.com/AllCrow/Koran-test-/actions/runs/40154414555): 15 hostade tester och tre UI-flöden på iPhone 16 Pro-simulator med iOS 18.5. Inget fysiskt iPhone-prov är utfört. En simulatorartefakt kan **inte** installeras på en fysisk iPhone.
+Molnets Mac bygger appen. Den färdiga iPhone-filen kan därefter signeras personligt med en lånad **Mac eller Windows-dator** för första SideStore-installationen. Du behöver inget betalt Developer-medlemskap för den vägen. Enbart iPhone räcker inte för grundinstallationen. En simulatorartefakt kan **inte** installeras på en fysisk iPhone.
 
-För **privat installation** finns nu en riktig, osignerad iPhoneOS/arm64-IPA från [molnbygget](https://github.com/AllCrow/Koran-test-/actions/runs/40156140923). Den behöver personlig signering innan den kan installeras. [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md) beskriver en gratisväg med vanligt Apple-konto och lånad Mac eller Windows-dator för grundinstallationen. Förnyelse behövs normalt före sju dagar, och en dator kan behövas igen vid återställning. Ingen faktisk SideStore-installation är ännu verifierad.
+För **privat installation** finns en riktig, osignerad iPhoneOS/arm64-IPA från molnbygget. Den behöver personlig signering innan den kan installeras. [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md) beskriver hämtning, gratis signering med vanligt Apple-konto och [det första provet på telefonen](docs/FIRST_IPHONE_TEST.md). Förnyelse behövs normalt före sju dagar, och en dator kan behövas igen vid återställning. Ingen faktisk SideStore-installation är ännu verifierad.
 
 Användaren har uttryckligen valt att behålla iPhone-appen och avstått från Safari/PWA. Om en dator inte går att låna behövs en signerande distributör. För TestFlight-alternativet krävs Apple Developer-medlemskap hos den som publicerar; testaren behöver inget eget betalt medlemskap. Inga Apple-uppgifter eller signeringsnycklar ingår i Git.
 
