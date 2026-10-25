@@ -48,9 +48,17 @@ On a Mac run `xcodebuild -project Sakina.xcodeproj -scheme Sakina -destination
 project whenever App Swift files or resource groups change. Local package products
 are wired by `scripts/generate_project.py`; no external Swift dependencies.
 The scheme also contains hosted `AppTests` and `AppUITests`; use an actual
-available iPhone simulator destination with `xcodebuild test`. They were prepared
-but not run on 2026-10-25. See `docs/IOS_VERIFICATION.md`. Keep native and portable
-results separate. UI tests use an isolated, Debug-only defaults suite.
+available iPhone simulator destination with `xcodebuild test`. Actual macOS CI
+has passed the Apple SDK build, eight AppStore tests, seven AudioLibrary tests
+and all three UI flows on 2026-10-25 (run 40154414555, source a0b2e624,
+Xcode16.4/iOS18.5 simulator). The audio file tests use synthetic MPEG frames;
+they do not verify real playback, network downloads or device energy use.
+The parent accessibility identifier had masked child buttons; do not put an
+identifier on the entire verse Card again. Verse scroll IDs must include sura
+and ayah, and the verse group must refresh when its sura changes. See
+`docs/IOS_VERIFICATION.md` and current `STATUS.md`. Keep native and portable
+results separate. UI tests use an isolated, Debug-only defaults suite. Debug
+must keep `ONLY_ACTIVE_ARCH=YES` to match packages for a concrete simulator.
 
 Practice and reading share chapter selection, so hidden practice callbacks must
 never delete a valid take or stop the reader's audio. Preserve the take's exact

@@ -1,17 +1,19 @@
 # Native iPhone-verifiering
 
-Uppdaterat 2026-10-25. Ett riktigt Xcode-simulatorbygge och 15 hostade iOS-prov
-har nu passerat i GitHub Actions på macOS. De tre UI-flödena misslyckades på
-överskrivna knappidentifierare; omkörning efter rättningen återstår.
-Linuxmiljön saknar fortfarande Apple SDK, simulator och fysisk iPhone.
-Exakta källversioner och [körningslänkar finns i statusen](../STATUS.md).
+Uppdaterat 2026-10-25. **Riktigt Xcode-bygge, 15 hostade tester och tre
+UI-flöden har passerat** i GitHub Actions på macOS. Körningen använde
+Xcode 16.4 och iPhone 16 Pro-simulator med iOS 18.5, arm64.
+Den lokala Linuxmiljön saknar fortfarande Apple SDK;
+Mac-resultaten kommer från de länkade CI-körningarna. **Ingen fysisk iPhone
+eller signering är verifierad.** Aktuella resultat finns i [statusen](../STATUS.md).
 
 ## Automatiska prov på macOS
 
 Det genererade Xcode-projektet har tre mål: `Sakina`, `SakinaTests` och
 `SakinaUITests`. Schemat `Sakina` kopplar båda testmålen till appen.
 `AppTests/AudioLibraryTests.swift` tillför sju prov av offlineljudets lokala
-filhantering. Alla sju passerade i [körningen på 4466679](https://github.com/AllCrow/Koran-test-/actions/runs/40153320675).
+filhantering. Alla sju passerade tillsammans med samtliga läs- och UI-prov i
+[körningen på a0b2e62](https://github.com/AllCrow/Koran-test-/actions/runs/40154414555).
 De använder syntetiska MPEG-ramar och testar inte verklig avkodning eller ljudrutter.
 
 På en Mac med Xcode och en installerad iPhone-simulator:
@@ -27,10 +29,11 @@ xcodebuild -project Sakina.xcodeproj -scheme Sakina \
 
 Välj ett faktiskt tillgängligt simulatornamn från det första kommandot.
 [GitHub Actions-flödet](../.github/workflows/ios.yml) väljer ett tillgängligt
-iPhone-ID och sparar en `.xcresult` även om teststeget misslyckas. Flödet har
-körts i användarens repo [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-/actions/runs/40153320675).
-Användaren har uttryckligen godkänt publikt läge tills vidare. Bygge och hostade
-prov har passerat, medan full UI-verifiering efter rättningen fortfarande återstår.
+iPhone-ID och sparar en `.xcresult` även om teststeget misslyckas. Flödet är
+godkänt i användarens repo [AllCrow/Koran-test-](https://github.com/AllCrow/Koran-test-/actions/runs/40154414555),
+kodcommit `a0b2e624406242f85af75e483854a09ce8265919`. Användaren har uttryckligen
+godkänt publikt läge tills vidare. Native-resultat och simulatorapp finns som
+CI-artefakter med sju dagars lagring. Simulatorappen kan inte installeras på en fysisk iPhone.
 
 | Testgrupp | Avsikt |
 | --- | --- |
@@ -40,9 +43,11 @@ prov har passerat, medan full UI-verifiering efter rättningen fortfarande åter
 
 UI-testerna använder en egen `UserDefaults`-suite per test. Endast Debug-byggen
 accepterar det avgränsade testargumentet. Tester raderar inte normala läsdata,
-kontaktar ingen analystjänst och ber inte om mikrofonbehörighet. Simulatorns
-stöd för tangentbordsinmatning av arabiska siffror måste också verifieras av
-den första riktiga körningen.
+kontaktar ingen analystjänst och ber inte om mikrofonbehörighet. Den godkända
+UI-körningen matar in arabiska siffror, öppnar sura 112, kontrollerar att den
+föregående surans kontroller har ersatts och markerar/bokmärker 112:1. Den
+sparade bokmärkesreferensen verifieras också i inställningarna. Proven
+kontrollerar inte mikrofon, ljudrutter eller fysisk energiförbrukning.
 
 ## Manuella prov på iPhone
 
