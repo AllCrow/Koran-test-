@@ -10,7 +10,7 @@ inte dessa prov. **Ingen fysisk iPhone eller personlig signering är verifierad.
 Det genererade Xcode-projektet har tre mål: `Sakina`, `SakinaTests` och
 `SakinaUITests`. Schemat `Sakina` kopplar båda testmålen till appen.
 De hostade proven använder isolerade inställningar, temporära filer, kontrollerad
-transport och egna korta PCM-ljud. Inga privata inspelningar eller hämtade
+transport och egna korta PCM-/MP3-ljud. Inga privata inspelningar eller hämtade
 recitationsfiler ingår i testerna eller repot.
 
 På en Mac med Xcode och en installerad iPhone-simulator:
@@ -38,6 +38,7 @@ en osignerad fysisk iPhone-IPA; efter alla godkända jobb bevaras den som ett
 | AppStore | Unika uttryckliga läsmarkeringar, återstart, kalender-/systemklockebyten, måländring, bokmärken, tajweedval och korrupt sparad data. Export/import återställer och sammanfogar läsdata idempotent; ogiltiga eller för stora filer ändrar inga data. |
 | AudioLibrary | Vers/sura/recitatör, MPEG-/ID3-validering, diskåteröppning, avgränsad radering, felaktig lagring och lagringsfel. Kontrollerad nedladdning provar exakt URL, fortsättning efter avbrott, avbrytning, sena svar, HTTP/MIME/storleksfel och städning av temporära filer. |
 | RecitationPlayer | Riktig AVPlayer-uppspelning av egna korta PCM-WAV-filer: start, naturligt slut, automatisk nästa vers, surans sista vers och enstaka övningsvers. Även trasig lokal fil/återförsök, sena händelser, sparade inställningar och uppskjuten laddning vid pausat recitatörsbyte. |
+| OfflineMP3Playback | Sju prov av verklig MP3-till-PCM-avkodning och AVPlayer med AudioLibrary:s lokala filval för alla tre recitatörer, aktiverad systemljudsession, paus/återstart, naturligt versslut/autospelning, enstaka övningsvers, simulerade avbrotts-/hörlursnotiser, gamla händelser och en ospelbar fil. En genererad svag ton används, inga externa ljudförfrågningar eller röster. |
 | PracticeRecorder | Fördröjd mikrofonbehörighet, avbrytning, sena besked, överlappande försök, ljudavbrott/hörlursnotiser, otillgänglig lagring och städning som bevarar andra filer. Inget prov spelar in från simulatorns mikrofon. |
 | Textberedning och sökning | Exakta UTF-8-sekvenser även för kanoniskt likvärdiga strängar, nästlade tajweedregler, säker fallback och begränsad cache. Arabisk tangentbordssökning, alternativa latinska vokalstavningar och validering av vershoppets siffror/intervall. |
 | UI-flöden | Läsmarkering och återstart, beständigt bokmärke, surasökning och korrekta kontrollreferenser efter surabyte. Hopp till 2:255 med arabiska siffror, ingen navigationskredit, återstart och senare läsposition. Största tillgänglighetstext, tajweedval som sparas och synliga backupkontroller. |
@@ -49,10 +50,22 @@ UI-körningen matar in arabiska siffror, öppnar sura 112, kontrollerar att den
 föregående surans kontroller har ersatts och markerar/bokmärker 112:1. Den
 sparade bokmärkesreferensen verifieras också i inställningarna. Proven
 kontrollerar inte fysisk mikrofon, ljudrutter eller energiförbrukning. Ljudproven
-visar faktisk uppspelning av test-WAV i simulatorn, inte avkodningskvalitet för
+visar faktisk uppspelning av genererade WAV-/MP3-filer i simulatorn, inte avkodningskvalitet för
 alla imaminspelningar. Transportproven använder kontrollerade svar och bevisar
 inte verklig nedladdning/offlineuppspelning på telefonen. Systemets filväljare
 och externa filproviders för backup behöver också ett manuellt prov.
+
+[Körning 40164031500](https://github.com/AllCrow/Koran-test-/actions/runs/40164031500)
+passerar alla **56 hostade prov och fem UI-flöden** på källversion
+`09e2239ee561bbb20487506ede1ddf939dd64a42`. Resultatens head-SHA är kontrollerad;
+faktisk PR-checkout och bytejämförelse dokumenteras i [STATUS.md](../STATUS.md).
+
+Apples [uppladdningskrav](https://developer.apple.com/news/upcoming-requirements/)
+kontrollerades 2026-10-25: App Store Connect kräver Xcode26+/iOS26 SDK sedan
+28 april 2026. Simulatorproven med Xcode16.4/iOS18.5 ersätter inte ett sådant
+bygge inför eventuell TestFlight-/App Store-distribution. Minsta stödda iOS17
+är en annan inställning än bygg-SDK:n. Personlig installation på aktuell
+fysisk telefon behöver fortfarande provas.
 
 ## Manuella prov på iPhone
 
@@ -88,5 +101,6 @@ stödd iPhone. Instruments-profiler kräver en lämplig Mac/enhetsanslutning.
 Subjektiv värme och batteriprocent är kompletterande observationer, inte
 precisa temperatur- eller energimått.
 
-Signering och TestFlight återstår. Ett lyckat simulatorprov ersätter inte
+Personlig signering och installation återstår enligt [guiden](PERSONAL_IPHONE_INSTALL.md).
+TestFlight är ett alternativ. Ett lyckat simulatorprov ersätter inte
 ljudrutter, mikrofon, energimätning eller arabisk återgivning på fysisk enhet.

@@ -3,14 +3,38 @@
 Uppdaterat **2026-10-25**. Native-app för personligt iPhone-prov, iOS 17+.
 Ljud, inspelningslivstid, offlinefiler, läsdata och textberedning har härdats.
 Direkt vershopp och säkerhetskopiering av läsdata är tillagda.
-**Rättningen av långt vershopp verifieras i en ny UI-körning.** Personlig signering,
+**Långt vershopp och samtliga 61 native-prov har passerat Mac-CI.** Personlig signering,
 fysisk installation och en offentlig apprelease är inte verifierade.
+
+## MP3-verifiering och läsflöden
+
+[PR #2](https://github.com/AllCrow/Koran-test-/pull/2), branch
+`codex/native-audio-playback-verification`, tillför sju
+`OfflineMP3PlaybackTests`. En lokalt genererad, svag 440 Hz-ton avkodas från
+MP3 till PCM och spelas med riktig AVPlayer och aktiverad systemljudsession
+genom AudioLibrary:s lokala filval för alla tre recitatörer. Proven omfattar
+paus/återstart, naturligt versslut/autospelning, övning av en vers, simulerade
+ljudnotiser, gamla händelser och en ospelbar fil. Ingen röst, mikrofon eller
+extern ljudförfrågan används. De bevisar inte kvalitet eller rättigheter för
+imaminspelningarna, riktig nättransport eller fysisk energi/ljudrutter.
+
+Huvudgrenens arbete är integrerat med bevarad Git-historik. UI-proven hittade
+ett långt hopp som landade kring 2:239 i stället för 2:255. Rättningen i
+`7657e3a` binder kapitlet före LazyVStack så att varje vers exponeras direkt
+som scrollTargetLayout-mål. Samma strikta UI-krav och femsekundersgräns
+passerar nu: exakt målvers, återstart, upprepat hopp, senare läsposition och
+korrekt läskredit. Äldre misslyckade körningar är inte releasegodkännanden.
 
 ## Aktuell källversion och verifiering
 
-[Körning 40163850515](https://github.com/AllCrow/Koran-test-/actions/runs/40163850515)
-testar exakt app-/testversion **7657e3ad31c58a49f99d19b0db8f37913d249ee2**.
-Senare dokumentationscommits ändrar ingen appkod, testkod eller bygginställning.
+[Den samlade körningen 40164031500](https://github.com/AllCrow/Koran-test-/actions/runs/40164031500)
+är **completed/success** på branchkälla
+**09e2239ee561bbb20487506ede1ddf939dd64a42**. GitHubs faktiska PR-checkout
+är **35a26792f457828306e420607f73e33aa4b6c045**; den är hämtad och dess
+kompletta filträd är byteidentiskt med branchkällan. Jobbloggar och
+artefakternas head-SHA har lästs. Den efterföljande integrationen av huvudgrenens
+dokumentation och denna resultatuppdatering ändrar bara Markdown, ingen
+appkod, testkod eller bygginställning. Ingen ny Mac-körning påstås för dokumentationen.
 Mac-miljön använder Xcode 16.4 och iPhone 16 Pro/iOS 18.5-simulator, arm64.
 
 | Kontroll | Observerat resultat | Omfattning |
@@ -18,21 +42,39 @@ Mac-miljön använder Xcode 16.4 och iPhone 16 Pro/iOS 18.5-simulator, arm64.
 | Fysiskt iPhone-bygge | **Godkänt** | Release, iPhoneOS/arm64. Enhetsbygge innebär inte enhetsprov eller signering. |
 | Simulatorbygge | **Godkänt** | Riktig Apple SDK, SwiftUI, AVFoundation och lokala paket. |
 | Portabla Swift-tester | **67 macOS / 65 Linux passerade** | 23 kärn-, 19 data- och 23 gemensamma övningsprov samt två Darwin-prov av stor respons och avbruten överföring. Linux storlekskontroll sker efter buffring; ingen hård överföringsgräns påstås där. |
-| Hostade native-/UI-prov | **Slutresultat inväntas** | Föregående körning klarade 49 hostade och fyra av fem UI-flöden. Felet i långt vershopp är rättat och verifieras nu med oförändrade krav. |
+| Hostade native-/UI-prov | **61 av 61 passerade** | 56 hostade prov och samtliga fem UI-flöden, noll fel. Långt vershopp, återstart och senare läsposition passerar. |
 | Backendtester | **32 passerade** | Riktig ffmpeg-avkodning av M4A/AAC/WAV, kontrakt, referenser, gränser och avbrytning. ResourceWarning som fel. Ingen akustisk kvalitetsmätning. |
 | Koran/övningsreferenser/font | **Godkända** | 114 suror, 6 236 referenser, exakt källtext, hashmanifest och fonem-/fontkontroller. Ingen arabisk lästext ändrad. |
-| Xcode-projekt | **Deterministiskt** | 14 appfiler, fem hostade testfiler, en UI-testfil och tre lokala bibliotek. |
-| Beständig ägarnedladdning | **Inväntar hela körningen** | Releaseutkast skapas först efter samtliga godkända jobb. Ingen publik apprelease. |
+| Xcode-projekt | **Deterministiskt** | 14 appfiler, sex hostade testfiler, en UI-testfil och tre lokala bibliotek. |
+| Beständig ägarnedladdning | **Verifierat releaseutkast för bygge 23** | Main-körning 40163850515 är success. Utkastet personal-build-23-1 har isDraft=true och källmål 7657e3a. Ingen publik apprelease. |
 | Fysisk iPhone/signering/energi | **Inte provat** | Mikrofon, verkligt nät/offlineljud, ljudrutter, filväljare, värme och batteri återstår. |
 
 Native-sviterna består av 12 AppStore-, 13 AudioLibrary-, nio PracticeRecorder-,
-sju RecitationPlayer- och åtta text-/sök-/vershoppsprov. Spelarproven använder
-riktig, dämpad AVPlayer-uppspelning av genererade PCM-WAV-filer. Kontrollerad
+sju RecitationPlayer-, sju OfflineMP3Playback- och åtta text-/sök-/vershoppsprov.
+Spelarproven använder genererade PCM-WAV- och MP3-filer. Kontrollerad
 transport och behörighetsbesked ersätter inte fysisk mikrofon eller verklig
 EveryAyah-nedladdning. UI-flöden provar läsmarkering, bokmärken, surasökning,
 2:255/återstart/senare läsposition samt största tillgänglighetstext och
 beständigt tajweedval. [Omfattning](docs/IOS_VERIFICATION.md) och
 [evidens](docs/evidence/readiness-verification-2026-10-25.md).
+
+CI-artefakter för den samlade körningen lagras till 2026-11-01:
+native-resultat **12587593518**, skärmbilder **12587248929**,
+simulatorapp **12587324023** och fysisk osignerad IPA **12588100162**.
+Simulatorappen går inte att installera på fysisk iPhone.
+
+Den separat hämtade IPA:n från samma körning är **0.1.0 (24)**,
+**3 104 771 byte**, SHA256
+`45d4a0d433edf6b4ce7eb260529380d7192393179dac46ee7c92e47a6ea6129a`.
+ZIP-integritet, iPhoneOS/arm64, iOS17-minimum, källrapport och frånvaro av
+provisionerings-/testpaket har återkontrollerats. Byggrapportens källversion
+är PR-checkouten ovan. Den är osignerad; ingen installation är utförd.
+
+Apples [uppladdningskrav](https://developer.apple.com/news/upcoming-requirements/)
+lästes 2026-10-25: App Store Connect kräver sedan 28 april 2026 **Xcode 26+
+och iOS 26 SDK**. De verifierade proven med Xcode16.4/iOS18.5 godkänner inte
+en sådan uppladdning. Nytt bygge och verifiering krävs inför eventuell
+TestFlight-/App Store-distribution. Den personliga installationsvägen kvarstår.
 
 ## Installation när en dator finns
 
