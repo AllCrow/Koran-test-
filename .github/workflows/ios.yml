@@ -24,7 +24,7 @@ jobs:
         include:
           - label: ios18
             runner: macos-15
-            xcode: /Applications/Xcode_16.4.app
+            xcode: /Applications/Xcode_26.2.app
             runtime: .iOS-18-5
             device: iPhone 16 Pro
           - label: ios26

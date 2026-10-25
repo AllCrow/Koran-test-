@@ -54,7 +54,9 @@ Apples [aktuella uppladdningskrav](https://developer.apple.com/news/upcoming-req
 kontrollerade 2026-10-25, kräver sedan 28 april 2026 **Xcode 26+ och iOS 26 SDK**
 för App Store Connect. Det aktuella CI-flödet bygger den personliga IPA:n med
 Xcode 26.2 och iOS 26.2 SDK. Det kör också tre simulatorvarianter: iOS 18.5 på
-iPhone 16 Pro och iPhone SE (3:e generationen), samt iOS 26.2 på iPhone 16e.
+iPhone 16 Pro byggd med Xcode 26.2, iOS 18.5 på iPhone SE (3:e generationen)
+med Xcode 16.4, samt iOS 26.2 på iPhone 16e med Xcode 26.2. Därmed provas
+även en app byggd med den aktuella SDK:n på en äldre iOS-körmiljö.
 Konfigurerade jobb eller ett lyckat osignerat bygge bevisar inte att en
 TestFlight-/App Store-uppladdning accepteras. Signering och faktisk uppladdning
 behöver fortfarande verifieras. Minsta körversion iOS17 är en annan

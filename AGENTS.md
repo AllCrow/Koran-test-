@@ -58,8 +58,10 @@ project whenever App Swift files or resource groups change. Local package produc
 are wired by `scripts/generate_project.py`; no external Swift dependencies.
 The scheme also contains hosted `AppTests` and `AppUITests`; use an actual
 available iPhone simulator destination with `xcodebuild test`. See `STATUS.md`
-for the exact latest tested source, run and counts. Mac CI now selects Xcode16.4/
-iOS18.5 on iPhone16Pro and compact iPhoneSE3, plus Xcode26.2/iOS26.2 on iPhone16e.
+for the exact latest tested source, run and counts. Mac CI selects Xcode26.2/
+iOS18.5 on iPhone16Pro, Xcode16.4/iOS18.5 on compact iPhoneSE3, and
+Xcode26.2/iOS26.2 on iPhone16e. The first job specifically verifies a build
+linked to the current SDK on the earlier operating-system runtime.
 The physical unsigned package uses Xcode26.2. Configuration is not a passing run;
 read the actual jobs/results before claiming compatibility. Native suites cover AppStore, AudioLibrary, PracticeRecorder,
 RecitationPlayer and text/search/navigation. Audio validation uses synthetic MPEG
