@@ -26,33 +26,7 @@ struct ReaderView: View {
     var body: some View {
         Group {
             ScrollView {
-                LazyVStack(spacing: 16) {
-                    if let chapter = store.chapter {
-                        chapterHeading(chapter).id("chapter-heading")
-                        if let basmala = QuranPresentation.basmala(for: chapter) {
-                            ArabicText(text: basmala, tajweed: nil, colored: false)
-                                .padding(.vertical, 12).padding(.horizontal, 8)
-                        }
-                        if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
-                        ForEach(chapter.ayahs, id: \.readerScrollID) { ayah in
-                            // The lazy layout and its scroll position use the
-                            // same global identity, including for distant rows.
-                            verseCard(ayah, chapter: chapter).id(ayah.readerScrollID)
-                        }
-                        Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
-                            .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)
-                    } else if store.isLoading {
-                        ProgressView("Öppnar Koranen …").padding(50)
-                    }
-                    if let error = store.errorMessage {
-                        ErrorBanner(message: error)
-                        Button("Försök igen") { Task { await store.load() } }
-                            .frame(minHeight: 44)
-                            .accessibilityIdentifier("reader.retry")
-                    }
-                }
-                .scrollTargetLayout()
-                .padding(20)
+                readerContent
             }
             .scrollPosition(id: $scrollPosition, anchor: scrollAnchor)
             .onChange(of: scrollPosition) { previous, next in
@@ -138,6 +112,46 @@ struct ReaderView: View {
             }
         }
         .sheet(item: $tafsirReference) { TafsirSheet(reference: $0) }
+    }
+
+    @ViewBuilder
+    private var readerContent: some View {
+        // Bind the chapter before creating the lazy target layout. Its
+        // ForEach exposes each verse directly at the target layout's root,
+        // alongside the heading, instead of through a whole-chapter group.
+        if let chapter = store.chapter {
+            LazyVStack(spacing: 16) {
+                chapterHeading(chapter).id("chapter-heading")
+                if let basmala = QuranPresentation.basmala(for: chapter) {
+                    ArabicText(text: basmala, tajweed: nil, colored: false)
+                        .padding(.vertical, 12).padding(.horizontal, 8)
+                }
+                if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
+                ForEach(chapter.ayahs, id: \.readerScrollID) { ayah in
+                    verseCard(ayah, chapter: chapter).id(ayah.readerScrollID)
+                }
+                Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
+                    .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)
+                readerError
+            }
+            .scrollTargetLayout()
+            .padding(20)
+        } else {
+            VStack(spacing: 16) {
+                if store.isLoading { ProgressView("Öppnar Koranen …").padding(50) }
+                readerError
+            }.padding(20)
+        }
+    }
+
+    @ViewBuilder
+    private var readerError: some View {
+        if let error = store.errorMessage {
+            ErrorBanner(message: error)
+            Button("Försök igen") { Task { await store.load() } }
+                .frame(minHeight: 44)
+                .accessibilityIdentifier("reader.retry")
+        }
     }
 
     private func chapterHeading(_ chapter: QuranChapter) -> some View {
