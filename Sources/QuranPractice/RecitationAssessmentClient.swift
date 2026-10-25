@@ -68,9 +68,10 @@ public actor RecitationAssessmentClient {
         let response: URLResponse
         do {
             try Task.checkCancellation()
-            (data, response) = try await session.data(for: request, delegate: redirectBlocker)
+            (data, response) = try await receiveResponse(for: request)
         } catch is CancellationError { throw CancellationError() }
         catch let error as URLError where error.code == .cancelled { throw CancellationError() }
+        catch let error as AssessmentError { throw error }
         catch { throw AssessmentError.networkUnavailable }
         try Task.checkCancellation()
         guard let http = response as? HTTPURLResponse else { throw AssessmentError.invalidResponse }
@@ -89,6 +90,40 @@ public actor RecitationAssessmentClient {
         }
         try Self.validate(assessment, reference: reference, expectedText: expectedText, includeBasmala: includeBasmala)
         return assessment
+    }
+
+    private func receiveResponse(for request: URLRequest) async throws -> (Data, URLResponse) {
+        #if canImport(Darwin)
+        // On iPhone/Mac, stop the transfer before an unbounded response can be
+        // accumulated. A post-data(for:) check alone limits decoding, not RAM.
+        let (bytes, response) = try await session.bytes(for: request, delegate: redirectBlocker)
+        let dataTask = bytes.task
+        defer { dataTask.cancel() }
+        return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else { return (Data(), response) }
+            guard response.expectedContentLength <= Int64(Self.maximumResponseBytes) else {
+                throw AssessmentError.responseTooLarge
+            }
+            var data = Data()
+            data.reserveCapacity(Int(max(0, min(response.expectedContentLength, Int64(Self.maximumResponseBytes)))))
+            for try await byte in bytes {
+                // Buffered bytes can remain available after a task is cancelled.
+                // Check in small batches without a task lookup for every byte.
+                if data.count.isMultiple(of: 4096) { try Task.checkCancellation() }
+                guard data.count < Self.maximumResponseBytes else { throw AssessmentError.responseTooLarge }
+                data.append(byte)
+            }
+            try Task.checkCancellation()
+            return (data, response)
+        } onCancel: {
+            dataTask.cancel()
+        }
+        #else
+        // FoundationNetworking currently lacks AsyncBytes. The caller retains
+        // the same semantic size check for portable development/test clients.
+        return try await session.data(for: request, delegate: redirectBlocker)
+        #endif
     }
 
     private static func validate(_ result: RecitationAssessment, reference: AyahReference, expectedText: AssessmentText, includeBasmala: Bool) throws {

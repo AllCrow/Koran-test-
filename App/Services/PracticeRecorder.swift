@@ -6,6 +6,8 @@ import QuranCore
 /// A single local practice take. There is deliberately no upload or AI score.
 @MainActor
 final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
+    typealias PermissionRequester = (@escaping @Sendable (Bool) -> Void) -> Void
+
     @Published private(set) var isRecording = false
     @Published private(set) var isPlaying = false
     @Published private(set) var isRequestingPermission = false
@@ -35,18 +37,38 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     private var permissionRequestID = UUID()
     private var permissionTask: Task<Void, Never>?
     private let directory: URL
+    private let requestPermission: PermissionRequester
+    private let notifications: NotificationCenter
+    private var ownedSessionCategory: AVAudioSession.Category?
     private var interruptionToken: NSObjectProtocol?
     private var routeToken: NSObjectProtocol?
 
-    override init() {
-        directory = FileManager.default.temporaryDirectory.appendingPathComponent("SakinaPractice", isDirectory: true)
+    override convenience init() {
+        self.init(
+            directory: FileManager.default.temporaryDirectory.appendingPathComponent("SakinaPractice", isDirectory: true),
+            requestPermission: { completion in AVAudioApplication.requestRecordPermission(completionHandler: completion) }
+        )
+    }
+
+    /// Storage and the permission callback can be isolated without opening the
+    /// microphone. The production initializer always uses the system request.
+    init(directory: URL, notifications: NotificationCenter = .default,
+         requestPermission: @escaping PermissionRequester) {
+        self.directory = directory
+        self.notifications = notifications
+        self.requestPermission = requestPermission
         super.init()
         // Takes are temporary and cannot be reopened after app restart.
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        if let files = try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) {
-            for file in files { try? FileManager.default.removeItem(at: file) }
+        if prepareDirectory(),
+           let files = try? FileManager.default.contentsOfDirectory(
+               at: directory, includingPropertiesForKeys: [.isRegularFileKey]
+           ) {
+            for file in files where file.pathExtension == "m4a" && UUID(uuidString: file.deletingPathExtension().lastPathComponent) != nil {
+                guard (try? file.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true else { continue }
+                try? FileManager.default.removeItem(at: file)
+            }
         }
-        interruptionToken = NotificationCenter.default.addObserver(
+        interruptionToken = notifications.addObserver(
             forName: AVAudioSession.interruptionNotification, object: nil, queue: .main
         ) { [weak self] notification in
             let type = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
@@ -54,7 +76,7 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
                 MainActor.assumeIsolated { self?.stopAll() }
             }
         }
-        routeToken = NotificationCenter.default.addObserver(
+        routeToken = notifications.addObserver(
             forName: AVAudioSession.routeChangeNotification, object: AVAudioSession.sharedInstance(), queue: .main
         ) { [weak self] notification in
             let reason = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt
@@ -62,14 +84,23 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
                 // Do not continue a private take through the speaker or switch
                 // microphones silently when headphones are disconnected.
                 MainActor.assumeIsolated { self?.stopAll() }
+            } else if reason == AVAudioSession.RouteChangeReason.categoryChange.rawValue {
+                MainActor.assumeIsolated {
+                    guard let self, let category = self.ownedSessionCategory,
+                          AVAudioSession.sharedInstance().category != category else { return }
+                    // Another player has claimed the shared audio session.
+                    // Stop our own work without deactivating its new category.
+                    self.ownedSessionCategory = nil
+                    self.stopAll()
+                }
             }
         }
     }
 
     deinit {
         permissionTask?.cancel()
-        if let interruptionToken { NotificationCenter.default.removeObserver(interruptionToken) }
-        if let routeToken { NotificationCenter.default.removeObserver(routeToken) }
+        if let interruptionToken { notifications.removeObserver(interruptionToken) }
+        if let routeToken { notifications.removeObserver(routeToken) }
         recorder?.stop()
         player?.stop()
         if let recordingURL { try? FileManager.default.removeItem(at: recordingURL) }
@@ -79,6 +110,7 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     /// screen exit can cancel it even before the permission task gets CPU time.
     func beginRecording(reference: AyahReference, includeBasmala: Bool = false) {
         guard !isRecording, !isRequestingPermission else { return }
+        guard prepareDirectory() else { return }
         stopPlayback()
         errorMessage = nil
         permissionDenied = false
@@ -100,7 +132,7 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
         }
         guard permissionRequestID == requestID, isRequestingPermission, !Task.isCancelled else { return }
         let allowed = await withCheckedContinuation { continuation in
-            AVAudioApplication.requestRecordPermission { continuation.resume(returning: $0) }
+            requestPermission { continuation.resume(returning: $0) }
         }
         guard permissionRequestID == requestID, !Task.isCancelled else { return }
         guard allowed else {
@@ -113,6 +145,7 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
             try session.setActive(true)
+            ownedSessionCategory = .playAndRecord
             let settings: [String: Any] = [
                 AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
                 AVSampleRateKey: 44_100,
@@ -163,11 +196,12 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     }
 
     func playRecording() {
-        guard !isRecording, !isRequestingPermission, hasRecording, let recordingURL else { return }
+        guard !isRecording, !isRequestingPermission, !isPlaying, hasRecording, let recordingURL else { return }
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playback, mode: .default)
             try session.setActive(true)
+            ownedSessionCategory = .playback
             let newPlayer = try AVAudioPlayer(contentsOf: recordingURL)
             newPlayer.delegate = self
             guard newPlayer.play() else { throw CocoaError(.fileReadUnknown) }
@@ -282,6 +316,21 @@ final class PracticeRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     }
 
     private func deactivateSession() {
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        guard let category = ownedSessionCategory else { return }
+        ownedSessionCategory = nil
+        let session = AVAudioSession.sharedInstance()
+        guard session.category == category else { return }
+        try? session.setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    @discardableResult
+    private func prepareDirectory() -> Bool {
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            return true
+        } catch {
+            errorMessage = "Sparplatsen för inspelningen är inte tillgänglig. Försök starta om appen."
+            return false
+        }
     }
 }

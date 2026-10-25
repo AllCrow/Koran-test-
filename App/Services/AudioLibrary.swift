@@ -5,6 +5,10 @@ import QuranCore
 /// Explicit, foreground downloads for personal offline listening. Nothing preloads.
 @MainActor
 final class AudioLibrary: ObservableObject {
+    /// A narrow transport seam keeps disk admission and cancellation testable
+    /// without reaching the recitation service. Production owns one URLSession.
+    typealias Download = @MainActor @Sendable (URLRequest, any URLSessionTaskDelegate) async throws -> (URL, URLResponse)
+
     static let shared = AudioLibrary()
 
     @Published private(set) var completed = 0
@@ -17,21 +21,28 @@ final class AudioLibrary: ObservableObject {
 
     private let directory: URL?
     private let session: URLSession
+    private let downloadFile: Download
     private let fileManager = FileManager.default
     private let maximumVerseBytes: Int64 = 32 * 1_024 * 1_024
     private var downloadTask: Task<Void, Never>?
     private var downloadID: UUID?
     private var validatedFiles: [URL: FileIdentity] = [:]
 
-    init(directory: URL? = nil) {
+    init(directory: URL? = nil, download: Download? = nil) {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil
+        configuration.httpCookieStorage = nil
+        configuration.httpShouldSetCookies = false
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
         configuration.httpMaximumConnectionsPerHost = 1
         configuration.timeoutIntervalForRequest = 30
         configuration.timeoutIntervalForResource = 180
         configuration.waitsForConnectivity = false
-        session = URLSession(configuration: configuration)
+        let networkSession = URLSession(configuration: configuration)
+        session = networkSession
+        downloadFile = download ?? { request, delegate in
+            try await networkSession.download(for: request, delegate: delegate)
+        }
 
         do {
             var root: URL
@@ -63,9 +74,12 @@ final class AudioLibrary: ObservableObject {
 
     /// Returns only a file with a valid MP3 header, with its size and date unchanged.
     func localURL(for reference: AyahReference, reciter: Reciter) -> URL? {
-        guard let url = fileURL(for: reference, reciter: reciter),
-              let identity = try? fileIdentity(at: url),
-              identity.bytes >= 128, identity.bytes <= maximumVerseBytes else { return nil }
+        guard let url = fileURL(for: reference, reciter: reciter) else { return nil }
+        guard let identity = try? fileIdentity(at: url),
+              identity.bytes >= 128, identity.bytes <= maximumVerseBytes else {
+            validatedFiles.removeValue(forKey: url)
+            return nil
+        }
         if validatedFiles[url] == identity { return url }
         guard (try? validateMP3(at: url, identity: identity)) != nil else {
             validatedFiles.removeValue(forKey: url)
@@ -182,11 +196,13 @@ final class AudioLibrary: ObservableObject {
 
     private func downloadVerse(_ reference: AyahReference, reciter: Reciter) async throws {
         var request = URLRequest(url: reciter.audioURL(for: reference))
+        request.httpMethod = "GET"
+        request.httpShouldHandleCookies = false
         request.setValue("audio/mpeg, application/octet-stream;q=0.5", forHTTPHeaderField: "Accept")
         let limit = AudioDownloadLimit(maximumBytes: maximumVerseBytes)
         let result: (URL, URLResponse)
         do {
-            result = try await session.download(for: request, delegate: limit)
+            result = try await downloadFile(request, limit)
         } catch {
             if limit.exceeded { throw AudioDownloadError.tooLarge }
             throw error
@@ -318,10 +334,30 @@ final class AudioLibrary: ObservableObject {
             case .storageUnavailable: return "Ljudets sparplats är inte tillgänglig."
             }
         }
-        if (error as? CocoaError)?.code == .fileWriteOutOfSpace {
+        if isOutOfSpace(error) {
             return "Telefonens lagringsutrymme räcker inte. Redan hämtade verser finns kvar."
         }
+        let storageFailures: Set<URLError.Code> = [.cannotCreateFile, .cannotOpenFile, .cannotWriteToFile, .cannotMoveFile]
+        if (error as NSError).domain == NSCocoaErrorDomain ||
+            (error as? URLError).map({ storageFailures.contains($0.code) }) == true {
+            return "Ljudfilen kunde inte sparas på telefonen. Kontrollera lagringsutrymmet och försök igen. Redan hämtade verser finns kvar."
+        }
         return "Nedladdningen avbröts. Kontrollera anslutningen och försök igen. Redan hämtade verser finns kvar."
+    }
+
+    /// URLSession wraps ENOSPC in a URL error; FileManager may use Cocoa's own
+    /// out-of-space code. Preserve the same useful recovery message for both.
+    private func isOutOfSpace(_ error: Error) -> Bool {
+        var current: NSError? = error as NSError
+        for _ in 0..<8 {
+            guard let error = current else { break }
+            if error.domain == NSCocoaErrorDomain && error.code == CocoaError.fileWriteOutOfSpace.rawValue ||
+                error.domain == NSPOSIXErrorDomain && error.code == Int(POSIXErrorCode.ENOSPC.rawValue) {
+                return true
+            }
+            current = error.userInfo[NSUnderlyingErrorKey] as? NSError
+        }
+        return false
     }
 }
 

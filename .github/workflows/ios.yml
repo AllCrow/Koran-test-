@@ -60,6 +60,20 @@ jobs:
           path: TestResults.xcresult
           if-no-files-found: ignore
           retention-days: 7
+      - name: Export simulator test screenshots
+        if: always()
+        shell: bash
+        run: |
+          if [ -d TestResults.xcresult ]; then
+            xcrun xcresulttool export attachments --path TestResults.xcresult --output-path SimulatorAttachments
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Sakina-simulator-screenshots
+          path: SimulatorAttachments
+          if-no-files-found: ignore
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: Sakina-simulator
@@ -90,7 +104,7 @@ jobs:
           xcodebuild -project Sakina.xcodeproj -scheme Sakina
           -configuration Release -destination 'generic/platform=iOS'
           -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO
-          CODE_SIGNING_REQUIRED=NO build
+          CODE_SIGNING_REQUIRED=NO CURRENT_PROJECT_VERSION=${{ github.run_number }} build
       - name: Verify iPhoneOS platform and package for personal signing
         run: >-
           python3 scripts/package_iphone.py
@@ -105,3 +119,50 @@ jobs:
             docs/PERSONAL_IPHONE_INSTALL.md
           if-no-files-found: error
           retention-days: 7
+  save-personal-download:
+    needs: [validate-and-build, backend-contracts, personal-iphone-package]
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Sakina-iPhone-personal-unsigned
+      - name: Verify the tested artifact and prepare installation notes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          report = json.loads(Path('iPhone-build-info.json').read_text())
+          ipa = Path('Sakina-iPhone-unsigned.ipa')
+          assert report['source_commit'] == os.environ['GITHUB_SHA']
+          assert report['ipa_sha256'] == hashlib.sha256(ipa.read_bytes()).hexdigest()
+          assert report['platform'] == 'iPhoneOS'
+          assert report['requires_personal_signing_and_device_provisioning'] is True
+          notes = (
+              'Privat testbygge för personlig signering.\n\n'
+              'IPA-filen är osignerad och kan inte installeras genom ett tryck i Filer. '
+              'Följ den bifogade SideStore-guiden; en dator behövs för grundinstallationen.\n\n'
+              f"Version: {report['app_version']} ({report['build_number']}). "
+              f"Minsta iOS: {report['minimum_ios']}.\n\n"
+              f"Testad källversion: `{report['source_commit']}`.\n\n"
+              f"IPA SHA256: `{report['ipa_sha256']}`.\n\n"
+              'Fysisk installation, mikrofon, ljudrutter och energiförbrukning är ännu inte verifierade.\n'
+          )
+          Path('release-notes.md').write_text(notes)
+          PY
+      - name: Save an owner-accessible draft download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_tag="personal-build-${{ github.run_number }}-${{ github.run_attempt }}"
+          gh release create "$release_tag" --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --draft --prerelease --latest=false \
+            --title "Sakina – privat testbygge ${{ github.run_number }}" \
+            --notes-file release-notes.md \
+            Sakina-iPhone-unsigned.ipa iPhone-build-info.json docs/PERSONAL_IPHONE_INSTALL.md
+          gh release view "$release_tag" --repo "$GITHUB_REPOSITORY" \
+            --json url,isDraft,tagName,targetCommitish

@@ -108,7 +108,8 @@ def create_app(settings: Settings | None = None, engine: AssessmentEngine | None
             decoded = decode_audio(payload, settings)
             issues = active_engine.assess(decoded, reference.text)
             for issue in issues:
-                if not (0 <= issue.start_scalar <= issue.end_scalar <= len(reference.text)):
+                if (not (0 <= issue.start_scalar <= issue.end_scalar <= len(reference.text))
+                        or issue.category != "insert" and issue.start_scalar == issue.end_scalar):
                     raise ValueError("Invalid engine range")
             return response(reference, status="assessed", issues=issues, message=(
                 "Experimentell analys klar. Gå igenom markeringarna med en kunnig lärare."

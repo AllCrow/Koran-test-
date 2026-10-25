@@ -56,6 +56,24 @@ final class FeedbackHighlighterTests: XCTestCase {
         XCTAssertTrue(spans.map(\.text).joined().utf8.elementsEqual(text.utf8))
     }
 
+    func testLongReferencesRetainExactGraphemesAndCoalesceStyles() {
+        let beginning = String(repeating: "بِسْمِ ", count: 4_000)
+        let highlighted = "👩🏽‍💻 ٱللَّهِ"
+        let ending = String(repeating: " رَحْمَةٌ", count: 4_000)
+        let text = beginning + highlighted + ending
+        let start = beginning.unicodeScalars.count
+        let end = start + highlighted.unicodeScalars.count
+        let spans = FeedbackHighlighter.spans(text: text, issues: [issue(start, end), issue(start + 1, end - 1)])
+        XCTAssertEqual(spans.count, 3)
+        XCTAssertEqual(spans.map(\.text), [beginning, highlighted, ending])
+        XCTAssertEqual(spans.map(\.isHighlighted), [false, true, false])
+        XCTAssertTrue(spans.map(\.text).joined().utf8.elementsEqual(text.utf8))
+        let plain = FeedbackHighlighter.spans(text: text, issues: [])
+        XCTAssertEqual(plain.count, 1)
+        XCTAssertEqual(plain.first?.text, text)
+        XCTAssertEqual(plain.first?.isHighlighted, false)
+    }
+
     private func issue(_ start: Int, _ end: Int, category: AssessmentIssue.Category = .replace) -> AssessmentIssue {
         AssessmentIssue(kind: .tajweed, category: category, startScalar: start, endScalar: end, expected: "", observed: "", message: "")
     }

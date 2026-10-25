@@ -26,6 +26,8 @@ final class TafsirRepositoryTests: XCTestCase {
         XCTAssertEqual(request.url?.host, "api.alquran.cloud")
         XCTAssertEqual(request.url?.path, "/v1/ayah/2:255/ar.muyassar")
         XCTAssertNil(request.url?.query)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "application/json")
+        XCTAssertFalse(request.httpShouldHandleCookies)
         let cached = try await repository.tafsir(for: reference)
         XCTAssertEqual(cached, entry)
         XCTAssertEqual(log.requests.count, 1)
@@ -94,6 +96,24 @@ final class TafsirRepositoryTests: XCTestCase {
         defer { environment.close() }
         let repository = TafsirRepository(session: environment.session)
         await assertError(.unexpectedContent) { _ = try await repository.tafsir(for: reference) }
+    }
+
+    func testOversizedSourceIsRejectedWithoutPoisoningTheVerseCache() async throws {
+        let reference = try XCTUnwrap(AyahReference(surahID: 1, ayahNumber: 1))
+        let log = RequestLog()
+        let valid = try makePayload(for: reference)
+        let environment = StubEnvironment { request in
+            let count = log.append(request)
+            return (200, count == 1 ? Data(repeating: 32, count: TafsirRepository.maximumResponseBytes + 1) : valid)
+        }
+        defer { environment.close() }
+        let repository = TafsirRepository(session: environment.session)
+        await assertError(.unexpectedContent) { _ = try await repository.tafsir(for: reference) }
+        let recovered = try await repository.tafsir(for: reference)
+        XCTAssertEqual(recovered.language, "ar")
+        XCTAssertEqual(log.requests.count, 2)
+        _ = try await repository.tafsir(for: reference)
+        XCTAssertEqual(log.requests.count, 2, "Only the valid response should have been cached")
     }
 
     func testURLSessionCancellationStaysCancellation() async throws {

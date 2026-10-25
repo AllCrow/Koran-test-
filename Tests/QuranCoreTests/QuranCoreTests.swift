@@ -187,6 +187,15 @@ final class TajweedParserTests: XCTestCase {
         XCTAssertEqual(TajweedParser.plainText(source).unicodeScalars.map(\.value), source.unicodeScalars.map(\.value))
     }
 
+    func testExcessivelyNestedInputFallsBackWithoutDroppingAnySource() {
+        let source = "عَرَبِيٌّ " + String(repeating: "[g[", count: 10_000) + "نِّ" + String(repeating: "]", count: 10_000)
+        let spans = TajweedParser.parse(source)
+        XCTAssertTrue(spans.map(\.text).joined().utf8.elementsEqual(source.utf8))
+        XCTAssertTrue(spans.allSatisfy { $0.rule == nil })
+        // Valid ordinary nesting must continue giving the inner rule priority.
+        XCTAssertEqual(TajweedParser.parse("[g[نِّ[n[ـٰ]]").map(\.rule), [.ghunnah, .maddNormal])
+    }
+
     func testEmptyTextAndAllKnownRuleCodes() {
         XCTAssertTrue(TajweedParser.parse("").isEmpty)
         for rule in TajweedRule.allCases {

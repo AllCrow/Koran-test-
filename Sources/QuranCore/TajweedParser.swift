@@ -98,8 +98,11 @@ public enum TajweedParser {
             guard end < scalars.count, scalars[end] == "[" else { return nil }
             return (TajweedRule(rawValue: String(scalars[start + 1])), end + 1)
         }
-        func annotation(at start: Int) -> (spans: [TajweedSpan], next: Int)? {
-            guard let annotationHeader = header(at: start) else { return nil }
+        func annotation(at start: Int, depth: Int = 0) -> (spans: [TajweedSpan], next: Int)? {
+            // The bundled edition nests at most two rules. Bound recursion so
+            // damaged or unexpectedly deep input falls back verbatim instead
+            // of exhausting the stack while rendering a verse.
+            guard depth < 64, let annotationHeader = header(at: start) else { return nil }
             var spans: [TajweedSpan] = []
             var plain = ""
             var index = annotationHeader.contentStart
@@ -117,7 +120,7 @@ public enum TajweedParser {
                     return (spans, index + 1)
                 }
                 if scalars[index] == "[" {
-                    guard let child = annotation(at: index) else { return nil }
+                    guard let child = annotation(at: index, depth: depth + 1) else { return nil }
                     flush()
                     spans.append(contentsOf: child.spans)
                     index = child.next

@@ -7,6 +7,8 @@ import QuranCore
 /// One player for all recitations. Verse changes follow player events, never a timer.
 @MainActor
 final class RecitationPlayer: ObservableObject {
+    typealias AudioURLProvider = @MainActor (AyahReference, Reciter) -> URL
+
     /// The verse whose audio has actually started, retained while it is paused.
     @Published private(set) var activeReference: AyahReference?
     /// The selected verse, including one whose audio is still loading.
@@ -21,11 +23,16 @@ final class RecitationPlayer: ObservableObject {
         }
     }
 
+    /// Distinguishes a completed verse from a user pause; resume restarts a
+    /// completed verse. Other published playback changes invalidate the UI.
+    var hasFinishedVerse: Bool { hasReachedEnd }
+
     private static let reciterPreferenceKey = "sakina.audio.reciter.v1"
     private static let autoplayPreferenceKey = "sakina.audio.autoplay.v1"
     private let defaults: UserDefaults
-    private let player = AVPlayer()
-    private let audioLibrary: AudioLibrary
+    private let player: AVPlayer
+    private let audioURL: AudioURLProvider
+    private let integratesWithSystemAudio: Bool
     private let audioSession = AVAudioSession.sharedInstance()
     private var chapterVerseCount = 0
     private var wantsToPlay = false
@@ -40,12 +47,25 @@ final class RecitationPlayer: ObservableObject {
     private var ownsAudioSession = false
     private var remoteCommandTargets: [(MPRemoteCommand, Any)] = []
 
-    init(audioLibrary: AudioLibrary? = nil, defaults: UserDefaults = .standard) {
+    convenience init(audioLibrary: AudioLibrary? = nil, defaults: UserDefaults = .standard) {
+        let library = audioLibrary ?? .shared
+        self.init(player: AVPlayer(), audioURL: { reference, reciter in
+            library.localURL(for: reference, reciter: reciter) ?? reciter.audioURL(for: reference)
+        }, defaults: defaults, integratesWithSystemAudio: true)
+    }
+
+    /// An injected local source allows native tests to exercise the real player
+    /// without network access or changing the app's global audio controls.
+    init(player: AVPlayer, audioURL: @escaping AudioURLProvider,
+         defaults: UserDefaults, integratesWithSystemAudio: Bool) {
         self.defaults = defaults
-        self.audioLibrary = audioLibrary ?? .shared
+        self.player = player
+        self.audioURL = audioURL
+        self.integratesWithSystemAudio = integratesWithSystemAudio
         selectedReciter = defaults.string(forKey: Self.reciterPreferenceKey).flatMap(Reciter.init(rawValue:)) ?? .alafasy
         autoplay = defaults.object(forKey: Self.autoplayPreferenceKey) as? Bool ?? true
         player.automaticallyWaitsToMinimizeStalling = true
+        guard integratesWithSystemAudio else { return }
         configureRemoteCommands()
 
         interruptionNotification = NotificationCenter.default.addObserver(
@@ -212,8 +232,16 @@ final class RecitationPlayer: ObservableObject {
         errorMessage = nil
         updateNowPlaying()
 
-        let url = audioLibrary.localURL(for: reference, reciter: selectedReciter)
-            ?? selectedReciter.audioURL(for: reference)
+        guard shouldPlay else {
+            // Replacing an item can start asset loading even while AVPlayer is
+            // paused. Keep the new reciter/verse selection without fetching or
+            // decoding anything until the user explicitly resumes playback.
+            player.replaceCurrentItem(with: nil)
+            deactivateOwnedAudioSession()
+            return
+        }
+
+        let url = audioURL(reference, selectedReciter)
         let item = AVPlayerItem(url: url)
         player.replaceCurrentItem(with: item)
 
@@ -222,7 +250,9 @@ final class RecitationPlayer: ObservableObject {
                 guard let self, let item,
                       self.isCurrent(item, generation: itemGeneration) else { return }
                 if item.status == .failed {
-                    self.reportFailure("Recitationen kunde inte hämtas. Kontrollera anslutningen och försök igen.")
+                    self.reportFailure(url.isFileURL
+                        ? "Det sparade ljudet kunde inte spelas. Radera och ladda ned suran igen under Ljud offline."
+                        : "Recitationen kunde inte hämtas. Kontrollera anslutningen och försök igen.")
                 } else {
                     self.updatePlaybackState(item: item, reference: reference)
                 }
@@ -269,19 +299,17 @@ final class RecitationPlayer: ObservableObject {
             Task { @MainActor [weak self, weak item] in
                 guard let self, let item,
                       self.isCurrent(item, generation: itemGeneration) else { return }
-                self.reportFailure("Ljudet avbröts. Kontrollera anslutningen och tryck på spela för att försöka igen.")
+                self.reportFailure(url.isFileURL
+                    ? "Det sparade ljudet avbröts. Radera och ladda ned suran igen under Ljud offline."
+                    : "Ljudet avbröts. Kontrollera anslutningen och tryck på spela för att försöka igen.")
             }
         })
 
-        if shouldPlay {
-            do {
-                try activateAudioSession()
-                player.play()
-            } catch {
-                reportFailure("Det gick inte att aktivera ljuduppspelningen. Försök igen.")
-            }
-        } else {
-            deactivateOwnedAudioSession()
+        do {
+            try activateAudioSession()
+            player.play()
+        } catch {
+            reportFailure("Det gick inte att aktivera ljuduppspelningen. Försök igen.")
         }
     }
 
@@ -311,6 +339,7 @@ final class RecitationPlayer: ObservableObject {
     }
 
     private func activateAudioSession() throws {
+        guard integratesWithSystemAudio else { return }
         // Recording practice can change the shared audio session's category.
         try audioSession.setCategory(.playback, mode: .default)
         try audioSession.setActive(true)
@@ -374,6 +403,7 @@ final class RecitationPlayer: ObservableObject {
     }
 
     private func updateNowPlaying() {
+        guard integratesWithSystemAudio else { return }
         let commands = MPRemoteCommandCenter.shared()
         let hasSelection = requestedReference != nil
         commands.playCommand.isEnabled = hasSelection && !wantsToPlay

@@ -41,24 +41,28 @@ def wav_bytes(duration: float = 0.5, *, silent: bool = False) -> bytes:
 
 class FakeEngine:
     """Only a deterministic transport-test double, not a simulated quality result."""
-    def __init__(self, *, ready=True, failure=False, invalid_range=False):
+    def __init__(self, *, ready=True, failure=False, invalid_range=False, empty_range=False, category="replace"):
         self.ready = ready
         self.failure = failure
         self.invalid_range = invalid_range
+        self.empty_range = empty_range
+        self.category = category
         self.calls: list[str] = []
+        self.durations: list[float] = []
         self.entered: Event | None = None
         self.release: Event | None = None
 
     def assess(self, audio, reference_text):
         self.calls.append(reference_text)
+        self.durations.append(audio.duration)
         if self.entered:
             self.entered.set()
         if self.release:
             self.release.wait(timeout=5)
         if self.failure:
             raise RuntimeError("Injected contract-test failure")
-        return [Issue(kind="normal", category="replace", start_scalar=0,
-                      end_scalar=len(reference_text) + 1 if self.invalid_range else 1,
+        return [Issue(kind="normal", category=self.category, start_scalar=0,
+                      end_scalar=len(reference_text) + 1 if self.invalid_range else (0 if self.empty_range else 1),
                       expected="TEST", observed="DOUBLE", message="Contract-test double")]
 
 
@@ -77,7 +81,7 @@ class APIContractTests(unittest.IsolatedAsyncioTestCase):
             payload = json.dumps(chapter, ensure_ascii=False).encode()
             (self.resources / filename).write_bytes(payload)
             hashes[filename] = hashlib.sha256(payload).hexdigest()
-        index = {"source": "quran-transcript-0.6.4", "surahs": [{"id": c["surah_id"], "count": len(c["ayahs"])} for c in chapters], "hashes": hashes}
+        index = {"version": 1, "source": "quran-transcript-0.6.4", "surahs": [{"id": c["surah_id"], "count": len(c["ayahs"])} for c in chapters], "hashes": hashes}
         (self.resources / "index.json").write_text(json.dumps(index), encoding="utf-8")
         self.settings = Settings(resource_directory=self.resources)
         self.engine = FakeEngine()
@@ -156,6 +160,19 @@ class APIContractTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(body["status"], "unavailable")
             self.assertEqual(body["issues"], [])
 
+    async def test_only_insertions_can_have_an_empty_reference_span(self):
+        for category in ("delete", "replace", "insert"):
+            engine = FakeEngine(empty_range=True, category=category)
+            result = await self.post(client=self.make_client(engine=engine))
+            self.assertEqual(result.status_code, 200)
+            body = result.json()
+            if category == "insert":
+                self.assertEqual(body["status"], "assessed")
+                self.assertEqual(body["issues"][0]["start_scalar"], body["issues"][0]["end_scalar"])
+            else:
+                self.assertEqual(body["status"], "unavailable")
+                self.assertEqual(body["issues"], [])
+
     async def test_short_and_silent_audio_are_not_scored(self):
         for payload in [wav_bytes(0.1), wav_bytes(0.6, silent=True)]:
             body = (await self.post(payload=payload)).json()
@@ -222,6 +239,48 @@ class APIContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(self.engine.calls, [])
 
+    async def test_malformed_reference_index_is_unavailable_not_a_server_error(self):
+        original = json.loads((self.resources / "index.json").read_text())
+        malformed = [
+            {**original, "version": 2},
+            {**original, "surahs": [{}]},
+            {**original, "surahs": "not a list"},
+            {**original, "surahs": [{"id": 1, "count": "two"}]},
+            {**original, "surahs": [{"id": True, "count": 2}]},
+            {**original, "surahs": [original["surahs"][0], original["surahs"][0]]},
+            {**original, "hashes": ["not a hash map"]},
+            {**original, "hashes": {**original["hashes"], "001.json": "broken digest"}},
+        ]
+        for index in malformed:
+            (self.resources / "index.json").write_text(json.dumps(index))
+            client = self.make_client()
+            health = (await client.get("/health")).json()
+            self.assertFalse(health["ready"])
+            response = await self.post(client=client)
+            self.assertEqual(response.status_code, 503)
+            self.assertNotIn(str(self.resources), response.text)
+        self.assertEqual(self.engine.calls, [])
+
+    async def test_malformed_reference_chapter_is_unavailable_even_with_a_matching_hash(self):
+        index = json.loads((self.resources / "index.json").read_text())
+        original = json.loads((self.resources / "001.json").read_text())
+        malformed = [
+            {**original, "ayahs": "not a list"},
+            {**original, "ayahs": [{"ayah_number": 1, "text": "first"}]},
+            {**original, "ayahs": [{"ayah_number": 1, "text": "first"}, {"ayah_number": 1, "text": "duplicate"}]},
+            {**original, "ayahs": [{"ayah_number": 1, "text": "first"}, {"ayah_number": 2, "text": 123}]},
+            {**original, "basmala": []},
+        ]
+        for chapter in malformed:
+            payload = json.dumps(chapter).encode()
+            (self.resources / "001.json").write_bytes(payload)
+            index["hashes"]["001.json"] = hashlib.sha256(payload).hexdigest()
+            (self.resources / "index.json").write_text(json.dumps(index))
+            response = await self.post(client=self.make_client())
+            self.assertEqual(response.status_code, 503)
+            self.assertNotIn(str(self.resources), response.text)
+        self.assertEqual(self.engine.calls, [])
+
     async def test_inference_is_serialized_and_does_not_block_health(self):
         self.engine.entered = Event()
         self.engine.release = Event()
@@ -283,6 +342,30 @@ class APIContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "assessed")
         self.assertEqual(set(Path(tempfile.gettempdir()).glob("sakina-audio-*")), before)
+
+    @unittest.skipUnless(shutil.which("ffmpeg"), "ffmpeg is needed for the native-duration boundary")
+    async def test_exactly_one_minute_native_rate_m4a_allows_resampling_roundoff(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            source = path / "minute.wav"
+            source.write_bytes(wav_bytes(60))
+            target = path / "native-rate.m4a"
+            subprocess.run([shutil.which("ffmpeg"), "-nostdin", "-loglevel", "error", "-i", str(source),
+                            "-ar", "44100", "-c:a", "aac", "-b:a", "64000", str(target)], check=True, capture_output=True)
+            response = await self.post(payload=target.read_bytes(), media_type="audio/mp4")
+            source.write_bytes(wav_bytes(60.1))
+            longer = path / "over-limit.m4a"
+            subprocess.run([shutil.which("ffmpeg"), "-nostdin", "-loglevel", "error", "-i", str(source),
+                            "-ar", "44100", "-c:a", "aac", "-b:a", "64000", str(longer)], check=True, capture_output=True)
+            over_limit = await self.post(payload=longer.read_bytes(), media_type="audio/mp4")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "assessed")
+        self.assertEqual(self.engine.durations[-1], 60.0)
+        self.assertEqual(over_limit.status_code, 415)
+        self.assertEqual(len(self.engine.calls), 1)
+        # Native PCM has no resampling tail and must retain the strict limit.
+        response = await self.post(payload=wav_bytes(60 + 1 / 16000))
+        self.assertEqual(response.status_code, 415)
 
 
 if __name__ == "__main__":

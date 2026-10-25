@@ -56,6 +56,23 @@ def main():
         raise SystemExit("The app is missing required offline reading resources")
     if not list(app.glob("*.bundle/PracticeReferences/index.json")):
         raise SystemExit("The app is missing its practice reference bundle")
+    embedded_binaries = set(app.rglob("*.dylib"))
+    for framework in app.rglob("*.framework"):
+        framework_info = framework / "Info.plist"
+        if not framework_info.is_file():
+            raise SystemExit(f"Framework metadata is missing: {framework.name}")
+        framework_executable = plistlib.loads(framework_info.read_bytes()).get("CFBundleExecutable", "")
+        if not framework_executable or Path(framework_executable).name != framework_executable:
+            raise SystemExit(f"Invalid framework executable: {framework.name}")
+        embedded_binaries.add(framework / framework_executable)
+    for binary in sorted(embedded_binaries):
+        binary_architectures = command("xcrun", "lipo", "-archs", str(binary)).split()
+        binary_info = command("xcrun", "vtool", "-show-build", str(binary))
+        binary_platforms = re.findall(r"^\s*platform\s+(\S+)", binary_info, re.MULTILINE)
+        if not binary_architectures or any(arch not in {"arm64", "arm64e"} for arch in binary_architectures):
+            raise SystemExit(f"Non-iPhone architecture in embedded binary: {binary.name}")
+        if not binary_platforms or any(platform.upper() != "IOS" for platform in binary_platforms):
+            raise SystemExit(f"Non-iPhone platform in embedded binary: {binary.name}")
 
     output = arguments.output.resolve()
     report = arguments.report.resolve()
@@ -82,6 +99,9 @@ def main():
         "platform": "iPhoneOS",
         "architectures": architectures,
         "configuration": "Release",
+        "app_version": info.get("CFBundleShortVersionString"),
+        "build_number": info.get("CFBundleVersion"),
+        "embedded_binaries_verified": len(embedded_binaries),
         "source_commit": os.environ.get("GITHUB_SHA"),
         "ipa_sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
         "ipa_bytes": output.stat().st_size,

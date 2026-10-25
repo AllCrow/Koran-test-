@@ -11,7 +11,15 @@ enum Palette {
     static let gold = Color(light: UIColor(red: 0.52, green: 0.36, blue: 0.08, alpha: 1),
                             dark: UIColor(red: 0.91, green: 0.75, blue: 0.39, alpha: 1))
 
+    private static let tajweedColors: [TajweedRule: Color] = Dictionary(
+        uniqueKeysWithValues: TajweedRule.allCases.map { ($0, makeTajweedColor($0)) }
+    )
+
     static func tajweed(_ rule: TajweedRule) -> Color {
+        tajweedColors[rule] ?? .primary
+    }
+
+    private static func makeTajweedColor(_ rule: TajweedRule) -> Color {
         if [.hamzatWasl, .silent, .lamShamsiyyah, .idghamMutajanisayn, .idghamMutaqaribayn].contains(rule) {
             return .secondary
         }
@@ -80,6 +88,51 @@ struct ErrorBanner: View {
     }
 }
 
+struct ArabicTextPreparation {
+    let spans: [TajweedSpan]?
+    let plainText: String?
+    var usesFallback: Bool { spans == nil }
+}
+
+/// Reuse annotation work across playback/progress updates. Byte keys deliberately
+/// distinguish canonically equivalent strings so source spelling is never reused
+/// from another edition. Only a bounded set of recently displayed verses stays.
+@MainActor
+final class ArabicTextPreparationCache {
+    static let shared = ArabicTextPreparationCache()
+    private let capacity: Int
+    private var entries: [Data: ArabicTextPreparation] = [:]
+    private var recentKeys: [Data] = []
+    var entryCount: Int { entries.count }
+
+    init(capacity: Int = 64) { self.capacity = max(1, capacity) }
+
+    func preparation(for source: String) -> ArabicTextPreparation {
+        let key = Data(source.utf8)
+        if let cached = entries[key] {
+            touch(key)
+            return cached
+        }
+        let spans = TajweedParser.parse(source)
+        let invalid = spans.isEmpty || spans.contains { $0.text.contains("[") || $0.text.contains("]") }
+        let prepared = ArabicTextPreparation(
+            spans: invalid ? nil : spans,
+            plainText: invalid ? nil : spans.map(\.text).joined()
+        )
+        entries[key] = prepared
+        touch(key)
+        while recentKeys.count > capacity {
+            entries.removeValue(forKey: recentKeys.removeFirst())
+        }
+        return prepared
+    }
+
+    private func touch(_ key: Data) {
+        recentKeys.removeAll { $0 == key }
+        recentKeys.append(key)
+    }
+}
+
 @MainActor
 struct ArabicText: View {
     let text: String
@@ -87,9 +140,9 @@ struct ArabicText: View {
     let colored: Bool
 
     var body: some View {
-        let spans = parsedSpans
-        let usesFallback = spans?.contains { $0.text.contains("[") || $0.text.contains("]") } ?? false
-        let safeSpans = usesFallback ? nil : spans
+        let prepared = colored ? tajweed.map { ArabicTextPreparationCache.shared.preparation(for: $0) } : nil
+        let safeSpans = prepared?.spans
+        let spokenText = prepared?.plainText ?? text
         VStack(alignment: .trailing, spacing: 10) {
             rendered(safeSpans)
             .font(.custom("AmiriQuran-Regular", size: 30, relativeTo: .title))
@@ -98,21 +151,16 @@ struct ArabicText: View {
             .multilineTextAlignment(.leading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .environment(\.layoutDirection, .rightToLeft)
-            .accessibilityLabel(safeSpans?.map(\.text).joined() ?? text)
+            .accessibilityLabel(spokenText)
             .accessibilityRepresentation {
-                ArabicAccessibilityLabel(text: safeSpans?.map(\.text).joined() ?? text)
+                ArabicAccessibilityLabel(text: spokenText)
             }
             .textSelection(.enabled)
-            if usesFallback {
+            if prepared?.usesFallback == true {
                 Text("Tajweedfärger är inte tillgängliga för den här versen.")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
-    }
-
-    private var parsedSpans: [TajweedSpan]? {
-        guard colored, let tajweed else { return nil }
-        return TajweedParser.parse(tajweed)
     }
 
     private func rendered(_ spans: [TajweedSpan]?) -> Text {

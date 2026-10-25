@@ -69,6 +69,7 @@ def decode_audio(payload: bytes, settings: Settings) -> DecodedAudio:
     """Decode a bounded local file. No recording or filename is logged/retained."""
     input_format = _input_format(payload)
     raw: bytes | None = None
+    used_decoder = False
     if input_format == "wav":
         try:
             with wave.open(io.BytesIO(payload), "rb") as recording:
@@ -82,6 +83,7 @@ def decode_audio(payload: bytes, settings: Settings) -> DecodedAudio:
         except (wave.Error, EOFError) as error:
             raise InvalidAudio("Ljudfilen kunde inte läsas.") from error
     if raw is None:
+        used_decoder = True
         executable = shutil.which(settings.ffmpeg_binary)
         if executable is None:
             raise DecoderUnavailable("Ljudavkodaren saknas på servern. Använd PCM WAV, mono, 16 kHz.")
@@ -108,7 +110,15 @@ def decode_audio(payload: bytes, settings: Settings) -> DecodedAudio:
             raw = result.stdout
     audio = DecodedAudio(_pcm16_samples(raw))
     if audio.duration > settings.max_duration_seconds:
-        raise InvalidAudio("Inspelningen får vara högst 60 sekunder.")
+        maximum_samples = int(settings.max_duration_seconds * SAMPLE_RATE)
+        # Resampling a native 44.1 kHz/AAC take of exactly 60 seconds can
+        # produce a handful of tail samples (six observed with ffmpeg).
+        # Discard at most 1 ms of decoder roundoff; native PCM remains strict
+        # and genuinely longer recordings are still rejected.
+        if used_decoder and len(audio.samples) <= maximum_samples + SAMPLE_RATE // 1000:
+            del audio.samples[maximum_samples:]
+        else:
+            raise InvalidAudio("Inspelningen får vara högst 60 sekunder.")
     if audio.duration < settings.min_duration_seconds:
         raise InsufficientAudio("Inspelningen är för kort. Läs en hel fras och försök igen.")
     rms = math.sqrt(sum(sample * sample for sample in audio.samples) / len(audio.samples))

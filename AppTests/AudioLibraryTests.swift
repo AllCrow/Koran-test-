@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import QuranCore
 import XCTest
@@ -118,6 +119,139 @@ final class AudioLibraryTests: XCTestCase {
         XCTAssertNotNil(library.errorMessage)
     }
 
+    func testCancellationBeforeTheOwnedJobStartsMakesNoRequest() async throws {
+        let root = try temporaryDirectory()
+        let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+        let library = AudioLibrary(directory: root, download: transport.download)
+
+        library.beginDownload(chapter(), reciter: .alafasy)
+        library.cancelDownload()
+        await waitForDownloadToFinish(library)
+
+        XCTAssertTrue(transport.requests.isEmpty)
+        XCTAssertEqual(library.completed, 0)
+        XCTAssertNil(library.errorMessage)
+        XCTAssertEqual(library.downloadedVerseCount(surahID: 1, reciter: .alafasy), 0)
+    }
+
+    func testResumeFetchesOnlyMissingVersesAndUsesExactReciterURLs() async throws {
+        let root = try temporaryDirectory()
+        try save(mpegFrames(), reference: reference(1), reciter: .husary, root: root)
+        try save(mpegFrames(), reference: reference(2), reciter: .husary, root: root)
+        let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+        let library = AudioLibrary(directory: root, download: transport.download)
+
+        library.beginDownload(chapter(), reciter: .husary)
+        XCTAssertEqual(library.completed, 2)
+        await waitForDownloadToFinish(library)
+
+        let expected = try (3...7).map { Reciter.husary.audioURL(for: try reference($0)) }
+        XCTAssertEqual(transport.requests.compactMap(\.url), expected)
+        XCTAssertTrue(transport.requests.allSatisfy { $0.httpMethod == "GET" && !$0.httpShouldHandleCookies && $0.httpBody == nil })
+        XCTAssertEqual(library.completed, 7)
+        XCTAssertEqual(library.progress, 1)
+        XCTAssertEqual(library.downloadedVerseCount(surahID: 1, reciter: .husary), 7)
+        XCTAssertEqual(library.downloadedVerseCount(surahID: 1, reciter: .alafasy), 0)
+        XCTAssertTrue(transport.createdFiles.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
+
+        library.beginDownload(chapter(), reciter: .husary)
+        await waitForDownloadToFinish(library)
+        XCTAssertEqual(transport.requests.count, 5, "A completed sura must not be fetched again")
+    }
+
+    func testInterruptedDownloadRetainsCompletedVersesAndCanResume() async throws {
+        let root = try temporaryDirectory()
+        let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+        transport.failureOnCall = 3
+        transport.failure = URLError(.networkConnectionLost)
+        let library = AudioLibrary(directory: root, download: transport.download)
+        library.beginDownload(chapter(), reciter: .minshawi)
+        await waitForDownloadToFinish(library)
+
+        XCTAssertEqual(library.completed, 2)
+        XCTAssertEqual(library.downloadedVerseCount(surahID: 1, reciter: .minshawi), 2)
+        XCTAssertTrue(try XCTUnwrap(library.errorMessage).contains("anslutningen"))
+        transport.failureOnCall = nil
+        transport.failure = nil
+        library.beginDownload(chapter(), reciter: .minshawi)
+        await waitForDownloadToFinish(library)
+
+        let expectedNumbers = [1, 2, 3, 3, 4, 5, 6, 7]
+        let expected = try expectedNumbers.map { Reciter.minshawi.audioURL(for: try reference($0)) }
+        XCTAssertEqual(transport.requests.compactMap(\.url), expected)
+        XCTAssertEqual(library.completed, 7)
+        XCTAssertNil(library.errorMessage)
+    }
+
+    func testRejectedResponsesLeaveNoStoredOrTemporaryAudio() async throws {
+        for kind in DownloadStub.InvalidResponse.allCases {
+            let root = try temporaryDirectory()
+            let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+            transport.invalidResponse = kind
+            let library = AudioLibrary(directory: root, download: transport.download)
+            library.beginDownload(chapter(), reciter: .alafasy)
+            await waitForDownloadToFinish(library)
+
+            XCTAssertEqual(transport.requests.count, 1, "Stop at the first rejected response: \(kind)")
+            XCTAssertEqual(library.completed, 0)
+            XCTAssertEqual(library.downloadedVerseCount(surahID: 1, reciter: .alafasy), 0)
+            XCTAssertNotNil(library.errorMessage)
+            XCTAssertTrue(transport.createdFiles.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) }, "Remove the temporary file: \(kind)")
+        }
+    }
+
+    func testCancelledResponseCannotInstallAudioAfterItArrives() async throws {
+        let root = try temporaryDirectory()
+        let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+        let started = expectation(description: "Transport is awaiting its response")
+        transport.pauseFirstResponse = true
+        transport.onRequest = { started.fulfill() }
+        let library = AudioLibrary(directory: root, download: transport.download)
+        defer { library.cancelDownload(); transport.resumeResponse() }
+        library.beginDownload(chapter(), reciter: .alafasy)
+        await fulfillment(of: [started], timeout: 2)
+
+        library.cancelDownload()
+        transport.resumeResponse()
+        await waitForDownloadToFinish(library)
+
+        XCTAssertEqual(transport.requests.count, 1)
+        XCTAssertEqual(library.completed, 0)
+        XCTAssertNil(library.errorMessage)
+        XCTAssertNil(library.localURL(for: try reference(1), reciter: .alafasy))
+        XCTAssertTrue(transport.createdFiles.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
+    }
+
+    func testStorageFailuresGiveStorageRecoveryInsteadOfNetworkAdvice() async throws {
+        let noSpace = NSError(domain: NSURLErrorDomain, code: URLError.cannotWriteToFile.rawValue,
+                              userInfo: [NSUnderlyingErrorKey: NSError(domain: NSPOSIXErrorDomain, code: Int(POSIXErrorCode.ENOSPC.rawValue))])
+        let cases: [(Error, String)] = [(noSpace, "lagringsutrymme"), (CocoaError(.fileWriteNoPermission), "kunde inte sparas")]
+        for (error, message) in cases {
+            let root = try temporaryDirectory()
+            let transport = DownloadStub(directory: try temporaryDirectory(), body: mpegFrames())
+            transport.failure = error
+            let library = AudioLibrary(directory: root, download: transport.download)
+            library.beginDownload(chapter(), reciter: .alafasy)
+            await waitForDownloadToFinish(library)
+
+            let actual = try XCTUnwrap(library.errorMessage)
+            XCTAssertTrue(actual.contains(message), actual)
+            XCTAssertFalse(actual.contains("anslutning"), actual)
+            XCTAssertEqual(library.completed, 0)
+        }
+    }
+
+    private func waitForDownloadToFinish(_ library: AudioLibrary) async {
+        guard library.downloadingSurahID != nil else { return }
+        let finished = expectation(description: "Foreground download has finished")
+        let subscription = library.$downloadingSurahID.dropFirst().first(where: { $0 == nil })
+            .sink { _ in finished.fulfill() }
+        defer { subscription.cancel() }
+        await fulfillment(of: [finished], timeout: 3)
+        XCTAssertNil(library.downloadingSurahID)
+        XCTAssertNil(library.downloadingReciter)
+    }
+
     private func temporaryDirectory() throws -> URL {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("sakina.audio-tests.\(UUID().uuidString)", isDirectory: true)
@@ -150,5 +284,66 @@ final class AudioLibraryTests: XCTestCase {
         var frame = Data(repeating: 0, count: 417)
         frame.replaceSubrange(0..<4, with: [0xFF, 0xFB, 0x90, 0x64])
         return frame + frame
+    }
+}
+
+/// Models only HTTP delivery. AudioLibrary still executes its real admission,
+/// move, cancellation and count logic; these synthetic bytes are not playback.
+@MainActor
+private final class DownloadStub {
+    enum InvalidResponse: CaseIterable, Equatable { case status, mimeType, length, nonHTTP, oversized }
+    private let directory: URL
+    private let body: Data
+    private var pausedResponse: CheckedContinuation<Void, Never>?
+    private var responseMayContinue = false
+    var requests: [URLRequest] = []
+    var createdFiles: [URL] = []
+    var invalidResponse: InvalidResponse?
+    var failure: Error?
+    var failureOnCall: Int?
+    var pauseFirstResponse = false
+    var onRequest: (() -> Void)?
+
+    init(directory: URL, body: Data) {
+        self.directory = directory
+        self.body = body
+    }
+
+    var download: AudioLibrary.Download {
+        { [self] request, _ in
+            requests.append(request)
+            if pauseFirstResponse && requests.count == 1 && !responseMayContinue {
+                await withCheckedContinuation { continuation in
+                    pausedResponse = continuation
+                    onRequest?()
+                }
+            }
+            if let failure, failureOnCall == nil || failureOnCall == requests.count { throw failure }
+            let file = directory.appendingPathComponent(UUID().uuidString)
+            try body.write(to: file)
+            createdFiles.append(file)
+            if invalidResponse == .oversized {
+                let handle = try FileHandle(forWritingTo: file)
+                defer { try? handle.close() }
+                try handle.truncate(atOffset: 33 * 1_024 * 1_024)
+            }
+            let url = try XCTUnwrap(request.url)
+            if invalidResponse == .nonHTTP {
+                return (file, URLResponse(url: url, mimeType: "audio/mpeg", expectedContentLength: body.count, textEncodingName: nil))
+            }
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: url, statusCode: invalidResponse == .status ? 404 : 200, httpVersion: "HTTP/1.1",
+                headerFields: ["Content-Type": invalidResponse == .mimeType ? "text/html" : "audio/mpeg",
+                               "Content-Length": String(invalidResponse == .length ? body.count + 1 : body.count)]
+            ))
+            return (file, response)
+        }
+    }
+
+    func resumeResponse() {
+        responseMayContinue = true
+        let continuation = pausedResponse
+        pausedResponse = nil
+        continuation?.resume()
     }
 }

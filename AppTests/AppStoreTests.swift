@@ -171,4 +171,86 @@ final class AppStoreTests: XCTestCase {
         XCTAssertEqual(store.selectedSurahID, 114)
         XCTAssertEqual(store.chapter?.surah.id, 114)
     }
+
+    func testReadingBackupRestoresUniqueProgressAndBookmarksAcrossReinstall() throws {
+        let today = date(24)
+        let source = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        let first = try reference(1)
+        source.markRead(first)
+        source.markRead(try reference(2))
+        source.markRead(try reference(3))
+        source.toggleBookmark(first)
+        let data = try source.readingBackupData()
+        let targetStorage = try defaults()
+        let restored = AppStore(defaults: targetStorage, now: { today }, calendar: { self.calendar() })
+        try restored.mergeReadingBackup(data)
+        try restored.mergeReadingBackup(data)
+        XCTAssertEqual(restored.todayReadCount, 3)
+        XCTAssertEqual(restored.bookmarks, [first])
+        XCTAssertEqual(restored.lastRead, try reference(3))
+        XCTAssertEqual(restored.streakSummary.current, 1)
+        let relaunched = AppStore(defaults: targetStorage, now: { today }, calendar: { self.calendar() })
+        XCTAssertEqual(relaunched.todayReadCount, 3)
+        XCTAssertEqual(relaunched.bookmarks, [first])
+    }
+
+    func testReadingBackupMergePreservesCurrentSettingsPositionAndEarnedDays() throws {
+        let today = date(24)
+        let source = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        source.setDailyGoal(1)
+        source.markRead(try reference(1))
+        source.toggleBookmark(try reference(1))
+        let target = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        target.setDailyGoal(9)
+        target.setTajweedEnabled(false)
+        let existing = try reference(255, surah: 2)
+        target.markRead(existing)
+        target.toggleBookmark(existing)
+        try target.mergeReadingBackup(source.readingBackupData())
+        XCTAssertEqual(target.lastRead, existing)
+        XCTAssertEqual(target.bookmarks, [existing, try reference(1)])
+        XCTAssertEqual(target.todayReadCount, 2)
+        XCTAssertEqual(target.dailyGoal, 9)
+        XCTAssertFalse(target.tajweedEnabled)
+        XCTAssertTrue(target.dailyGoalMet, "An earned imported day must not be revoked by the current higher goal")
+    }
+
+    func testBookmarkOnlyBackupNeverCreatesReadingCredit() throws {
+        let today = date(24)
+        let source = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        let bookmark = try reference(1, surah: 112)
+        source.toggleBookmark(bookmark)
+        source.setLastRead(bookmark)
+        let restored = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        try restored.mergeReadingBackup(source.readingBackupData())
+        XCTAssertEqual(restored.todayReadCount, 0)
+        XCTAssertFalse(restored.dailyGoalMet)
+        XCTAssertEqual(restored.streakSummary.current, 0)
+        XCTAssertEqual(restored.lastRead, bookmark)
+    }
+
+    func testInvalidReadingBackupsNeverChangeExistingData() throws {
+        let today = date(24)
+        let store = AppStore(defaults: try defaults(), now: { today }, calendar: { self.calendar() })
+        store.markRead(try reference(2))
+        store.toggleBookmark(try reference(2))
+        let original = try store.readingBackupData()
+        let envelope = try XCTUnwrap(JSONSerialization.jsonObject(with: original) as? [String: Any])
+        var invalidFormat = envelope
+        invalidFormat["format"] = "another-app"
+        var futureVersion = envelope
+        futureVersion["version"] = 2
+        var invalidDay = envelope
+        invalidDay["readAyahsByDay"] = ["2026-02-31": [["surahID": 1, "ayahNumber": 1]]]
+        var invalidReference = envelope
+        invalidReference["bookmarks"] = [["surahID": 1, "ayahNumber": 99]]
+        var missingIdentity = envelope
+        missingIdentity.removeValue(forKey: "format")
+        let invalidFiles = try [invalidFormat, futureVersion, invalidDay, invalidReference, missingIdentity]
+            .map { try JSONSerialization.data(withJSONObject: $0) }
+        for data in invalidFiles + [Data("not JSON".utf8), Data(repeating: 0, count: AppStore.maximumReadingBackupBytes + 1)] {
+            XCTAssertThrowsError(try store.mergeReadingBackup(data))
+            XCTAssertEqual(try store.readingBackupData(), original, "Validation failure must be atomic")
+        }
+    }
 }
