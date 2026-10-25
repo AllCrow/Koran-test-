@@ -2,6 +2,23 @@
 
 Uppdaterat: **2026-10-25**. Den senaste omgången fokuserar på användarens begärda finjusteringar, granskning och bevarande. Detta är en utvecklingsversion i källkod; ingen signerad eller färdigtestad iPhone-release är publicerad. Produktkraven finns i [KRAV.md](KRAV.md).
 
+## Pågående verifiering av ljudspelaren
+
+Sju nya hostade prov i `AppTests/RecitationPlayerTests.swift` förbereder kontroll
+av riktig MP3-avkodning, sparat ljud för alla tre recitatörsval, paus/återstart,
+versslut och autospelning, övning av en enda vers, simulerade ljudavbrott,
+gamla spelarhändelser efter surabyte samt ett ospelbart ljudklipp. Provfilen är
+en lokalt genererad, svag 440 Hz-ton i tre sekunder, utan röst eller religiöst
+innehåll. Den ligger endast i testkoden och ska inte följa med i iPhone-appen.
+
+Spelarens befintliga AVPlayer och URL-val kan injiceras i proven. Appens normala
+val är oförändrat: sparad fil först, därefter EveryAyah. Testfallen använder
+fil-URL:er även för felvägen och gör inga externa ljudförfrågningar. De nya proven
+är **inte ännu körda i iOS**; tidigare 18 godkända native-prov nedan gäller den
+tidigare källversionen. En riktig simulatoromgång och iPhoneOS-byggning krävs
+innan denna ändring beskrivs som verifierad. Fysiska ljudrutter, mikrofon,
+recitationsinspelningarnas innehåll samt energi/värme täcks inte av dessa tonprov.
+
 ## Privat installation och fysisk iPhone-fil
 
 Användaren vill behålla den riktiga iPhone-appen och har uttryckligen valt bort

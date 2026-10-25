@@ -39,6 +39,7 @@ CI-artefakter med sju dagars lagring. Simulatorappen kan inte installeras på en
 | --- | --- |
 | Åtta hostade AppStore-tester | Uttryckliga, unika läsmarkeringar; persistens och återstart; midnatt/DST; systemklockans förändringsnotis; måländring; bokmärken och tajweedval; beskärd detaljhistorik; korrupt sparad data; bundlade kapitel och ogiltigt suraval. |
 | Sju hostade AudioLibrary-tester | Rätt lokalt ljud per vers/sura/recitatör; avvisning av fel-/ofullständiga filer och felaktig ID3-storlek; omvalidering av en ändrad fil; återöppning från disk; radering som bevarar andra suror/recitatörer; otillgänglig lagring utan nedladdningsstart. |
+| Sju förberedda RecitationPlayer-tester, ännu inte körda | Riktig MP3-avkodning och AVPlayer-händelser med genererad ton; alla recitatörers lokala filval; paus/återstart och sparade val; faktisk versslutshändelse och sista vers; en-verseövning; simulerade avbrotts-/hörlursnotiser; gamla händelser efter nytt suraval; ospelbar lokal fil utan markering. |
 | Tre UI-flöden | Läsmarkering utan automatisk läskredit och återstart; sparat bokmärke som öppnar sin vers; tom sökning samt arabiska siffror i surasökning. |
 
 UI-testerna använder en egen `UserDefaults`-suite per test. Endast Debug-byggen

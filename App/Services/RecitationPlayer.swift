@@ -24,8 +24,9 @@ final class RecitationPlayer: ObservableObject {
     private static let reciterPreferenceKey = "sakina.audio.reciter.v1"
     private static let autoplayPreferenceKey = "sakina.audio.autoplay.v1"
     private let defaults: UserDefaults
-    private let player = AVPlayer()
+    private let player: AVPlayer
     private let audioLibrary: AudioLibrary
+    private let streamingURL: (AyahReference, Reciter) -> URL
     private let audioSession = AVAudioSession.sharedInstance()
     private var chapterVerseCount = 0
     private var wantsToPlay = false
@@ -40,12 +41,16 @@ final class RecitationPlayer: ObservableObject {
     private var ownsAudioSession = false
     private var remoteCommandTargets: [(MPRemoteCommand, Any)] = []
 
-    init(audioLibrary: AudioLibrary? = nil, defaults: UserDefaults = .standard) {
+    init(audioLibrary: AudioLibrary? = nil, defaults: UserDefaults = .standard,
+         player: AVPlayer? = nil,
+         streamingURL: @escaping (AyahReference, Reciter) -> URL = { reference, reciter in reciter.audioURL(for: reference) }) {
         self.defaults = defaults
         self.audioLibrary = audioLibrary ?? .shared
+        self.player = player ?? AVPlayer()
+        self.streamingURL = streamingURL
         selectedReciter = defaults.string(forKey: Self.reciterPreferenceKey).flatMap(Reciter.init(rawValue:)) ?? .alafasy
         autoplay = defaults.object(forKey: Self.autoplayPreferenceKey) as? Bool ?? true
-        player.automaticallyWaitsToMinimizeStalling = true
+        self.player.automaticallyWaitsToMinimizeStalling = true
         configureRemoteCommands()
 
         interruptionNotification = NotificationCenter.default.addObserver(
@@ -213,7 +218,7 @@ final class RecitationPlayer: ObservableObject {
         updateNowPlaying()
 
         let url = audioLibrary.localURL(for: reference, reciter: selectedReciter)
-            ?? selectedReciter.audioURL(for: reference)
+            ?? streamingURL(reference, selectedReciter)
         let item = AVPlayerItem(url: url)
         player.replaceCurrentItem(with: item)
 

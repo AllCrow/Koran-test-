@@ -164,6 +164,16 @@
 			isa = PBXBuildFile;
 			fileRef = A8CFA11393C908FE3F8D0324;
 		};
+		1B14DC85DA3657D87608FE5E = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = "AppTests/RecitationPlayerTests.swift";
+			sourceTree = "<group>";
+		};
+		67E2C1F8051DDB4BC2297E88 = {
+			isa = PBXBuildFile;
+			fileRef = 1B14DC85DA3657D87608FE5E;
+		};
 		66AB85B868128BCD5EC66962 = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
@@ -255,7 +265,7 @@
 		};
 		04D13FD0AA6F0197CF2C9990 = {
 			isa = PBXGroup;
-			children = (0E17ABB5153CB2488E36F3AF, A8CFA11393C908FE3F8D0324);
+			children = (0E17ABB5153CB2488E36F3AF, A8CFA11393C908FE3F8D0324, 1B14DC85DA3657D87608FE5E);
 			name = "AppTests";
 			sourceTree = "<group>";
 		};
@@ -346,7 +356,7 @@
 		D6D3EFCD007A068187E3C9F7 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (48C1C939BEDFDB404E6375C3, 5FE49F7D24495161A13B1363);
+			files = (48C1C939BEDFDB404E6375C3, 5FE49F7D24495161A13B1363, 67E2C1F8051DDB4BC2297E88);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4A675AF9B1361023D153D34C = {
