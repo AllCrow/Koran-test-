@@ -129,3 +129,33 @@ paketcache och en oanvänd härledd backend-containerbild rensades; källkod,
 modellfiler, Git-historik, tidigare iPhone-paket och verifieringsunderlag
 bevarades. En avbruten skrivning till ett nytt test återställdes före fortsatt
 kontroll. Detta var ett miljöfel, inte ett godkänt eller underkänt native-prov.
+
+[PR-körning56](https://github.com/AllCrow/Koran-test-/actions/runs/40204828944)
+på `b3bf6993b585816a56b1fc429f3703063193644e` passerade samtliga 139 hostade
+fall på alla tre simulatorer, inklusive den nya bundna MP3-sessionen.
+UI-körningen underkändes som helhet. Bibliotekets rätta text, recitatör,
+nästa vers och återkomst efter flikbyte verifierades på alla varianter.
+På iOS18 passerade hela bibliotekets radering och omstart; repetitionsprovet
+stoppades när det krävde en aktiveringspunkt på Stepper-behållaren. Det nya
+provet väljer i stället den verkliga plusknappen, kräver synlighet och
+nåbarhet, gör ett riktigt knapptryck och behåller exakt kontroll av 3→4.
+Repetitionsflödet passerade redan med verkliga reglage på iOS26.
+
+Den mindre telefonens två tidigare UI-fall hittade dessutom en riktig
+inställningsregression. Den nya nätverksförklaringen låg i en hög egen rad
+före tajweed och textstorlek. Med största systemtext hamnade tajweedradens
+underkant på665,5 medan den tillgängliga ytan slutade på618; vanlig bläddring
+kunde även passera textstorleksvalet. Läsreglagen har nu återfått sin tidigare
+ordning och placering. Nätvalet ligger i en egen senare sektion med
+förklaringen i en sektionsfot. De åtta tidigare UI-proven är oförändrade.
+
+På iOS26 passerade elva UI-fall. Biblioteksprovet stoppades först när
+raderingsbekräftelsen fanns men ännu inte uppfyllde nåbarhetskravet vid den
+omedelbara avläsningen. Videon visar rätt dialog och knapp, men underlaget
+avgör inte om avläsningen berodde på presentationen eller AX-representationen.
+Den nya kontrollen använder en enda femsekundersgräns för att kräva rätt
+bekräftelseknapp, förgrund, ändliga hela fönstergränser, aktivering och
+nåbarhet före ett riktigt tryck. Exakta kvarvarande1668byte, rätt borttagen
+post och omstart måste fortfarande verifieras. Den tidigare tidsgränsen
+förlängs inte. Alla56-resultat, originalbilder och tidigare fel bevaras;
+ny fullständig verifiering krävs för rättningarna.
