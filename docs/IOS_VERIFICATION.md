@@ -11,10 +11,12 @@ eller signering är verifierad.** Aktuella resultat finns i [statusen](../STATUS
 
 Det genererade Xcode-projektet har tre mål: `Sakina`, `SakinaTests` och
 `SakinaUITests`. Schemat `Sakina` kopplar båda testmålen till appen.
-`AppTests/AudioLibraryTests.swift` tillför sju prov av offlineljudets lokala
-filhantering. Alla sju passerade tillsammans med samtliga läs- och UI-prov i
-[körningen på a0b2e62](https://github.com/AllCrow/Koran-test-/actions/runs/40154414555).
-De använder syntetiska MPEG-ramar och testar inte verklig avkodning eller ljudrutter.
+`AppTests` omfattar läsdata, arabisk textberedning, ljudlagring, uppspelning
+och inspelningens tillstånd. Filproven använder syntetiska MPEG-ramar och
+injicerade nedladdningssvar. `OfflineMP3PlaybackTests` kompletterar dem med en
+lokalt genererad, faktiskt avkodad MP3-ton och riktig AVPlayer-uppspelning.
+PCM-proven använder genererade WAV-filer. Inga mänskliga inspelningar,
+externa ljudförfrågningar eller mikrofonbehörigheter behövs för dessa prov.
 
 På en Mac med Xcode och en installerad iPhone-simulator:
 
@@ -37,10 +39,13 @@ CI-artefakter med sju dagars lagring. Simulatorappen kan inte installeras på en
 
 | Testgrupp | Avsikt |
 | --- | --- |
-| Åtta hostade AppStore-tester | Uttryckliga, unika läsmarkeringar; persistens och återstart; midnatt/DST; systemklockans förändringsnotis; måländring; bokmärken och tajweedval; beskärd detaljhistorik; korrupt sparad data; bundlade kapitel och ogiltigt suraval. |
-| Sju hostade AudioLibrary-tester | Rätt lokalt ljud per vers/sura/recitatör; avvisning av fel-/ofullständiga filer och felaktig ID3-storlek; omvalidering av en ändrad fil; återöppning från disk; radering som bevarar andra suror/recitatörer; otillgänglig lagring utan nedladdningsstart. |
+| Tolv hostade AppStore-tester | Unika läsmarkeringar; persistens och återstart; kalender och systemklocka; måländring; bokmärken och tajweedval; korrupt data; bundlade kapitel; läsbackup, sammanfogning och avvisning av ogiltig import utan dataförlust. |
+| Tretton hostade AudioLibrary-tester | Lokalt ljud per vers/sura/recitatör; avvisning av fel-/ofullständiga filer; omvalidering; återöppning och avgränsad radering; lagringsfel; avbrytning före start och under hämtning; återupptagning som bara begär saknade verser. Svaren är injicerade, inte riktiga nätverksnedladdningar. |
+| Åtta ArabicTextPreparation-tester | Oförändrad UTF-8 och diakritik, felaktiga annoteringar, nästlade regler, begränsad cache, arabisk och latinsk surasökning samt separat validering av versnummer. |
+| Sju RecitationPlayer-tester | Riktig AVPlayer med genererad PCM; uppskjuten laddning vid pausat recitatörsbyte; faktiskt versslut, nästa och sista vers; omförsök efter fel; gamla händelser; sparade val utan förladdning. Systemljudintegrationen är avstängd i denna grupp. |
+| Nio PracticeRecorder-tester | Ägda temporärfiler, lagringsfel, avbrytning före och under behörighetsbegäran, sena behörighetssvar, saknad tagning och simulerade avbrotts-/hörlursnotiser. Behörighet och inspelning är injicerade; proven spelar inte in från mikrofonen. |
 | Sju OfflineMP3Playback-tester, samlad omkörning återstår | Riktig MP3-avkodning och AVPlayer-händelser med genererad ton; alla recitatörers lokala filval; paus/återstart och sparade val; faktisk versslutshändelse och sista vers; övning av en vers; simulerade avbrotts-/hörlursnotiser; gamla händelser efter nytt suraval; ospelbar lokal fil utan markering. |
-| Tre UI-flöden | Läsmarkering utan automatisk läskredit och återstart; sparat bokmärke som öppnar sin vers; tom sökning samt arabiska siffror i surasökning. |
+| Fem UI-flöden, samlad omkörning återstår | Läsmarkering och återstart; sparat bokmärke; tom, arabisk och latinsk surasökning; direkt vershopp med validering och bevarad läsposition utan läskredit; största textstorlek, tajweedreglage och åtkomliga backupknappar. |
 
 UI-testerna använder en egen `UserDefaults`-suite per test. Endast Debug-byggen
 accepterar det avgränsade testargumentet. Tester raderar inte normala läsdata,
@@ -82,5 +87,7 @@ stödd iPhone. Instruments-profiler kräver en lämplig Mac/enhetsanslutning.
 Subjektiv värme och batteriprocent är kompletterande observationer, inte
 precisa temperatur- eller energimått.
 
-Signering och TestFlight återstår. Ett lyckat simulatorprov ersätter inte
+Personlig signering och installation återstår enligt
+[installationsguiden](PERSONAL_IPHONE_INSTALL.md). TestFlight är ett alternativ,
+inte den prioriterade personliga vägen. Ett lyckat simulatorprov ersätter inte
 ljudrutter, mikrofon, energimätning eller arabisk återgivning på fysisk enhet.

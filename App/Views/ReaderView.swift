@@ -24,13 +24,12 @@ struct ReaderView: View {
                                 .padding(.vertical, 12).padding(.horizontal, 8)
                         }
                         if showLegend && store.tajweedEnabled { Card { TajweedLegend() } }
-                        ForEach(chapter.ayahs) { ayah in
+                        ForEach(chapter.ayahs, id: \.readerScrollID) { ayah in
                             // Verse numbers repeat in every sura. A global
                             // identity keeps recycled controls bound to this
                             // chapter when the reader changes its content.
-                            verseCard(ayah, chapter: chapter).id("\(ayah.surahID):\(ayah.numberInSurah)")
+                            verseCard(ayah, chapter: chapter)
                         }
-                        .id(chapter.surah.id)
                         Text("Arabisk text: Tanzil.net via AlQuran Cloud. Läsningen följer Hafs-numrering.")
                             .font(.caption).foregroundStyle(.secondary).padding(.vertical, 12)
                     } else if store.isLoading {
@@ -42,7 +41,13 @@ struct ReaderView: View {
                             .frame(minHeight: 44)
                             .accessibilityIdentifier("reader.retry")
                     }
-                }.padding(20)
+                }
+                .padding(20)
+                // Reset the stack on a chapter change while keeping its
+                // ForEach rows directly identifiable to the lazy layout.
+                // An ID around the whole ForEach hides distant row targets
+                // behind a single estimated-height child during scrollTo.
+                .id(store.chapter?.surah.id)
             }
             .task(id: store.chapter?.surah.id) {
                 guard store.chapter != nil else { return }
@@ -213,6 +218,11 @@ struct ReaderView: View {
             RoundedRectangle(cornerRadius: 24).strokeBorder(active ? Palette.green : .clear, lineWidth: 2)
         }
     }
+}
+
+private extension Ayah {
+    /// Match AyahReference.id in the ForEach itself, including unloaded rows.
+    var readerScrollID: String { "\(surahID):\(numberInSurah)" }
 }
 
 /// A jump is a reading position, never an automatic reading-completion action.
