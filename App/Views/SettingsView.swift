@@ -42,17 +42,6 @@ struct SettingsView: View {
                 .accessibilityIdentifier("settings.appearance")
                 NavigationLink("Ljud för offline-lyssning") { AudioDownloadsView() }
                     .accessibilityIdentifier("settings.audioLibrary")
-                Toggle("Använd mobildata för ljud", isOn: Binding(
-                    get: { audioNetwork.allowsCellularAudio },
-                    set: { allowed in
-                        audioNetwork.setAllowsCellularAudio(allowed)
-                        audioLibrary.setAllowsCellularAccess(allowed)
-                        player.setAllowsCellularAccess(allowed)
-                    }
-                ))
-                .accessibilityIdentifier("settings.audioCellular")
-                Text("När mobildata är avstängt behöver nytt ljud Wi-Fi. Sparat ljud fungerar fortfarande offline. Ändrar du valet pausas pågående hämtning och strömning.")
-                    .font(.caption).foregroundStyle(.secondary)
                 Toggle("Tajweedfärger", isOn: Binding(get: { store.tajweedEnabled }, set: { store.setTajweedEnabled($0) }))
                     .accessibilityIdentifier("settings.tajweed")
                 NavigationLink {
@@ -68,6 +57,22 @@ struct SettingsView: View {
                     ForEach(Reciter.allCases) { Text($0.displayName).tag($0) }
                 }
                 Toggle("Spela nästa vers automatiskt", isOn: $player.autoplay)
+            }
+            Section {
+                Toggle("Använd mobildata för ljud", isOn: Binding(
+                    get: { audioNetwork.allowsCellularAudio },
+                    set: { allowed in
+                        audioNetwork.setAllowsCellularAudio(allowed)
+                        audioLibrary.setAllowsCellularAccess(allowed)
+                        player.setAllowsCellularAccess(allowed)
+                    }
+                ))
+                .accessibilityIdentifier("settings.audioCellular")
+            } header: {
+                Text("Nätverk för ljud")
+            } footer: {
+                Text("När mobildata är avstängt behöver nytt ljud Wi-Fi. Sparat ljud fungerar fortfarande offline. Ändrar du valet pausas pågående hämtning och strömning.")
+                    .font(.caption)
             }
             readingBackupSection
             Section("Övning") {

@@ -137,9 +137,17 @@ final class FeatureFlowTests: XCTestCase {
         chooseRepeatOption(picker: "repeat.end", option: "repeat.end.option.2", label: "Vers 2")
         XCTAssertTrue(waitForValue("Vers 2", on: app.buttons["repeat.end"]))
         let cycles = app.steppers["repeat.cycles"]
-        scrollFullyIntoView(cycles)
         XCTAssertEqual(cycles.value as? String, "3")
-        cycles.coordinate(withNormalizedOffset: CGVector(dx: 0.94, dy: 0.5)).tap()
+        // The native Stepper container is a value/child group, not the action.
+        // In this Swedish LTR layout the actual plus button is the right child.
+        guard let increment = repetitionIncrementButton(in: cycles) else {
+            XCTFail("The repetition Stepper must expose two distinct native action buttons")
+            return
+        }
+        scrollFullyIntoView(increment)
+        XCTAssertTrue(increment.frame.minX >= app.frame.minX && increment.frame.maxX <= app.frame.maxX)
+        XCTAssertTrue(increment.isEnabled && increment.isHittable)
+        increment.tap()
         XCTAssertTrue(waitForValue("4", on: cycles))
         chooseRepeatOption(picker: "repeat.pause", option: "repeat.pause.option.0", label: "Ingen paus")
         XCTAssertTrue(waitForValue("Ingen paus", on: app.buttons["repeat.pause"]))
@@ -220,8 +228,7 @@ final class FeatureFlowTests: XCTestCase {
                        "Returning from playback must retain the exact library selection")
         tapContent(app.buttons["downloads.delete.present"])
         let confirm = app.buttons["downloads.delete.confirm"]
-        XCTAssertTrue(confirm.waitForExistence(timeout: 5))
-        XCTAssertTrue(confirm.isHittable)
+        XCTAssertTrue(waitForOperableDeletionConfirmation(confirm))
         confirm.tap()
         scrollFullyIntoView(element("downloads.inventory.bytes"))
         XCTAssertTrue(waitForValue("1668 byte", on: element("downloads.inventory.bytes")))
@@ -372,6 +379,54 @@ final class FeatureFlowTests: XCTestCase {
     private func tapContent(_ element: XCUIElement) {
         scrollFullyIntoView(element)
         element.tap()
+    }
+
+    private func waitForOperableDeletionConfirmation(_ confirmation: XCUIElement) -> Bool {
+        var observation = "The identified confirmation has not appeared."
+        let operable = NSPredicate { candidate, _ in
+            guard let candidate = candidate as? XCUIElement, candidate.exists else { return false }
+            let frame = candidate.frame
+            let window = self.app.frame
+            observation = "Confirmation id=\(candidate.identifier), frame=\(frame), window=\(window), enabled=\(candidate.isEnabled), hittable=\(candidate.isHittable)."
+            guard candidate.identifier == "downloads.delete.confirm", !frame.isEmpty,
+                  frame.minX.isFinite, frame.maxX.isFinite, frame.minY.isFinite, frame.maxY.isFinite,
+                  !window.isEmpty, frame.minX >= window.minX, frame.maxX <= window.maxX,
+                  frame.minY >= window.minY, frame.maxY <= window.maxY else { return false }
+            return self.app.state == .runningForeground && candidate.isEnabled && candidate.isHittable
+        }
+        let ready = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: operable, object: confirmation)], timeout: 5) == .completed
+        if !ready {
+            attachScreenshot("Audio-library-native-confirmation-not-operable")
+            let diagnostic = XCTAttachment(string: "\(observation)\nConfirmation: \(String(confirmation.debugDescription.prefix(8_000)))\n\(String(app.debugDescription.prefix(24_000)))")
+            diagnostic.name = "Audio-library-native-confirmation-frame-and-hierarchy"
+            diagnostic.lifetime = .keepAlways
+            add(diagnostic)
+        }
+        return ready
+    }
+
+    private func repetitionIncrementButton(in stepper: XCUIElement) -> XCUIElement? {
+        let buttons = stepper.buttons.allElementsBoundByIndex
+        let frames = buttons.map { $0.frame }
+        let finite = frames.allSatisfy { frame in
+            !frame.isEmpty && frame.minX.isFinite && frame.maxX.isFinite &&
+                frame.minY.isFinite && frame.maxY.isFinite
+        }
+        if buttons.count == 2, finite {
+            let ordered = zip(buttons, frames).sorted { $0.1.midX < $1.1.midX }
+            if ordered[0].1.midX < ordered[1].1.midX {
+                return ordered[1].0
+            }
+        }
+        attachScreenshot("Repetition-native-stepper-actions-ambiguous")
+        let controls = buttons.prefix(16).enumerated().map { index, button in
+            "Button \(index): id=\(String(button.identifier.prefix(256))), label=\(String(button.label.prefix(256))), frame=\(frames[index])"
+        }.joined(separator: "\n")
+        let diagnostic = XCTAttachment(string: "Native action count: \(buttons.count)\n\(controls)\nStepper: \(String(stepper.debugDescription.prefix(8_000)))\n\(String(app.debugDescription.prefix(24_000)))")
+        diagnostic.name = "Repetition-native-stepper-action-frames-and-hierarchy"
+        diagnostic.lifetime = .keepAlways
+        add(diagnostic)
+        return nil
     }
 
     private func scrollFullyIntoView(_ element: XCUIElement) {
