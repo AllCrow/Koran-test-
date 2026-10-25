@@ -17,7 +17,7 @@ källa `dffc0bb115812db66a02e93763b3a0eb37c97a4b`, med 18 äldre native-prov och
 riktig iPhoneOS-paketering. Huvudgrenens förbättringar från `1c13b88` har därefter
 integrerats utan att skriva över dem. Ett pausat recitatörsbyte ska nu behålla
 valet utan att skapa eller hämta ett nytt ljudklipp före uttrycklig återstart.
-**Den samlade nya versionen behöver en ny Mac-körning före godkännande.**
+I [den samlade körningen 40160437326](https://github.com/AllCrow/Koran-test-/actions/runs/40160437326) passerade därefter alla 54 hostade iOS-prov, men det nya UI-provet med största textstorleken missade tajweedreglagets faktiska tryckyta. Huvudgrenens rättning av reglagets testtryck och nya versnavigering från `4d65851` är integrerade. **Den samlade versionen behöver fortfarande en godkänd Mac-körning före merge.**
 Fysisk installation, ljudrutter, mikrofon, källinspelningarnas innehåll och
 energi/värme är fortfarande inte godkända genom dessa tonprov.
 
