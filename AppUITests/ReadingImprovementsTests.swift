@@ -208,11 +208,24 @@ final class ReadingImprovementsTests: XCTestCase {
         let description = app.textViews["contentIssue.description"]
         scrollFullyIntoView(description)
         description.tap()
-        description.typeText("Kontrollera visningen av den här versen.")
+        let keyboard = app.keyboards.firstMatch
+        let keyboardReady = NSPredicate { _, _ in
+            keyboard.exists && keyboard.keys.firstMatch.exists && keyboard.keys.firstMatch.isHittable
+        }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: keyboardReady, object: nil)], timeout: 5), .completed)
+        let expectedDescription = "Kontrollera visningen av den här versen."
+        // Keep real keyboard input and exact value checks. A checkpoint
+        // between the repeated letters prevents one synthetic burst from
+        // hiding where an input loss occurred; no retry repairs typed text.
+        description.typeText("Kontrol")
+        XCTAssertTrue(waitForValue("Kontrol", on: description))
+        description.typeText("lera visningen av den här versen.")
+        XCTAssertTrue(waitForValue(expectedDescription, on: description))
         let done = app.buttons["contentIssue.keyboardDone"]
         XCTAssertTrue(done.waitForExistence(timeout: 5))
         XCTAssertTrue(done.isHittable)
         done.tap()
+        XCTAssertTrue(waitForValue(expectedDescription, on: description), "Dismissing the keyboard must preserve the exact editor value")
         let create = app.buttons["contentIssue.preview"]
         scrollFullyIntoView(create)
         XCTAssertGreaterThanOrEqual(create.frame.height, 44)
@@ -227,7 +240,7 @@ final class ReadingImprovementsTests: XCTestCase {
         XCTAssertEqual(exactReference["surahID"] as? Int, 1)
         XCTAssertEqual(exactReference["ayahNumber"] as? Int, 1)
         XCTAssertEqual(json["reading_edition"] as? String, "quran-uthmani")
-        XCTAssertEqual(json["description"] as? String, "Kontrollera visningen av den här versen.")
+        XCTAssertEqual(json["description"] as? String, expectedDescription)
         for forbidden in ["lastRead", "bookmarks", "file://", "api_key", "recording"] {
             XCTAssertFalse(preview.label.contains(forbidden), "A verse report must not collect \(forbidden)")
         }
@@ -252,6 +265,11 @@ final class ReadingImprovementsTests: XCTestCase {
         XCTAssertTrue(present.waitForExistence(timeout: 5))
         XCTAssertTrue(present.isHittable)
         present.tap()
+    }
+
+    private func waitForValue(_ expected: String, on control: XCUIElement) -> Bool {
+        let predicate = NSPredicate { _, _ in control.exists && (control.value as? String) == expected }
+        return XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: nil)], timeout: 5) == .completed
     }
 
     private func element(_ identifier: String) -> XCUIElement {
@@ -429,13 +447,22 @@ final class ReadingImprovementsTests: XCTestCase {
 
     private func contentViewport() -> (top: CGFloat, bottom: CGFloat) {
         var top = app.navigationBars.firstMatch.frame.maxY
+        var contentBottom = app.tabBars.firstMatch.exists ? app.tabBars.firstMatch.frame.minY : app.frame.maxY
         // A page-sheet's navigation bar can sit below the presenting reader's
-        // bar. Use the active screen's bar for real control visibility checks.
+        // bar. Bind it to its own window. The scaled presenting TabBar is
+        // behind the sheet and must not clip the modal's observed window.
+        let modalTitles: Set<String> = ["Granska innehåll", "Versalternativ", "Sök i verser"]
         for title in ["Granska innehåll", "Versalternativ", "Sök i verser", "Källor och textutgåvor"] {
-            let bar = app.navigationBars[title]
-            if bar.exists, !bar.frame.isEmpty { top = bar.frame.maxY; break }
+            let windows = app.windows.containing(.navigationBar, identifier: title)
+            guard windows.count == 1 else { continue }
+            let window = windows.element(boundBy: 0)
+            let bar = window.navigationBars[title]
+            guard bar.exists, finite(bar.frame), finite(window.frame),
+                  bar.frame.minY >= window.frame.minY, bar.frame.maxY <= window.frame.maxY else { continue }
+            top = bar.frame.maxY
+            if modalTitles.contains(title) { contentBottom = window.frame.maxY }
+            break
         }
-        let contentBottom = app.tabBars.firstMatch.exists ? app.tabBars.firstMatch.frame.minY : app.frame.maxY
         let bottom = app.keyboards.firstMatch.exists ? min(contentBottom, app.keyboards.firstMatch.frame.minY) : contentBottom
         return (top, bottom)
     }

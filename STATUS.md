@@ -426,3 +426,38 @@ misstas för en senare navigering. Sju nya hostade native-prov omfattar även
 en verklig SwiftUI-lista, ankare, dolda/reparerade rader, programmatisk
 rullning och sena callbacks. Ett ytterligare UI-fall provar ljudavsikt efter
 passiv läsning. Dessa nya prov är ännu inte körda.
+
+PR-körning 40232028809 (71), första försöket på 89a449b, avslutades
+underkänd. Alla tre simulatorer passerade 150 hostade fall och 106 portabla
+Mac-fall. iPhone16Pro/iOS18.5 och iPhone16e/iOS26.2 passerade samtliga
+19 UI-fall; kompakt iOS18.5 passerade 18/19. Alla 36 exekveringar av de tolv
+äldre UI-fallen passerade. Automatisk läsplats, uttrycklig sparning och
+återupptagning av samma pausade ljudvers passerade på alla tre varianter.
+Inga runner-omstartsmarkörer hittades i dessa tre råloggar. Den faktiska
+PR-checkouten 946ff8a58707ea599f586100e08ad0a93c8e778c och kandidatens
+89a449b170f123b22ac8a4357bc0cc45392be953 har samma kompletta Git-träd
+a9bb3b22ea77f6bf14a2bfe08b79d593bf5dc289.
+
+Det enda kompakta UI-felet var rapportbeskrivningen: Kontroera i stället
+för Kontrollera. Originalfilmen visar samma bortfall av båda l redan i
+TextEditor med tangentbordet öppet, före Klart och rapportförhandsvisningen.
+Det avkodade syntetiska typing-eventet begär däremot den exakta ursprungliga
+meningen. Förlusten sker alltså före rapportmodellen/JSON, men beviset
+skiljer inte XCTest-inmatning från UIKit/SwiftUI-redigering. Inga krav eller
+assertioner har ändrats för att godkänna det felet. Råloggar, ursprungsfilm,
+snapshotarkiv, event och extraherade bilder bevaras separat; bevis-JSON har
+SHA256 80ac3a7498dae228644f5d7ffbe7c1b7285b0444e7fc2cb1a6fc3d8ec4f6279a.
+Enbart det kompakta jobbet körs om på oförändrad källa 2026-10-27. Det är
+ännu inget godkänt slutresultat eller nytt godkänt personligt paket.
+
+Det kompakta andra försöket (jobb121955384136) avslutades också underkänt:
+150 hostade och 18/19 UI-fall passerade. Den exakta beskrivningen och
+JSON-assertionen passerade denna gång. Rapportfallet föll i stället på
+hjälparens skärmgräns för exportknappen. Originalbilden och native-hierarkin
+visar hela knappens ram y502–649,5 i den aktiva modalens 667-punktsfönster.
+Hjälparen använde felaktigt flikraden i den nedskalade, bakomliggande läsvyn
+som nedre gräns y596,2. Detta är inte bevis för en avklippt produktkontroll.
+Nästa testkorrigering binder modalens gränser till dess eget native-fönster,
+behåller fulla ramar, faktisk klickbarhet, högst tolv drag och oförändrade
+femsekunderskrav för läsposition. Inmatningen kontrolleras även i editorn före
+och efter Klart, med två vanliga tangentbordsinmatningar vid dubbelt l.
