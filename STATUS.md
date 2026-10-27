@@ -461,3 +461,41 @@ Nästa testkorrigering binder modalens gränser till dess eget native-fönster,
 behåller fulla ramar, faktisk klickbarhet, högst tolv drag och oförändrade
 femsekunderskrav för läsposition. Inmatningen kontrolleras även i editorn före
 och efter Klart, med två vanliga tangentbordsinmatningar vid dubbelt l.
+
+PR-körning 40436574639 (72) på 6b8cde9 behåller appkoden från 89a449b och
+innehåller den granskade UI-testkorrigeringen. Första backendjobbet
+121966536437 avbröts efter tio minuter under långsam hämtning av
+Ubuntu-paket från azure.archive.ubuntu.com. Det nådde inte Python-
+beroendena eller något backendprov. Det är ett underkänt infrastrukturutfall,
+inte en genomförd eller godkänd backendtestomgång. Native-jobben lämnas
+att avsluta; denna avbrutna installation får inte godkänna leveransen.
+
+Körning72 avslutades som cancelled med ytterligare två underkända
+native-jobb. iOS26 passerade 150 hostade och 19 UI-fall. Ett passnamn
+delades av ett native-stderrmeddelande i textloggen; originalraderna och
+150/0-summeringen bevaras utan omskrivning. iPhone16Pro passerade 150
+hostade och 18/19 UI-fall, inklusive alla sju nya UI-fall. Det äldre
+repetitionsprovet stod kvar på Vers1 efter ett syntetiskt tap i nominellt
+centrum för Vers3. Menyn stod fortfarande öppen. En intern runner-assertion
+och omstart kom efter detta assertionsfel; de bevisar inte orsaken till
+det uteblivna valet. Testet och appens repetitionskod ändras inte på detta
+underlag. Film, event och native-beskrivningar binds av bevis-JSON med
+SHA256 aecaaf293173c39089be8bb35ba3fb7be0c88b8016f13d22de4a838482a61476.
+
+Kompakt72 passerade också 150 hostade och 18/19 UI-fall; alla tolv äldre
+UI-fall passerade. Beskrivningens nya exakta checkpoints och rapportens
+schema passerade. Den korrekta modalgränsen667 användes, men den nya
+hjälparen observerade bara före vart och ett av tolv drag. Efter det tolfte
+draget blev exportknappen helt synlig (y519–666,5), vilket originalbilden
+och native-hierarkin visar. Hjälparen gjorde ingen observation efter detta
+sista tillåtna drag och underkände felaktigt flödet. Den har nu en sista
+högst fem sekunders kontroll av hel, ändlig ram, horisontell inneslutning,
+foreground och faktisk klickbarhet, utan fler drag. Kravet på minst44
+punkters exportkontroll och alla äldre läsar-/ljudbudgetar behålls.
+
+Nästa stabila kandidat behåller appkoden från89a449b och de äldre
+testklasserna. Backendjobbets dokumenterade paketstall åtgärdas samtidigt
+med Ubuntus officiella HTTPS-spegel och utan rekommenderade extraprogram.
+Distributionspaketet ffmpeg, Pythonberoenden, tiominutersbudgeten, alla57
+tester och leveransens needs-gate behålls. Shellsyntax och spegelbytet
+kontrolleras separat; faktisk godkänd molninstallation återstår.

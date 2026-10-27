@@ -418,6 +418,22 @@ final class ReadingImprovementsTests: XCTestCase {
                        thenDragTo: origin.withOffset(CGVector(dx: app.frame.midX, dy: center - drag / 2)),
                        withVelocity: .slow, thenHoldForDuration: 0.1)
         }
+        // The twelfth drag is allowed to reveal the control too. Inspect its
+        // actual result within the usual five seconds without another drag.
+        var finalTarget: XCUIElement?
+        let visibleAndOperable = NSPredicate { _, _ in
+            let viewport = self.contentViewport()
+            guard self.app.state == .runningForeground, control.exists else { return false }
+            let frame = control.frame
+            guard self.finite(frame), frame.minY >= viewport.top, frame.maxY <= viewport.bottom,
+                  frame.minX >= self.app.frame.minX, frame.maxX <= self.app.frame.maxX else { return false }
+            let target = self.operableControl(for: control, frame: frame)
+            guard target.isHittable else { return false }
+            finalTarget = target
+            return true
+        }
+        if XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: visibleAndOperable, object: nil)], timeout: 5) == .completed,
+           let finalTarget { return finalTarget }
         diagnostic("New-reading-control-not-visible", details: control.debugDescription)
         XCTFail("The actual control must be fully visible and operable")
         return control
