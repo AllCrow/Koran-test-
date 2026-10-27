@@ -20,11 +20,18 @@ Den utökade stabilitetsrundan förbättrar läskomfort, veckohistorik, offline-
 - Uppdateringsprov med frysta äldre format och en frivillig felsökningsrapport att granska före export.
 - Tafsir al-Muyassar på arabiska med källangivelse. Tidigare öppnade förklaringar kan sparas lokalt för senare offlinebruk i en begränsad och validerad cache.
 - Lokala bokmärken, läsposition, dagligt läsmål, en uppmuntrande streak och en översikt över de senaste sju läsdagarna.
+- Återupptagning på versnivå efter manuell rullning eller valet **Spara läsplats här**, utan automatisk läskredit. Ljudets sekundposition sparas inte.
 - Surasökning med arabiska siffror och vanliga latinska stavningar samt direkt **Gå till vers** i läsmenyn.
+- Separat offline-sökning i den arabiska verstexten med eller utan vokaltecken. Träffar visar källtexten och öppnar rätt vers; svensk översättning och translittererad verstext ingår inte.
+- Samlad källvy med exakta textutgåvor, Hafs-numrering och tydligt skild tafsir. Vid varje vers kan användaren skapa, granska och själv exportera en lokal innehållsrapport utan automatisk sändning.
 - Export och återställning av lokal läsdata via Filer, med sammanfogning av bokmärken och läsdagar.
 - Lokal inspelning och återlyssning för övning, med bevarad tagning, synlig inspelningstid upp till en minut och tydliga val före ersättning/radering.
 - Återhämtning när iOS ljudtjänst startas om: recitationsvalet behålls och uppspelning återupptas först efter en uttrycklig åtgärd.
 - En integrerad **experimentell analysväg** med separat Muaalem-backend, typad iOS-klient och återkopplingsvy. Den är **avstängd som standard** och har ingen konfigurerad serveradress.
+
+Den nya [läsförbättringsomgången](docs/READING_IMPROVEMENTS_2026-10-25.md)
+är implementerad i källkoden. Dess native-verifiering pågår/återstår; tidigare
+godkända byggresultat nedan godkänner inte automatiskt den nya koden.
 
 Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline. Ny tafsir kräver nät; lokalt sparade förklaringar kan öppnas även efter appstart utan nät. Cachen prioriterar nyligen öppnade förklaringar och omfattar högst 64 poster, 4 MiB totalt och 128 KiB per sparad post. Hela tafsiren är inte paketerad för offlinebruk. Ljudproven omfattar kontrollerad transport och riktiga URLSession-överföringar över lokal HTTP; nät och ljud på fysisk iPhone återstår.
 

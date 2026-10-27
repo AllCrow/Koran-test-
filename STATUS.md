@@ -335,3 +335,167 @@ i historiken.
 Tidigare fullständiga statusar och felsökningsbelägg finns i
 [denna omgångs historik](docs/STATUS_HISTORY_PREMIUM_2026-10-25.md)
 och [den äldre historiken](docs/STATUS_HISTORY_2026-10-25.md).
+
+
+## Ny förbättringsrunda 2026-10-25: läsplats, textsökning och källor
+
+Implementationen tillför lokal arabisk verstextsökning, sparad versposition efter
+manuell bläddring, ett uttryckligt alternativ för att spara läsplats och en
+versbunden granskningsrapport med lokal förhandsvisning/export. Läsning tilldelas
+inte kredit genom navigering eller bläddring. Ingen svensk översättning eller
+ljudtidsposition har tillkommit.
+
+Lokalt har verifiering av båda koranutgåvorna, övningsreferenser och appresurser
+passerat, liksom 57 backendtester. Swift och Xcode saknas i denna Linuxmiljö.
+De nya Swift- och native-/UI-fallen är ännu inte körda; tidigare bygge63:s
+resultat gäller den tidigare källan. Faktiska CI-resultat ska läggas till efter
+att körningen avslutats. Se docs/READING_IMPROVEMENTS_2026-10-25.md.
+
+Första PR-körningen 40222790505 på 4ee3aa0 avvisades vid kompilering av
+ReaderView: för stort SwiftUI-typkontrolluttryck dolde även ett felaktigt
+recitatörsnamn i rapportkopplingen. Inga native-/UI-resultat godkänns från
+den körningen. Läsvyn har delats upp och kopplingen använder nu spelarens
+selectedReciter. Den tidigare körningen 40222772710 ersattes och avbröts
+när kravdokumentationen färdigställdes; den räknas inte som godkänd.
+
+Den följande PR-körningen 40223278849 på b4dcd1e byggde både iPhoneOS-paket
+och simulatorappar. Native-gaten hittade en Unicode-regression i rapportens
+beskrivning: iOS trimmade U+FEFF. Testet behålls; exporten bevarar nu hela
+inmatningen och använder trimning endast för att identifiera tom text.
+Inga UI-fall godkänns från den körningen; den är inte en godkänd leverans.
+
+PR-körning 40223934384 på eff9e59 hittade samma rapportprov trots att
+inmatningen nu bevaras. Den räknas inte som godkänd. Nästa kandidat behåller
+originalassertionen och kontrollerar även inmatningens byte och JSONDecoder,
+samt en separat kontroll med systemets JSONEncoder/JSONSerialization. U+FEFF
+exporteras som JSON-Unicode-escape för entydig läsning över Foundation-versioner.
+Detta gäller rapportbeskrivningen; koranresurserna ändras inte.
+
+Körning 40224518157 på 4243917 isolerade felet: både kompakt iOS18 och
+iPhone16Pro körde 143 hostade fall med ett enda fel i JSONSerialization-
+assertionen. Inmatningens byte, JSON-Unicode-escapen och strikt JSONDecoder-
+återläsning passerade. Kontrollraden var raw input marker=true, encoded literal
+marker=true, Foundation-decoded marker=false. Förlusten sker alltså i Darwins
+JSONSerialization, även vid en giltig Unicode-escape. Nästa kandidat använder
+JSONDecoder som byte-orakel och behåller exakta UTF-8-kravet; JSONSerialization
+används fortsatt för oberoende kontroll av schema/källor/referenser. Detta
+rättar provmetoden utifrån native-bevis och godkänner inte den fallerade körningen.
+
+PR-körning 40225286761 på 8899735 avslutades underkänd. Kompakt iOS18
+passerade 143 hostade fall men hade fyra UI-fel: ett äldre tabbyte nådde inte
+läsfliken, två nya prov valde Menys icke klickbara omslag och ett nytt prov
+krävde onödig pixelprecision efter verklig rullning. iOS26 passerade samtliga
+143 hostade fall; dess individuella UI-rader visar 17 godkända och ett fel i
+samma rullningshjälpare. En rapporterad runner-omstart gör att dessa inte
+redovisas som en ren godkänd UI-svit. Sökning, exakt träff/omstart, källor,
+rapport vid XXXL och uttrycklig läsplats har faktisk godkänd iOS26-evidens.
+iPhone16Pro missade ett äldre inventeringsprovs START-registrering inom
+10 sekunder (143 fall, ett fel); senare faser kördes inte i det provet.
+
+Nästa kandidat behåller alla äldre testklasser och tidsbudgetar. De nya
+UI-proven väljer endast den referensbundna Menys unika, synliga, faktiskt
+klickbara native-knapp inom samma 44-punktsram. Rullning måste fortfarande
+ske på riktigt, målversen ligga helt nära toppen inom fem sekunder och rätt
+vers överleva omstart utan läskredit. Hjälparens oavsiktliga pixelkrav
+anpassas till observerad beröringsmarginal. Läsvyn mäter också höjd och
+safe-area-marginaler tillsammans så att rader bakom navigations-, flik-
+eller uppspelningsfält inte väljs som synlig läsplats. Nollmarginaler behåller
+tidigare geometri. Korantexten och ljud-/inventeringskoden är oförändrade.
+
+Körning 40227891265 på daecfa3 avslutades underkänd utan att ersättas
+under pågående prov. Alla tre varianter passerade 143 hostade fall. Alla
+36 exekveringar av de tolv äldre UI-fallen passerade. Hela UI-utfallet var 15/18 på båda iOS18-varianterna och 17/18 på
+iOS26 (47/54 totalt). Automatisk läsplats misslyckades överallt: verklig
+rullning och synlig2:2 passerade, men startvyn visade Börja läsa/Öppna Koranen,
+vilket bevisar att lastRead var nil. Rapport och uttrycklig läsplats missade
+faktisk klickbarhet på båda iOS18-varianterna. iOS26-kontrollerna fungerade.
+Runner-omstarter i felloggarna gör inte detta till rena godkända sviter.
+Fulla loggar, metadata och bilder är sparade separat från appkoden.
+
+Nästa implementation ersätter SwiftUI-listpreferenser och separat draggest
+med svaga native-radprober i den befintliga UIScrollView, en KVO-observation
+och dess befintliga panigenkännare. Ingen scroll-delegate eller gest ersätts.
+En kapitelankare binder före första versen utan att förfalska en versrad.
+Generationer, referenser, synliga vyhierarkier och explicit återkallad dragavsikt
+kontrolleras; tomma/automatiska förflyttningar ger aldrig ny användaravsikt.
+En vanlig44-punktsknapp öppnar en separat versvalsvy; rapporten presenteras
+först när den vyn stängts. Ljudkontroller återkallar äldre väntande sparning
+synkront. Återupptagning av samma pausade vers sparar dess uttryckliga plats.
+Den tvetydiga lastRead-observationen tas bort så egna sparningar inte kan
+misstas för en senare navigering. Sju nya hostade native-prov omfattar även
+en verklig SwiftUI-lista, ankare, dolda/reparerade rader, programmatisk
+rullning och sena callbacks. Ett ytterligare UI-fall provar ljudavsikt efter
+passiv läsning. Dessa nya prov är ännu inte körda.
+
+PR-körning 40232028809 (71), första försöket på 89a449b, avslutades
+underkänd. Alla tre simulatorer passerade 150 hostade fall och 106 portabla
+Mac-fall. iPhone16Pro/iOS18.5 och iPhone16e/iOS26.2 passerade samtliga
+19 UI-fall; kompakt iOS18.5 passerade 18/19. Alla 36 exekveringar av de tolv
+äldre UI-fallen passerade. Automatisk läsplats, uttrycklig sparning och
+återupptagning av samma pausade ljudvers passerade på alla tre varianter.
+Inga runner-omstartsmarkörer hittades i dessa tre råloggar. Den faktiska
+PR-checkouten 946ff8a58707ea599f586100e08ad0a93c8e778c och kandidatens
+89a449b170f123b22ac8a4357bc0cc45392be953 har samma kompletta Git-träd
+a9bb3b22ea77f6bf14a2bfe08b79d593bf5dc289.
+
+Det enda kompakta UI-felet var rapportbeskrivningen: Kontroera i stället
+för Kontrollera. Originalfilmen visar samma bortfall av båda l redan i
+TextEditor med tangentbordet öppet, före Klart och rapportförhandsvisningen.
+Det avkodade syntetiska typing-eventet begär däremot den exakta ursprungliga
+meningen. Förlusten sker alltså före rapportmodellen/JSON, men beviset
+skiljer inte XCTest-inmatning från UIKit/SwiftUI-redigering. Inga krav eller
+assertioner har ändrats för att godkänna det felet. Råloggar, ursprungsfilm,
+snapshotarkiv, event och extraherade bilder bevaras separat; bevis-JSON har
+SHA256 80ac3a7498dae228644f5d7ffbe7c1b7285b0444e7fc2cb1a6fc3d8ec4f6279a.
+Enbart det kompakta jobbet körs om på oförändrad källa 2026-10-27. Det är
+ännu inget godkänt slutresultat eller nytt godkänt personligt paket.
+
+Det kompakta andra försöket (jobb121955384136) avslutades också underkänt:
+150 hostade och 18/19 UI-fall passerade. Den exakta beskrivningen och
+JSON-assertionen passerade denna gång. Rapportfallet föll i stället på
+hjälparens skärmgräns för exportknappen. Originalbilden och native-hierarkin
+visar hela knappens ram y502–649,5 i den aktiva modalens 667-punktsfönster.
+Hjälparen använde felaktigt flikraden i den nedskalade, bakomliggande läsvyn
+som nedre gräns y596,2. Detta är inte bevis för en avklippt produktkontroll.
+Nästa testkorrigering binder modalens gränser till dess eget native-fönster,
+behåller fulla ramar, faktisk klickbarhet, högst tolv drag och oförändrade
+femsekunderskrav för läsposition. Inmatningen kontrolleras även i editorn före
+och efter Klart, med två vanliga tangentbordsinmatningar vid dubbelt l.
+
+PR-körning 40436574639 (72) på 6b8cde9 behåller appkoden från 89a449b och
+innehåller den granskade UI-testkorrigeringen. Första backendjobbet
+121966536437 avbröts efter tio minuter under långsam hämtning av
+Ubuntu-paket från azure.archive.ubuntu.com. Det nådde inte Python-
+beroendena eller något backendprov. Det är ett underkänt infrastrukturutfall,
+inte en genomförd eller godkänd backendtestomgång. Native-jobben lämnas
+att avsluta; denna avbrutna installation får inte godkänna leveransen.
+
+Körning72 avslutades som cancelled med ytterligare två underkända
+native-jobb. iOS26 passerade 150 hostade och 19 UI-fall. Ett passnamn
+delades av ett native-stderrmeddelande i textloggen; originalraderna och
+150/0-summeringen bevaras utan omskrivning. iPhone16Pro passerade 150
+hostade och 18/19 UI-fall, inklusive alla sju nya UI-fall. Det äldre
+repetitionsprovet stod kvar på Vers1 efter ett syntetiskt tap i nominellt
+centrum för Vers3. Menyn stod fortfarande öppen. En intern runner-assertion
+och omstart kom efter detta assertionsfel; de bevisar inte orsaken till
+det uteblivna valet. Testet och appens repetitionskod ändras inte på detta
+underlag. Film, event och native-beskrivningar binds av bevis-JSON med
+SHA256 aecaaf293173c39089be8bb35ba3fb7be0c88b8016f13d22de4a838482a61476.
+
+Kompakt72 passerade också 150 hostade och 18/19 UI-fall; alla tolv äldre
+UI-fall passerade. Beskrivningens nya exakta checkpoints och rapportens
+schema passerade. Den korrekta modalgränsen667 användes, men den nya
+hjälparen observerade bara före vart och ett av tolv drag. Efter det tolfte
+draget blev exportknappen helt synlig (y519–666,5), vilket originalbilden
+och native-hierarkin visar. Hjälparen gjorde ingen observation efter detta
+sista tillåtna drag och underkände felaktigt flödet. Den har nu en sista
+högst fem sekunders kontroll av hel, ändlig ram, horisontell inneslutning,
+foreground och faktisk klickbarhet, utan fler drag. Kravet på minst44
+punkters exportkontroll och alla äldre läsar-/ljudbudgetar behålls.
+
+Nästa stabila kandidat behåller appkoden från89a449b och de äldre
+testklasserna. Backendjobbets dokumenterade paketstall åtgärdas samtidigt
+med Ubuntus officiella HTTPS-spegel och utan rekommenderade extraprogram.
+Distributionspaketet ffmpeg, Pythonberoenden, tiominutersbudgeten, alla57
+tester och leveransens needs-gate behålls. Shellsyntax och spegelbytet
+kontrolleras separat; faktisk godkänd molninstallation återstår.

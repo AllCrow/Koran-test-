@@ -135,8 +135,18 @@ jobs:
           python-version: '3.12'
       - name: Install audio decoder and lightweight test dependencies
         run: |
+          # The Azure mirror stalled before any tests in run 72. Keep Ubuntu's
+          # signed repositories and packages, using its official HTTPS mirror.
+          for apt_source in /etc/apt/sources.list /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list /etc/apt/apt-mirrors.txt /etc/apt/apt-mirrors-security.txt; do
+            if [ -f "$apt_source" ]; then
+              sudo sed -i \
+                -e 's|http://azure\.archive\.ubuntu\.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' \
+                -e 's|https://azure\.archive\.ubuntu\.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' \
+                "$apt_source"
+            fi
+          done
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y --no-install-recommends ffmpeg
           python -m pip install -r backend/requirements-test.txt
       - name: Test API contracts and real audio decoding
         run: python -W error::ResourceWarning -m unittest discover -s backend/tests -v
