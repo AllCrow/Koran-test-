@@ -1,6 +1,12 @@
 # Sakina – produktkrav
 
-Uppdaterat: **2026-10-25**. Sakina är ett arbetsnamn. Dokumentet bevarar användarens krav och beslut; en kravpunkt är inte automatiskt en levererad eller verifierad funktion. Se [STATUS.md](STATUS.md) för genomförandet.
+Uppdaterat: **2026-11-03**. Sakina är ett arbetsnamn. Dokumentet bevarar användarens krav och beslut; en kravpunkt är inte automatiskt en levererad eller verifierad funktion. Se [STATUS.md](STATUS.md) för genomförandet.
+
+Återupptagning 2026-11-03: användaren har nu tillgång till en Windows-dator.
+Projektet och hela Git-historiken finns lokalt och chatten är kopplad till
+dess egen projektplats i Codex. Användaren har bett oss fortsätta från den
+senaste läsförbättringsomgången. Native-byggen sker fortsatt på molnets Mac;
+personlig signering och fysisk iPhone-provning är inte därmed genomförda.
 
 ## Syfte och plattform
 

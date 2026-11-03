@@ -30,8 +30,12 @@ Den utökade stabilitetsrundan förbättrar läskomfort, veckohistorik, offline-
 - En integrerad **experimentell analysväg** med separat Muaalem-backend, typad iOS-klient och återkopplingsvy. Den är **avstängd som standard** och har ingen konfigurerad serveradress.
 
 Den nya [läsförbättringsomgången](docs/READING_IMPROVEMENTS_2026-10-25.md)
-är implementerad i källkoden. Dess native-verifiering pågår/återstår; tidigare
-godkända byggresultat nedan godkänner inte automatiskt den nya koden.
+har passerat [PR-körning 73](https://github.com/AllCrow/Koran-test-/actions/runs/40440076201):
+150 hostade och 19 UI-fall på var och en av tre simulatorer, 106 separata
+portabla Mac-fall per variant och 57 backendfall. Simulator- och osignerat
+iPhoneOS-bygge passerade. Fysisk installation och provning återstår.
+Se [aktuell status](STATUS.md) och [återgranskningen](docs/evidence/reading-pr73-review-2026-11-03.md)
+för exakt källa, utgångna bilagor och nästa huvudgrensleverans.
 
 Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline. Ny tafsir kräver nät; lokalt sparade förklaringar kan öppnas även efter appstart utan nät. Cachen prioriterar nyligen öppnade förklaringar och omfattar högst 64 poster, 4 MiB totalt och 128 KiB per sparad post. Hela tafsiren är inte paketerad för offlinebruk. Ljudproven omfattar kontrollerad transport och riktiga URLSession-överföringar över lokal HTTP; nät och ljud på fysisk iPhone återstår.
 
@@ -75,7 +79,7 @@ behöver fortfarande verifieras. Minsta körversion iOS17 är en annan
 inställning än bygg-SDK:n. Den personliga installationsvägen
 beskrivs i [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
-**Aktuell verifiering:**
+**Historiskt verifierat huvudgrenspaket, bygge 63:**
 
 [Huvudkörning 63](https://github.com/AllCrow/Koran-test-/actions/runs/40218507319) är **avslutad med alla sex jobb godkända**.
 Varje simulator utförde **139 hostade + 12 UI-fall**, samt separat

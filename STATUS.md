@@ -1,9 +1,41 @@
 # Sakina – utvecklingsstatus
 
-Uppdaterat **2026-10-25**. Native-app för iPhone, **iOS 17+**.
+Uppdaterat **2026-11-03**. Native-app för iPhone, **iOS 17+**.
 
 **Automatisk tajweedbedömning är fortsatt experimentell och avstängd. Ingen
 analysserver är konfigurerad och Tarteel-kvalitetsmålet är inte uppfyllt.**
+
+## Återupptaget arbete och godkänd PR-körning 73
+
+Projektet är hämtat med full historik till Windows och har en egen lokal
+projektplats i Codex. Den senaste arbetsgrenen är
+`codex/reading-improvements-2026-10-25`, [PR #15](https://github.com/AllCrow/Koran-test-/pull/15).
+Den inför sparad synlig läsposition, arabisk offlinesökning, källvy och
+uttryckligt förhandsgranskad lokal innehållsrapport. Koranresurserna,
+ljudtjänsterna och de tolv äldre UI-fallen är oförändrade.
+
+[PR-körning 73](https://github.com/AllCrow/Koran-test-/actions/runs/40440076201)
+avslutades **godkänd 2026-10-27** och har nu återkontrollerats i originalets
+fem jobbloggar. Alla tre simulatorer passerade **150 hostade + 19 UI-fall**,
+med **106 separata portabla Mac-fall per variant**. Backend passerade
+**57 fall**. Simulatorbyggen och det osignerade iPhoneOS-paketet passerade.
+Det är **169 unika native-/UI-fall och 507 exekveringar** över tre varianter.
+De portabla proven och backendproven är separata från dessa antal.
+
+Kandidat `32f09bb709897400930a8ad2956e138bff4c2bc8` och faktisk PR-checkout
+`52c99c1a8f23afcebe9edc95f9a81ffdb4ddb14a` har samma kompletta Git-träd:
+`6b585620301ce6272c4fd4383cc100d07c94aaa4`.
+En iOS26-passrad är delad av native-stderr; de ursprungliga raderna och
+150/0-summeringen bevaras, utan omskrivning av råloggen.
+
+Körningens sjudagarsbilagor är inte längre tillgängliga. Dess IPA och
+skärmbilder är därför inte hämtade eller visuellt återgranskade i denna
+fortsättning. Det godkända paketjobbet är inte ett nytt verifierat
+ägarutkast: PR-körningens `save-personal-download` hoppades över enligt
+huvudgrensvillkoret. Nästa integration ska få en ny huvudkörning och nya
+bilagor innan ett nytt personligt paket redovisas som levererat.
+[Granskningsunderlag och logghashar](docs/evidence/reading-pr73-review-2026-11-03.md).
+Tidigare fel och bygge63:s leveransbevis nedan är bevarade.
 
 ## Senaste fortsättningsrunda
 

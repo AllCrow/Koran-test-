@@ -6,10 +6,13 @@ befintliga iPhone-appen. Alla ursprungliga krav och den ordagranna korantexten
 bevaras. Se [kraven](../KRAV.md) för K17–K20 och
 [aktuell verifiering](../STATUS.md) för faktiska källversioner och provutfall.
 
-**Läge när detta underlag skrevs:** implementation och nya prov finns i
-källkoden. Ny native-verifiering är inte ännu godkänd i detta dokument.
-Tidigare godkända prov av en annan källversion blir inte bevis för dessa
-ändringar. Resultat ska kompletteras först efter lästa CI-utfall.
+**Återkontrollerat 2026-11-03:** [PR-körning 73](https://github.com/AllCrow/Koran-test-/actions/runs/40440076201)
+på `32f09bb` passerade 150 hostade och 19 UI-fall på alla tre simulatorer,
+106 separata portabla Mac-fall per variant och 57 backendfall. Både
+simulator- och osignerat iPhoneOS-bygge passerade. Originalets jobbloggar
+är lästa; dess utgångna skärm-/paketbilagor har inte återgranskats.
+[Källbindning och gränser](evidence/reading-pr73-review-2026-11-03.md).
+Huvudgrensintegration och nytt ägarpaket redovisas separat i [STATUS.md](../STATUS.md).
 
 ## Fortsätt från den synliga versen
 
