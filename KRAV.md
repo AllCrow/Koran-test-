@@ -15,6 +15,16 @@ installerat men inloggning misslyckas med -80045; förnyelse är inte verifierad
 Datorn/iloader behövs för förnyelse före sju dagar tills den vägen fungerar.
 Se aktuell STATUS.md.
 
+Senaste beslut 2026-11-03: användaren tycker att appen är långt ifrån optimal
+och har accepterat en separat, mobilanpassad prototyp som kan provas på
+Windows-datorn. Design och flöden förfinas där och förs sedan stegvis över
+till befintliga native-appen, med iPhone-prov under arbetet. Detta ändrar
+inte målet om en native-app och innebär ingen beställd PWA-/hybridomskrivning
+eller automatisk konvertering. Specifika brister och designval återstår att
+konkretisera. Prototypen ska påbörjas i en ny chatt inom samma projekt.
+Användaren har begärt ett löpande projektminne i .md; läs och uppdatera
+[PROJEKTMINNE.md](PROJEKTMINNE.md) vid varje fortsättning och överlämning.
+
 ## Syfte och plattform
 
 Skapa en koranapp som är behaglig att använda, uppmuntrar regelbunden läsning och håller telefonens batteri- och värmebelastning låg. Användaren ska inte behöva betala en obligatorisk månadsavgift för appens funktioner.

@@ -2,6 +2,20 @@
 
 Uppdaterat **2026-11-03**. Native-app för iPhone, **iOS 17+**.
 
+## Aktuell riktning och återupptagning
+
+Läs [PROJEKTMINNE.md](PROJEKTMINNE.md) först vid varje ny projektchatt och
+uppdatera dess nuläge och daterade logg under arbetet. Det samlar historiken,
+verifieringsgränserna, installationen och nästa uppgift; denna fil behåller
+de detaljerade faktiska testresultaten.
+
+Användaren har bekräftat att Sakina öppnas men bedömer appen som långt ifrån
+optimal. Den 2026-11-03 accepterade användaren en separat, mobilanpassad
+prototyp som går att prova på Windows, följd av stegvisa förbättringar i
+befintliga SwiftUI-appen och återkommande iPhone-prov. **Prototypen är beslutad
+men ännu inte skapad.** Specifika användarproblem och designval återstår.
+Ingen PWA-/hybridomskrivning eller automatisk konvertering är beslutad.
+
 **Automatisk tajweedbedömning är fortsatt experimentell och avstängd. Ingen
 analysserver är konfigurerad och Tarteel-kvalitetsmålet är inte uppfyllt.**
 

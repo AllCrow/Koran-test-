@@ -1,5 +1,10 @@
 # Sakina – koranapp för iPhone
 
+**Återuppta projektet:** läs [PROJEKTMINNE.md](PROJEKTMINNE.md), följ
+`AGENTS.md` och håll minnet uppdaterat mellan chattar. Nästa beslutade steg
+är en separat mobilprototyp som kan provas på datorn, följd av förbättringar
+i befintliga native-appen. Prototypen är ännu inte skapad.
+
 Pågående native-app i SwiftUI för **iOS 17 eller senare**. Sakina är arbetsnamnet. Målet är en lugn koranapp med låg värme- och batteribelastning, uppmuntrande läsning och utan obligatorisk månadsprenumeration.
 
 Den utökade stabilitetsrundan förbättrar läskomfort, veckohistorik, offline-tafsir, nedladdningar och återhämtning vid ljudavbrott. Källkoden, kraven och verifieringsläget bevaras här. iloader har rapporterat lyckad personlig signering och installation av bygge 74, och användaren har bekräftat att appen öppnas. Fysisk funktionsprovning återstår.

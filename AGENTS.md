@@ -1,5 +1,24 @@
 # Working on Sakina
 
+## Project continuity and current direction
+
+At the beginning of every chat/task, read `PROJEKTMINNE.md`, `STATUS.md` and
+`KRAV.md` before meaningful project work. `PROJEKTMINNE.md` is the running
+cross-chat project memory requested by the user. Update its current state and
+append a dated log entry after material changes and before handoff, with files,
+actual checks, unresolved questions and the next concrete step. Preserve older
+decisions/failures, link detailed evidence and never store credentials there.
+Verify drift-prone facts against current files/tools; memory is not live proof.
+
+Latest user decision (2026-11-03): build a separate mobile-first interactive
+prototype that can be reviewed on the Windows computer, then transfer the
+accepted design/flows incrementally into the existing native SwiftUI app and
+test on iPhone during the work. This does not authorize a PWA/hybrid replacement
+or promise automatic web-to-SwiftUI conversion. The user says the current app
+is far from optimal; specific usability problems have not yet been described.
+The prototype has not been implemented. Start that implementation in the next
+project chat; this handoff only saves continuity and its starting prompt.
+
 This is an iPhone-first SwiftUI app (iOS 17+) with portable Swift packages and an
 experimental Python recitation backend. Preserve the user's full requirements
 in `KRAV.md`, actual verification in `STATUS.md`, and all source history.
