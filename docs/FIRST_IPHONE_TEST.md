@@ -108,6 +108,9 @@ ytterligare kontroller.
 
 Förnya både SideStore och Sakina innan den kostnadsfria signeringen löper ut,
 normalt efter sju dagar. Följ SideStores aktuella krav på Wi-Fi och LocalDevVPN.
+Om Sakina installerats direkt genom iloader och SideStore-inloggningen ännu
+inte fungerar, förnya i stället genom datorn/iloader före utgången. Använd
+samma konto och appidentitet; avinstallation är inte ett normalt förnyelsesteg.
 Exportera läsdatan före större uppdateringar och innan du avinstallerar appen.
 **Avinstallation raderar appens lokala data.** Spara säkerhetskopian i Filer;
 en kopia som bara finns inne i appens lagring skyddar inte vid avinstallation.

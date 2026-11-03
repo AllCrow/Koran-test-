@@ -5,8 +5,15 @@ Uppdaterat: **2026-11-03**. Sakina är ett arbetsnamn. Dokumentet bevarar använ
 Återupptagning 2026-11-03: användaren har nu tillgång till en Windows-dator.
 Projektet och hela Git-historiken finns lokalt och chatten är kopplad till
 dess egen projektplats i Codex. Användaren har bett oss fortsätta från den
-senaste läsförbättringsomgången. Native-byggen sker fortsatt på molnets Mac;
-personlig signering och fysisk iPhone-provning är inte därmed genomförda.
+senaste läsförbättringsomgången. Native-byggen sker fortsatt på molnets Mac.
+
+Installationsfortsättning samma dag: iloader 2.4.1 rapporterar lyckad personlig
+signering och installation av bygge 74 på den USB-anslutna telefonen
+(användaren anger iPhone 15 Pro, verktyget visar iOS 26.6.1). Användaren
+bekräftar att Sakina öppnas. Fysisk funktionsprovning återstår. SideStore är
+installerat men inloggning misslyckas med -80045; förnyelse är inte verifierad.
+Datorn/iloader behövs för förnyelse före sju dagar tills den vägen fungerar.
+Se aktuell STATUS.md.
 
 ## Syfte och plattform
 

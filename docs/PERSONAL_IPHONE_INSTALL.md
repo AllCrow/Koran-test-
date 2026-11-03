@@ -32,7 +32,35 @@ GitHub levererar ett arkiv. Behåll IPA-filen och byggrapporten tillsammans.
 IPA-filen behöver därefter signeras för användarens telefon. Att trycka på en
 osignerad IPA i Filer eller Safari installerar den inte. Den tidigare artefakten
 `Sakina-simulator` går inte heller att använda för detta. **Sakina kräver iOS 17
-eller senare.** Ingen faktisk installation på fysisk iPhone är ännu godkänd.
+eller senare.** iloader har nu rapporterat lyckad signering och installation
+av bygge 74, och användaren har bekräftat att Sakina öppnas på telefonen.
+Funktionerna på den fysiska telefonen är ännu inte provade.
+
+## Nuvarande installation: direkt genom iloader
+
+Den 2026-11-03 installerades iTunes och iloader **2.4.1** på Windows.
+Telefonen identifieras över USB med iOS **26.6.1**; användaren anger
+**iPhone 15 Pro**. Apple-inloggning och installation av SideStore genom
+iloader lyckades. Inloggning inne i SideStore gav däremot **-80045**, vilket
+även finns [rapporterat i SideStore-projektet](https://github.com/SideStore/SideStore/issues/1675).
+SideStores första förnyelse är inte klar.
+
+[iloader stöder import av egna IPA-filer](https://github.com/nab138/iloader).
+Den kontrollerade `Sakina-iPhone-unsigned.ipa` för **0.1.0 (74)** valdes med
+**Import IPA** i det redan inloggade iloader, med telefonen vald över USB.
+Originalfilen är **3 663 212 byte**, SHA256
+`c6d6fb7d1db07bcd2bea9e9cac212f62a28729937ee6cd02d7606489929ad64a`.
+iloader avslutade med **Operation completed** och en grön bock för
+**Sign & Install App**. Originalfilen i projektleveransen är alltjämt osignerad;
+signeringen för telefonen skedde i verktyget.
+
+Användaren bekräftade därefter att **Sakina öppnas** på telefonen. Versionsvyn
+under **Mitt** och [det första iPhone-provet](FIRST_IPHONE_TEST.md) återstår.
+En lyckad installation och appstart ersätter inte fysisk funktionsprovning.
+Gratis signering gäller normalt sju dagar. Tills SideStore fungerar behöver
+Sakina förnyas via datorn/iloader före utgången. Bevara samma konto och
+appidentitet vid uppdatering och exportera läsdatan före större ändringar.
+Avinstallera inte appen som ett rutinmässigt förnyelsesteg.
 
 ## Kostnadsfri personlig signering med SideStore
 
@@ -43,9 +71,9 @@ andra installationsverktyg kan beskriva en annan version av SideStore.
 Windowsförberedelserna och installationsstegen är återlästa 2026-11-03 i
 [SideStores förberedelser](https://docs.sidestore.io/docs/installation/prerequisites)
 och [installationsguide](https://docs.sidestore.io/docs/installation/install).
-Ingen programinstallation, Apple-inloggning eller parkoppling har utförts i
-denna projektfortsättning. De stegen och telefonens förtroende-/utvecklarval
-behöver genomföras av användaren i de officiella verktygen.
+Windowsinstallationen och inloggningen i iloader har nu genomförts.
+Telefonens förtroende-/utvecklarval och Apple-inloggning hanteras av användaren
+i de officiella verktygen. Aktuellt utfall och SideStore-felet redovisas ovan.
 
 1. Installera LocalDevVPN på iPhone via länken i SideStores officiella guide.
 2. På den lånade datorn: installera iloader; Windows-instruktionen kräver även

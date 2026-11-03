@@ -2,7 +2,7 @@
 
 Pågående native-app i SwiftUI för **iOS 17 eller senare**. Sakina är arbetsnamnet. Målet är en lugn koranapp med låg värme- och batteribelastning, uppmuntrande läsning och utan obligatorisk månadsprenumeration.
 
-Den utökade stabilitetsrundan förbättrar läskomfort, veckohistorik, offline-tafsir, nedladdningar och återhämtning vid ljudavbrott. Källkoden, kraven och verifieringsläget bevaras här. Appen behöver fortfarande personlig signering och provning på en fysisk iPhone.
+Den utökade stabilitetsrundan förbättrar läskomfort, veckohistorik, offline-tafsir, nedladdningar och återhämtning vid ljudavbrott. Källkoden, kraven och verifieringsläget bevaras här. iloader har rapporterat lyckad personlig signering och installation av bygge 74, och användaren har bekräftat att appen öppnas. Fysisk funktionsprovning återstår.
 
 ## Nuvarande funktioner
 
@@ -33,7 +33,8 @@ Den nya [läsförbättringsomgången](docs/READING_IMPROVEMENTS_2026-10-25.md)
 är integrerad och har passerat [huvudkörning 74](https://github.com/AllCrow/Koran-test-/actions/runs/41694013456):
 150 hostade och 19 UI-fall på var och en av tre simulatorer, 106 separata
 portabla Mac-fall per variant och 57 backendfall. Simulator- och osignerat
-iPhoneOS-bygge passerade. Fysisk installation och provning återstår.
+iPhoneOS-bygge passerade. iloader rapporterar nu lyckad fysisk installation;
+användaren har bekräftat appstart. Fysisk funktionsprovning återstår.
 **iPhone-paket 0.1.0 (74)** finns som ägaråtkomligt releaseutkast
 `personal-build-74-2`. Samtliga 239 paketerade källresurser och alla tre
 nedladdningsfiler är oberoende kontrollerade.
@@ -50,7 +51,7 @@ Se [kraven](KRAV.md), [aktuell status](STATUS.md), [modellundersökningen](docs/
 
 Molnets Mac bygger appen. Den färdiga iPhone-filen kan därefter signeras personligt med en lånad **Mac eller Windows-dator** för första SideStore-installationen. Du behöver inget betalt Developer-medlemskap för den vägen. Enbart iPhone räcker inte för grundinstallationen. En simulatorartefakt kan **inte** installeras på en fysisk iPhone.
 
-För **privat installation** finns en riktig, osignerad iPhoneOS/arm64-IPA från molnbygget. Den behöver personlig signering innan den kan installeras. [SideStore-guiden](docs/PERSONAL_IPHONE_INSTALL.md) beskriver hämtning, gratis signering med vanligt Apple-konto och [det första provet på telefonen](docs/FIRST_IPHONE_TEST.md). Förnyelse behövs normalt före sju dagar, och en dator kan behövas igen vid återställning. Ingen faktisk SideStore-installation är ännu verifierad.
+För **privat installation** finns en riktig, osignerad iPhoneOS/arm64-IPA från molnbygget. Den behöver personlig signering innan den kan installeras. [Installationsguiden](docs/PERSONAL_IPHONE_INSTALL.md) beskriver hämtning, gratis signering med vanligt Apple-konto och [det första provet på telefonen](docs/FIRST_IPHONE_TEST.md). Bygge 74 har nu signerats och installerats enligt iloaders lyckade resultat. Användaren har bekräftat att Sakina öppnas. SideStore-inloggning ger -80045; dess förnyelse fungerar ännu inte. Tills det är löst behövs datorn/iloader för förnyelse före den vanliga sjudagarsgränsen. Fysisk funktionsprovning återstår.
 
 Användaren har uttryckligen valt att behålla iPhone-appen och avstått från Safari/PWA. Om en dator inte går att låna behövs en signerande distributör. För TestFlight-alternativet krävs Apple Developer-medlemskap hos den som publicerar; testaren behöver inget eget betalt medlemskap. Inga Apple-uppgifter eller signeringsnycklar ingår i Git.
 
@@ -122,7 +123,7 @@ simulatorverifiering. Bygge53:s separata [prov med riktiga recitationer](docs/LI
 är historiskt underlag för dess exakta källa, inte ett nytt prov av senare ändrad
 ljudkod. Personlig installation beskrivs i [guiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
-Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. Fysisk iPhone-provning, personlig signering och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
+Verifieringen omfattar riktiga Xcode-byggen för simulator och fysisk iPhone, portabla Swift-tester, hostade native-prov, UI-flöden och backendtester med riktig ljudavkodning. **Exakt testad källversion, antal och utfall finns i [STATUS.md](STATUS.md).** Ett verkligt CPU-modellprov och lokala Docker-startkontroller har genomförts separat. iloader rapporterar nu lyckad personlig signering/installation och användaren har bekräftat appstart; fysisk funktionsprovning och energimätning återstår. Se även [native-provens omfattning](docs/IOS_VERIFICATION.md).
 
 ## Struktur
 

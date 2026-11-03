@@ -32,7 +32,30 @@ Analysflaggan är avstängd och serveradressen tom.
 på rätt källa. Dess IPA, byggrapport och installationsguide är hämtade och
 matchar byggartefaktens samtliga filstorlekar och SHA256.
 Hämta [Sakina – privat testbygge 74](https://github.com/AllCrow/Koran-test-/releases/tag/untagged-227b199ee9eb87aa020d),
-inloggad som AllCrow. Paketet kräver fortfarande personlig signering.
+inloggad som AllCrow. Den hämtade originalfilen är fortfarande osignerad;
+den personliga installationen nedan utfördes separat genom iloader.
+
+### Personlig installation via Windows, 2026-11-03
+
+iloader **2.4.1** hittar telefonen över USB och visar iOS **26.6.1**.
+Användaren anger **iPhone 15 Pro**. SideStore installerades genom iloader,
+men inloggningen i SideStore misslyckas med **-80045**. SideStores första
+förnyelse är därför inte genomförd och automatisk förnyelse är inte verifierad.
+
+Den kontrollerade IPA-filen för **0.1.0 (74)** importerades därefter direkt
+med **Import IPA** i det redan inloggade iloader. Filens storlek och SHA256
+återkontrollerades mot ovanstående paket innan importen. iloader visar
+**Operation completed** och en **grön bock för Sign & Install App**.
+Detta är verktygets rapport om lyckad personlig signering och installation.
+Användaren bekräftade därefter **Sakina öppnas** på telefonen. Appstarten är
+alltså användarbekräftad; versionsvyn och funktionerna är ännu inte provade.
+Ingen ny fysisk funktions-, mikrofon-, ljud-, radio- eller energiprovning
+följer av installationsmeddelandet. Apple-uppgifter och parkopplingsmaterial
+ingår inte i underlaget.
+
+Tills SideStore-inloggning och förnyelse fungerar används datorn/iloader för
+förnyelse före den vanliga sjudagarsgränsen. Se
+[installationsguiden](docs/PERSONAL_IPHONE_INSTALL.md).
 
 Färska skärmbilder är visuellt granskade för alla tre simulatorvarianter:
 mörk läsning, arabisk sökning, manuell läsplats och rapport/export vid stor

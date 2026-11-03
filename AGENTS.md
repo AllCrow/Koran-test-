@@ -6,7 +6,8 @@ in `KRAV.md`, actual verification in `STATUS.md`, and all source history.
 
 The user uses an iPhone and now has Windows computer access (2026-11-03).
 Keep cloud Mac builds and personal native installation. The current Windows
-checkout has no Xcode or attached verified physical iPhone. Never
+checkout has no Xcode. An iPhone is now detected over USB and the user confirmed
+Sakina opens; functional acceptance is not verified. Never
 describe syntax checks or Linux tests as a verified native build. Do not claim
 Tarteel parity or low heat without the corresponding measurements.
 
@@ -16,8 +17,15 @@ an unsigned physical-iPhone IPA for subsequent personal signing; this is distinc
 from the simulator artifact and cannot be installed by tapping it in Files.
 SideStore with an ordinary Apple account is a possible free route using the
 Windows computer for initial setup/recovery. See
-`docs/PERSONAL_IPHONE_INSTALL.md`; no signing or device install is
-verified, and never request passwords or pairing files in chat.
+`docs/PERSONAL_IPHONE_INSTALL.md`. On 2026-11-03, iloader 2.4.1 reported
+Operation completed with a green Sign & Install App check after importing
+the hash-checked build74 IPA directly to the selected USB iPhone (26.6.1;
+user reports iPhone15Pro). SideStore itself installed, but its login fails
+with -80045; its first refresh and automatic renewal are unverified.
+The user then confirmed Sakina opens; the in-app version and device functional
+acceptance remain unverified. Until SideStore refresh works, renew via
+computer/iloader before the normal
+seven-day expiry. Never request passwords or pairing files in chat.
 
 ## Latest reading verification and Windows continuation
 
@@ -34,7 +42,8 @@ the artifact. IPA 0.1.0 (74), 3663212 bytes, SHA256
 c6d6fb7d1db07bcd2bea9e9cac212f62a28729937ee6cd02d7606489929ad64a.
 Windows independently checked arm64/iOS, SDK26.2, disabled analysis and 239
 exact packaged resources. Screenshots were visually reviewed for all three
-variants. Personal signing, physical installation and device acceptance remain.
+variants. iloader now reports personal signing/installation success as above;
+the user confirmed launch, while device functional acceptance remains unverified.
 See STATUS.md and docs/evidence/reading-delivery-74-2026-11-03.json.
 
 PR15 run40440076201 (73) passed on32f09bb709897400930a8ad2956e138bff4c2bc8.
