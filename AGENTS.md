@@ -4,8 +4,9 @@ This is an iPhone-first SwiftUI app (iOS 17+) with portable Swift packages and a
 experimental Python recitation backend. Preserve the user's full requirements
 in `KRAV.md`, actual verification in `STATUS.md`, and all source history.
 
-The user owns only an iPhone and wants cloud Mac builds and a personal native
-installation. This Linux environment has no Xcode or physical iPhone. Never
+The user uses an iPhone and now has Windows computer access (2026-11-03).
+Keep cloud Mac builds and personal native installation. The current Windows
+checkout has no Xcode or attached verified physical iPhone. Never
 describe syntax checks or Linux tests as a verified native build. Do not claim
 Tarteel parity or low heat without the corresponding measurements.
 
@@ -15,8 +16,24 @@ an unsigned physical-iPhone IPA for subsequent personal signing; this is distinc
 from the simulator artifact and cannot be installed by tapping it in Files.
 SideStore with an ordinary Apple account is a possible free route if a computer
 can be borrowed for initial setup/recovery. The user expects access to a computer later; the computer platform is not yet
-confirmed. See `docs/PERSONAL_IPHONE_INSTALL.md`; no signing or device install is
+confirmed in the original notes; the current computer is Windows. See
+`docs/PERSONAL_IPHONE_INSTALL.md`; no signing or device install is
 verified, and never request passwords or pairing files in chat.
+
+## Latest reading verification and Windows continuation
+
+PR15 run40440076201 (73) passed on32f09bb709897400930a8ad2956e138bff4c2bc8.
+Actual checkout52c99c1a8f23afcebe9edc95f9a81ffdb4ddb14a has the same complete
+tree6b585620301ce6272c4fd4383cc100d07c94aaa4. The five original job logs were
+read on2026-11-03:150 hosted and19 UI cases on each of three simulators,
+106 portable Mac cases per variant and57 backend cases. These are169 unique
+native/UI cases and507 executions. One iOS26 pass row is interrupted by
+native stderr; preserve its original fragments and150/0 summary.
+The seven-day artifacts have expired, so neither screenshots nor the IPA
+were independently re-downloaded during this continuation. The owner-draft
+job was correctly skipped on the PR. Integration needs a fresh main build,
+screenshots and checked owner assets before a new delivery claim.
+See STATUS.md and docs/evidence/reading-pr73-review-2026-11-03.md.
 
 ## Latest library and practice verification
 

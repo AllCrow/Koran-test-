@@ -108,7 +108,8 @@ struct SettingsView: View {
                     Text(versionDescription).font(.caption).foregroundStyle(.secondary)
                         .accessibilityIdentifier("settings.version")
                 }
-                NavigationLink("Källor och textutgåvor") { SourceNoticeView() }
+                NavigationLink("Källor och textutgåvor") { ContentSourcesView() }
+                    .accessibilityIdentifier("settings.sources")
                 NavigationLink("Integritet") { PrivacyView() }
                 NavigationLink("Felsökningsrapport") {
                     DiagnosticsView(allowsCellularAudio: audioNetwork.allowsCellularAudio)
@@ -372,36 +373,6 @@ private struct BookmarkDestination: View {
             player.stop()
             store.setLastRead(reference)
             await store.openSurah(reference.surahID)
-        }
-    }
-}
-
-@MainActor
-struct SourceNoticeView: View {
-    @State private var notice = ""
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                Text("Korantext och tajweed").font(.title2.bold()).accessibilityAddTraits(.isHeader)
-                Text("Uthmani-texten och den annoterade tajweedutgåvan är separata utgåvor. Visningen följer Hafs-numrering. Båda källtexterna bevaras ordagrant i appens databas.")
-                Link("Tanzil.net – korantext", destination: URL(string: "https://tanzil.net")!)
-                Link("AlQuran Cloud – käll-API", destination: URL(string: "https://alquran.cloud")!)
-                Link("Tajweednotation och färgförklaring", destination: URL(string: "https://alquran.cloud/tajweed-guide")!)
-                Text("Typsnitt: Amiri Quran, SIL Open Font License 1.1. Originallicensen finns med i appen.").font(.footnote)
-                Link("Amiri – typsnittsprojektet", destination: URL(string: "https://github.com/aliftype/amiri")!)
-                Text("Recitation").font(.title2.bold()).accessibilityAddTraits(.isHeader)
-                Text("Mishary Rashid al-Afasy, Mahmoud Khalil al-Husary och Muhammad Siddiq al-Minshawi. Inspelningarna strömmas från EveryAyah, en fil per vers. Textmarkeringen följer versen, inte enskilda ord.")
-                Link("EveryAyah", destination: URL(string: "https://everyayah.com")!)
-                Text("Tafsir").font(.title2.bold()).accessibilityAddTraits(.isHeader)
-                Text("Al-Muyassar på arabiska via AlQuran Cloud. Ingen automatisk översättning eller AI-genererad tafsir används.")
-                Divider()
-                Text(notice).font(.footnote).textSelection(.enabled)
-            }.padding(24)
-        }
-        .navigationTitle("Källor").navigationBarTitleDisplayMode(.inline)
-        .task {
-            if let url = Bundle.main.url(forResource: "NOTICE", withExtension: "txt", subdirectory: "Quran"),
-               let text = try? String(contentsOf: url, encoding: .utf8) { notice = text }
         }
     }
 }
