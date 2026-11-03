@@ -5,10 +5,65 @@ Uppdaterat **2026-11-03**. Native-app för iPhone, **iOS 17+**.
 **Automatisk tajweedbedömning är fortsatt experimentell och avstängd. Ingen
 analysserver är konfigurerad och Tarteel-kvalitetsmålet är inte uppfyllt.**
 
-## Återupptaget arbete och godkänd PR-körning 73
+## Aktuellt bygge 74 – läsförbättringar
+
+PR #15 är nu integrerad med bevarad historik i
+`491c7471d8b276a25950eb3441fdb7569108fd9c`. Den lokala kopian står på `main`.
+Alla andra filer än Markdown är byteidentiska med den godkända PR-kandidaten.
+[Huvudkörning 74](https://github.com/AllCrow/Koran-test-/actions/runs/41694013456)
+är **avslutad med alla sex jobb godkända**, efter en riktad omkörning på samma
+oförändrade källa. Alla tre simulatorer passerade **150 hostade + 19 UI-fall**,
+med **106 separata portabla Mac-fall per variant** och **57 backendfall**.
+Det godkända underlaget omfattar **169 unika native-/UI-fall och 507
+exekveringar** över tre validerade varianter. Det tidigare underkända
+iPhone16Pro-försökets extra exekveringar ingår inte i 507. Individuella passnamn
+är kontrollerade och identiska mellan varianterna.
+De godkända loggarna har inga runner-omstartsmarkörer. Kompakt iOS18:s resultat
+kommer från försök1; iPhone16Pro och iOS26 passerade i försök2.
+
+Det aktuella paketet är **0.1.0 (74)**, **3 663 212 byte**, iPhoneOS/arm64,
+minsta iOS17.0 och SDK26.2. IPA SHA256:
+`c6d6fb7d1db07bcd2bea9e9cac212f62a28729937ee6cd02d7606489929ad64a`.
+En oberoende Windows-kontroll matchar rapporten, Mach-O-plattformen och alla
+**239 paketerade källresurser** mot Git-blobbarna på den testade källan.
+Analysflaggan är avstängd och serveradressen tom.
+
+Ägarutkast **433135893**, tagg **personal-build-74-2**, är `draft/prerelease`
+på rätt källa. Dess IPA, byggrapport och installationsguide är hämtade och
+matchar byggartefaktens samtliga filstorlekar och SHA256.
+Hämta [Sakina – privat testbygge 74](https://github.com/AllCrow/Koran-test-/releases/tag/untagged-227b199ee9eb87aa020d),
+inloggad som AllCrow. Paketet kräver fortfarande personlig signering.
+
+Färska skärmbilder är visuellt granskade för alla tre simulatorvarianter:
+mörk läsning, arabisk sökning, manuell läsplats och rapport/export vid stor
+textstorlek. Detta ersätter inte fysisk iPhone-, VoiceOver-, Filer-, radio-,
+mikrofon- eller energiprovning. Ingen ny inferens eller akustisk noggrannhet
+påstås. [Slutligt leveransbevis](docs/evidence/reading-delivery-74-2026-11-03.json)
+binder källa, båda försök, loggar, bilder, paket och samtliga ägarfiler.
+
+### Bevarat första försök
+
+Första iOS26-jobbet `126119646221` avbröts i kön utan runner eller utförda
+steg. GitHubs annotation anger `The job was not acquired by Runner of type
+hosted even after multiple attempts` samt kapacitetsbrist för macOS arm64.
+Det är ett infrastrukturutfall, inte ett genomfört iOS26-prov.
+
+Försök1 avslutades underkänt: kompakt iOS18 passerade 150 hostade och 19 UI-fall,
+medan iPhone16Pro passerade 150 hostade och 18/19 UI-fall. Det enda UI-felet var
+rapportprovets första exakta inmatningskontroll på rad221. Originalfilmen visar
+`Kontro` i editorn och dess förslag, medan det avkodade typing-eventet begär
+`Kontrol`. Felet föregår rapportskapandet; underlaget skiljer inte säkert
+XCTest-inmatning från UIKit/SwiftUI-redigering. En runner-omstart inträffade
+efter assertionen och godkänner inte den underkända sviten. Originalfilmer,
+snapshots, event och loggar är sparade lokalt och hashbundna i leveransbeviset.
+De underkända/avbrutna jobben passerade omkörningen på samma oförändrade källa,
+med alla exakta värdekrav bevarade. Orsaken till det tidigare teckenbortfallet
+är inte därmed slutligt avgjord. Första försöket är fortsatt underkänt.
+
+### Föregående PR-körning 73
 
 Projektet är hämtat med full historik till Windows och har en egen lokal
-projektplats i Codex. Den senaste arbetsgrenen är
+projektplats i Codex. Den integrerade arbetsgrenen är
 `codex/reading-improvements-2026-10-25`, [PR #15](https://github.com/AllCrow/Koran-test-/pull/15).
 Den inför sparad synlig läsposition, arabisk offlinesökning, källvy och
 uttryckligt förhandsgranskad lokal innehållsrapport. Koranresurserna,
@@ -32,12 +87,11 @@ Körningens sjudagarsbilagor är inte längre tillgängliga. Dess IPA och
 skärmbilder är därför inte hämtade eller visuellt återgranskade i denna
 fortsättning. Det godkända paketjobbet är inte ett nytt verifierat
 ägarutkast: PR-körningens `save-personal-download` hoppades över enligt
-huvudgrensvillkoret. Nästa integration ska få en ny huvudkörning och nya
-bilagor innan ett nytt personligt paket redovisas som levererat.
+huvudgrensvillkoret. Huvudkörning74 och dess färska ägarpaket redovisas ovan.
 [Granskningsunderlag och logghashar](docs/evidence/reading-pr73-review-2026-11-03.md).
 Tidigare fel och bygge63:s leveransbevis nedan är bevarade.
 
-## Senaste fortsättningsrunda
+## Historiskt bygge 63 – bibliotek och övning
 
 - Samlat ljudbibliotek med kontrollerad lagring, avskilda skadade filer och radering per sura/recitatör. Sparat ljud öppnar rätt text och binds till sin lokala fil även vid nytt försök.
 - Ändlig repetition av ett versintervall, 1–20 omgångar och 0–15 sekunders paus, driven av verkligt versslut.
@@ -56,7 +110,7 @@ Källa `dd0f159dbf60d5daa839bafd252dc80091cc18aa`, komplett Git-träd `b082e40e9
 [Leveransbeviset](docs/evidence/library-delivery-63-2026-10-25.json) binder individuella passrader, råloggar,
 källor, paket och ägarutkast.
 
-Aktuellt paket är **0.1.0 (63)**, **3 491 616 byte**,
+Dåvarande paket är **0.1.0 (63)**, **3 491 616 byte**,
 iPhoneOS/arm64, minsta iOS17.0 och SDK26.2. IPA SHA256:
 `0bfb02ef8779662de7e99a47a43c60643483eaf7450c3ee4a1ff801a99dbea3f`.
 Releaseutkast **423574403**, tagg **personal-build-63-1**, är draft/prerelease

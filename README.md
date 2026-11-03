@@ -30,12 +30,15 @@ Den utökade stabilitetsrundan förbättrar läskomfort, veckohistorik, offline-
 - En integrerad **experimentell analysväg** med separat Muaalem-backend, typad iOS-klient och återkopplingsvy. Den är **avstängd som standard** och har ingen konfigurerad serveradress.
 
 Den nya [läsförbättringsomgången](docs/READING_IMPROVEMENTS_2026-10-25.md)
-har passerat [PR-körning 73](https://github.com/AllCrow/Koran-test-/actions/runs/40440076201):
+är integrerad och har passerat [huvudkörning 74](https://github.com/AllCrow/Koran-test-/actions/runs/41694013456):
 150 hostade och 19 UI-fall på var och en av tre simulatorer, 106 separata
 portabla Mac-fall per variant och 57 backendfall. Simulator- och osignerat
 iPhoneOS-bygge passerade. Fysisk installation och provning återstår.
-Se [aktuell status](STATUS.md) och [återgranskningen](docs/evidence/reading-pr73-review-2026-11-03.md)
-för exakt källa, utgångna bilagor och nästa huvudgrensleverans.
+**iPhone-paket 0.1.0 (74)** finns som ägaråtkomligt releaseutkast
+`personal-build-74-2`. Samtliga 239 paketerade källresurser och alla tre
+nedladdningsfiler är oberoende kontrollerade.
+Se [aktuell status](STATUS.md) och [leveransbeviset](docs/evidence/reading-delivery-74-2026-11-03.json)
+för exakt källa, omkörningen och kvarvarande fysisk provning.
 
 Läsning och tajweeddata fungerar utan nätverk. Ljud behöver hämtas först för att kunna spelas offline. Ny tafsir kräver nät; lokalt sparade förklaringar kan öppnas även efter appstart utan nät. Cachen prioriterar nyligen öppnade förklaringar och omfattar högst 64 poster, 4 MiB totalt och 128 KiB per sparad post. Hela tafsiren är inte paketerad för offlinebruk. Ljudproven omfattar kontrollerad transport och riktiga URLSession-överföringar över lokal HTTP; nät och ljud på fysisk iPhone återstår.
 

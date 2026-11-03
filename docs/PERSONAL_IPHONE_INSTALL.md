@@ -5,8 +5,9 @@ Safari/PWA. Egen Mac och betalt Developer-medlemskap saknas. Privat bruk kräver
 fortfarande signering, men ett vanligt Apple-konto kan användas för gratis
 personlig signering med exempelvis SideStore.
 
-**Denna väg kräver tillgång till en lånad Mac eller Windows-dator för
-grundinstallationen.** Enbart iPhone räcker inte för detta första steg. Datorn
+**Denna väg kräver en Mac eller Windows-dator för grundinstallationen.**
+Användaren har nu Windows-datoråtkomst (2026-11-03). Enbart iPhone räcker
+inte för detta första steg. Datorn
 kan också behövas igen vid utgången parkoppling eller återställning.
 
 ## Appfilen
@@ -38,6 +39,13 @@ eller senare.** Ingen faktisk installation på fysisk iPhone är ännu godkänd.
 Följ de aktuella [officiella instruktionerna](https://docs.sidestore.io/).
 Den kontrollerade guiden använder **iloader och LocalDevVPN**. Äldre guider med
 andra installationsverktyg kan beskriva en annan version av SideStore.
+
+Windowsförberedelserna och installationsstegen är återlästa 2026-11-03 i
+[SideStores förberedelser](https://docs.sidestore.io/docs/installation/prerequisites)
+och [installationsguide](https://docs.sidestore.io/docs/installation/install).
+Ingen programinstallation, Apple-inloggning eller parkoppling har utförts i
+denna projektfortsättning. De stegen och telefonens förtroende-/utvecklarval
+behöver genomföras av användaren i de officiella verktygen.
 
 1. Installera LocalDevVPN på iPhone via länken i SideStores officiella guide.
 2. På den lånade datorn: installera iloader; Windows-instruktionen kräver även

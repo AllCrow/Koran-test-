@@ -60,7 +60,9 @@ Körningens artifacts-lista var tom vid återkontrollen. Sjudagarsbilagorna
 är utgångna; IPA, xcresult och skärmbilder har inte hämtats eller visuellt
 granskats på nytt. Inget paket-SHA eller ny självständig paketkontroll
 påstås för bygge73. `save-personal-download` var `skipped` enligt PR-villkoret.
-En ny huvudkörning ska ge färska bilagor och ett ägarutkast efter integration.
+Efter integration gav [huvudkörning74](https://github.com/AllCrow/Koran-test-/actions/runs/41694013456)
+färska bilagor och ett kontrollerat ägarutkast. Dess omkörning och faktiska
+leverans redovisas separat i [leveransbeviset](reading-delivery-74-2026-11-03.json).
 
 Personlig signering/installation, fysisk mikrofon/radio, Filer-leverantörer,
 VoiceOver och energi återstår. Analys är avstängd; ingen ny inferens,

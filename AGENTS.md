@@ -14,13 +14,28 @@ Latest clarification: the user wants a local personal installation and explicitl
 REJECTED a Safari/PWA rewrite. Preserve the native app. A separate CI job prepares
 an unsigned physical-iPhone IPA for subsequent personal signing; this is distinct
 from the simulator artifact and cannot be installed by tapping it in Files.
-SideStore with an ordinary Apple account is a possible free route if a computer
-can be borrowed for initial setup/recovery. The user expects access to a computer later; the computer platform is not yet
-confirmed in the original notes; the current computer is Windows. See
+SideStore with an ordinary Apple account is a possible free route using the
+Windows computer for initial setup/recovery. See
 `docs/PERSONAL_IPHONE_INSTALL.md`; no signing or device install is
 verified, and never request passwords or pairing files in chat.
 
 ## Latest reading verification and Windows continuation
+
+PR #15 is merged as 491c7471d8b276a25950eb3441fdb7569108fd9c, tree
+58e51d1e8b35c36193107663c625c62128a9c054. Main run 41694013456 (74) passed
+all six jobs after a targeted retry on unchanged source: 150 hosted and 19 UI
+cases on each of three variants, 106 portable Mac cases per variant and 57
+backend cases. The successful individual case sets match; no restart markers.
+Compact passed attempt 1; ios18 and ios26 passed attempt 2. Preserve attempt 1's
+runner-capacity cancellation and input failure (expected Kontrol, observed
+Kontro before report creation); a later pass does not resolve its root cause.
+Owner draft 433135893 / personal-build-74-2 and all three downloaded assets match
+the artifact. IPA 0.1.0 (74), 3663212 bytes, SHA256
+c6d6fb7d1db07bcd2bea9e9cac212f62a28729937ee6cd02d7606489929ad64a.
+Windows independently checked arm64/iOS, SDK26.2, disabled analysis and 239
+exact packaged resources. Screenshots were visually reviewed for all three
+variants. Personal signing, physical installation and device acceptance remain.
+See STATUS.md and docs/evidence/reading-delivery-74-2026-11-03.json.
 
 PR15 run40440076201 (73) passed on32f09bb709897400930a8ad2956e138bff4c2bc8.
 Actual checkout52c99c1a8f23afcebe9edc95f9a81ffdb4ddb14a has the same complete
@@ -31,11 +46,11 @@ native/UI cases and507 executions. One iOS26 pass row is interrupted by
 native stderr; preserve its original fragments and150/0 summary.
 The seven-day artifacts have expired, so neither screenshots nor the IPA
 were independently re-downloaded during this continuation. The owner-draft
-job was correctly skipped on the PR. Integration needs a fresh main build,
-screenshots and checked owner assets before a new delivery claim.
+job was correctly skipped on the PR. Main74 supplies the fresh build,
+screenshots and checked owner assets described above.
 See STATUS.md and docs/evidence/reading-pr73-review-2026-11-03.md.
 
-## Latest library and practice verification
+## Historical library and practice verification
 
 Main run 40218507319 passed on dd0f159dbf60d5daa839bafd252dc80091cc18aa: 139 hosted and 12 UI
 cases per simulator, 89 portable Mac cases and 57 backend cases.
